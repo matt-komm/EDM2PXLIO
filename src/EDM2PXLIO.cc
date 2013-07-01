@@ -41,8 +41,8 @@
 #include "Pxl/Pxl/interface/Pxl.h"
 
 #include "EDM2PXLIO/EDM2PXLIO/src/Collection2Pxlio.h"
-
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/PatMuon2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/PatJet2Pxlio.h"
 //
 // class declaration
 //
@@ -68,6 +68,7 @@ class EDM2PXLIO : public edm::EDAnalyzer {
       pxl::OutputFile pxlFile_;
       
       PatMuon2Pxlio muonCollection_;
+      PatJet2Pxlio jetCollection_;
       // ----------member data ---------------------------
 };
 
@@ -84,9 +85,11 @@ class EDM2PXLIO : public edm::EDAnalyzer {
 //
 EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
     pxlFile_(iConfig.getUntrackedParameter<std::string>("fileName")),
-    muonCollection_("muon")
+    muonCollection_("muon"),
+    jetCollection_("jet")
 {
     muonCollection_.parseParameter(iConfig);
+    jetCollection_.parseParameter(iConfig);
 }
 
 
@@ -110,7 +113,9 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     pxl::Event pxlEvent;
     pxlEvent.setUserRecord<unsigned int>("Run", iEvent.run());
     pxlEvent.setUserRecord<unsigned int>("Event number", iEvent.id().event());
+    
     muonCollection_.convert(&iEvent,&pxlEvent);
+    jetCollection_.convert(&iEvent,&pxlEvent);
     
     pxlFile_.streamObject(&pxlEvent);
     pxlFile_.writeFileSection();
