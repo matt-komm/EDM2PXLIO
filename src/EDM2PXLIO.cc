@@ -42,8 +42,10 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/Collection2Pxlio.h"
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/PatMuon2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/PatElectron2Pxlio.h"
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/PatJet2Pxlio.h"
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/PatMET2Pxlio.h"
+
 //
 // class declaration
 //
@@ -69,8 +71,10 @@ class EDM2PXLIO : public edm::EDAnalyzer {
       pxl::OutputFile pxlFile_;
       
       PatMuon2Pxlio muonCollection_;
+      PatElectron2Pxlio electronCollection_;
       PatJet2Pxlio jetCollection_;
       PatMET2Pxlio metCollection_;
+      
       // ----------member data ---------------------------
 };
 
@@ -88,10 +92,12 @@ class EDM2PXLIO : public edm::EDAnalyzer {
 EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
     pxlFile_(iConfig.getUntrackedParameter<std::string>("fileName")),
     muonCollection_("muon"),
+    electronCollection_("electron"),
     jetCollection_("jet"),
     metCollection_("met")
 {
     muonCollection_.parseParameter(iConfig);
+    electronCollection_.parseParameter(iConfig);
     jetCollection_.parseParameter(iConfig);
     metCollection_.parseParameter(iConfig);
 }
@@ -119,6 +125,7 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     pxlEvent.setUserRecord<unsigned int>("Event number", iEvent.id().event());
     
     muonCollection_.convert(&iEvent,&pxlEvent);
+    electronCollection_.convert(&iEvent,&pxlEvent);
     jetCollection_.convert(&iEvent,&pxlEvent);
     metCollection_.convert(&iEvent,&pxlEvent);
     
