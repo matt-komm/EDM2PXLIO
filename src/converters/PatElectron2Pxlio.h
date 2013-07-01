@@ -78,7 +78,6 @@ class PatElectron2Pxlio: public Pat2Pxlio<pat::Electron>
         
         virtual void convertP4(const pat::Electron& patObject, pxl::Particle* pxlParticle)
         {
-            std::cout<<"using alternative electron momentum"<<std::endl;
             pxlParticle->setP4(patObject.ecalDrivenMomentum().px(),patObject.ecalDrivenMomentum().py(),patObject.ecalDrivenMomentum().pz(),patObject.ecalDrivenMomentum().energy());
         }
         

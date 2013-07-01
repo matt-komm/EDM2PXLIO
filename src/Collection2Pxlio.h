@@ -31,7 +31,6 @@ class Collection2Pxlio
         std::string name_;
         std::vector<edm::InputTag> srcs_;
         std::vector<std::string> names_;
-        std::vector<std::string> userRecords_;
         std::vector<std::string> eventViewNames_;
         
     public:    
@@ -62,10 +61,6 @@ class Collection2Pxlio
             } else {
                 names_.push_back(name_);
                 edm::LogInfo(name_+"Names") << "no default name defined - will use default name:"<<names_[0];    
-            }
-            if (iConfig.exists(name_+"UserRecords"))
-            {
-                userRecords_ = iConfig.getParameter<std::vector<std::string> >(name_+"UserRecords");
             }
             if (iConfig.exists(name_+"TargetEventViews"))
             {

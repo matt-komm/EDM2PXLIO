@@ -46,6 +46,10 @@
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/PatJet2Pxlio.h"
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/PatMET2Pxlio.h"
 
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/Trigger2Pxlio.h"
+//missing: primary vertex
+//missing: gen particles
+
 //
 // class declaration
 //
@@ -75,6 +79,8 @@ class EDM2PXLIO : public edm::EDAnalyzer {
       PatJet2Pxlio jetCollection_;
       PatMET2Pxlio metCollection_;
       
+      Trigger2Pxlio triggerCollection_;
+      
       // ----------member data ---------------------------
 };
 
@@ -94,12 +100,14 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
     muonCollection_("muon"),
     electronCollection_("electron"),
     jetCollection_("jet"),
-    metCollection_("met")
+    metCollection_("met"),
+    triggerCollection_("trigger")
 {
     muonCollection_.parseParameter(iConfig);
     electronCollection_.parseParameter(iConfig);
     jetCollection_.parseParameter(iConfig);
     metCollection_.parseParameter(iConfig);
+    triggerCollection_.parseParameter(iConfig);
 }
 
 
@@ -123,11 +131,14 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     pxl::Event pxlEvent;
     pxlEvent.setUserRecord<unsigned int>("Run", iEvent.run());
     pxlEvent.setUserRecord<unsigned int>("Event number", iEvent.id().event());
+    //add lumi
     
     muonCollection_.convert(&iEvent,&pxlEvent);
     electronCollection_.convert(&iEvent,&pxlEvent);
     jetCollection_.convert(&iEvent,&pxlEvent);
     metCollection_.convert(&iEvent,&pxlEvent);
+    
+    triggerCollection_.convert(&iEvent,&pxlEvent);
     
     pxlFile_.streamObject(&pxlEvent);
     pxlFile_.writeFileSection();
