@@ -46,22 +46,29 @@ class Pat2Pxlio: public Collection2Pxlio<std::vector<PatClass>>
                 
                 if (collection) {
                     for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) {
+                        const PatClass patObject = (*collection)[iparticle];
                         pxl::Particle* pxlParticle = pxlEventView->create<pxl::Particle>();
                         pxlCollection.push_back(pxlParticle);
                         pxlParticle->setName(Collection2Pxlio<std::vector<PatClass>>::getCollectionName(index));
-                        convertObject((*collection)[iparticle],pxlParticle);
+                        convertP4(patObject,pxlParticle);
+                        convertObject(patObject,pxlParticle);
                     }
                     convertCollection(collection,pxlCollection);
                 }
             }
         }
         
-        virtual void convertObject(const PatClass patObject, pxl::Particle* pxlParticle)
+        virtual void convertObject(const PatClass& patObject, pxl::Particle* pxlParticle)
         {
         }
         
         virtual void convertCollection(const std::vector<PatClass>* patObjectList, std::vector<pxl::Particle*> pxlParticleList)
         {
+        }
+        
+        virtual void convertP4(const PatClass& patObject, pxl::Particle* pxlParticle)
+        {
+            pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
         }
         
         ~Pat2Pxlio()

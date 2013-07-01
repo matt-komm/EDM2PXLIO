@@ -35,7 +35,7 @@ class PatMuon2Pxlio: public Pat2Pxlio<pat::Muon>
         {
         }
                 
-        virtual void convertObject(const pat::Muon patObject, pxl::Particle* pxlParticle)
+        virtual void convertObject(const pat::Muon& patObject, pxl::Particle* pxlParticle)
         {
             pxlParticle->setUserRecord<float>("chi2",patObject.globalTrack()->normalizedChi2());
         }
