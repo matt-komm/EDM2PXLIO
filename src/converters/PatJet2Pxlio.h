@@ -17,7 +17,7 @@
 
 #include "DataFormats/Common/interface/Handle.h"
 
-#include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
 
 #include "PhysicsTools/PatUtils/interface/StringParserTools.h"
 
