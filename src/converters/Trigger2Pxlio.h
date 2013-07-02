@@ -3,6 +3,7 @@
 
 // system include files
 #include <memory>
+#include <string>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -24,7 +25,7 @@
 
 #include "PhysicsTools/PatUtils/interface/StringParserTools.h"
 
-
+#include "boost/regex.hpp"
 
 #include "Pxl/Pxl/interface/Pxl.h"
 
@@ -32,6 +33,8 @@
 
 class Trigger2Pxlio: public Collection2Pxlio<edm::TriggerResults>
 {
+    protected:
+        std::vector<boost::regex> regexList_;
 
     public:
         Trigger2Pxlio(std::string name):
@@ -42,6 +45,14 @@ class Trigger2Pxlio: public Collection2Pxlio<edm::TriggerResults>
         //todo: enable trigger name filter parameter
         void parseParameter(const edm::ParameterSet& iConfig)
         {
+            if (iConfig.exists(name_+"Regex")) 
+            {
+                std::vector<std::string> list = iConfig.getParameter<std::vector<std::string>>(name_+"Regex");
+                for (unsigned iregex=0; iregex<list.size(); ++iregex)
+                {
+                    regexList_.push_back(boost::regex(list[iregex]));
+                }
+            }
             if (iConfig.exists(name_+"TargetEventViews"))
             {
                 eventViewNames_= iConfig.getParameter<std::vector<std::string> >(name_+"TargetEventViews");
@@ -60,11 +71,20 @@ class Trigger2Pxlio: public Collection2Pxlio<edm::TriggerResults>
             //fix dirty hack for the name
             pxl::EventView* pxlEventView = Collection2Pxlio<edm::TriggerResults>::findEventView(pxlEvent,"Reconstructed");
             const edm::TriggerNames& trigNames = edmEvent->triggerNames(*trigResults);
-            //performance can be improved here: check only a subset of triggers
-            for (unsigned cnt=0; cnt<trigNames.size(); ++cnt) {
-                const std::string pathName=trigNames.triggerName(cnt);
-                bool passTrig=trigResults->accept(trigNames.triggerIndex(pathName));
-                pxlEventView->setUserRecord<bool>(pathName,passTrig);
+            for (unsigned inames=0; inames<trigNames.size(); ++inames) 
+            {
+                const std::string pathName=trigNames.triggerName(inames);
+                bool accept = false;
+                for (unsigned iregex=0; (iregex<regexList_.size()) && !accept; ++iregex)
+                {
+
+                    accept = accept || regex_search(pathName,regexList_[iregex]);
+                }
+                if (accept)
+                {
+                    bool passTrig=trigResults->accept(trigNames.triggerIndex(pathName));
+                    pxlEventView->setUserRecord<bool>(pathName,passTrig);
+                }
             }
         }
         
