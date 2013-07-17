@@ -63,7 +63,7 @@ class Trigger2Pxlio: public Collection2Pxlio<edm::TriggerResults>
             }
         }
         
-        virtual void convert(const edm::Event* edmEvent, pxl::Event* pxlEvent)
+        virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
         {
             edm::Handle<edm::TriggerResults> trigResults;
             edm::InputTag trigResultsTag("TriggerResults","","HLT");

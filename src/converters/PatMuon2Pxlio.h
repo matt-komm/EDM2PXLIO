@@ -41,7 +41,7 @@ class PatMuon2Pxlio: public Pat2Pxlio<pat::Muon>
         {
         }
         
-        virtual void convert(const edm::Event* edmEvent, pxl::Event* pxlEvent)
+        virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
         {
             
             if (vertexInputTag_.length()>0) {
@@ -49,7 +49,7 @@ class PatMuon2Pxlio: public Pat2Pxlio<pat::Muon>
                 edmEvent->getByLabel(vertexInputTag_,vertexList);
                 primaryVertex_ = &(*vertexList)[0];
             }
-            Pat2Pxlio<pat::Muon>::convert(edmEvent,pxlEvent);
+            Pat2Pxlio<pat::Muon>::convert(edmEvent,iSetup,pxlEvent);
             
         }
                 

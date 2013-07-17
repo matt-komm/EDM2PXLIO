@@ -41,7 +41,7 @@ class PatJet2Pxlio: public Pat2Pxlio<pat::Jet>
         {
         }
         
-        virtual void convert(const edm::Event* edmEvent, pxl::Event* pxlEvent)
+        virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
         {
             
             if (puJetInputTag_.length()>0) 
@@ -50,7 +50,7 @@ class PatJet2Pxlio: public Pat2Pxlio<pat::Jet>
                 edmEvent->getByLabel(puJetInputTag_, jetIDs);
                 jetIDs_=jetIDs.product();
             }
-            Pat2Pxlio<pat::Jet>::convert(edmEvent,pxlEvent);
+            Pat2Pxlio<pat::Jet>::convert(edmEvent,iSetup,pxlEvent);
         } 
                 
         virtual void convertObject(const pat::Jet& patObject, pxl::Particle* pxlParticle)

@@ -122,7 +122,7 @@ class Collection2Pxlio
         }
 
 
-        virtual void convert(const edm::Event* edmEvent, pxl::Event* pxlEvent)
+        virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
         {
         }
 };

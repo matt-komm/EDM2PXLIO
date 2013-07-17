@@ -133,12 +133,12 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     pxlEvent.setUserRecord<unsigned int>("Event number", iEvent.id().event());
     //add lumi
     
-    muonCollection_.convert(&iEvent,&pxlEvent);
-    electronCollection_.convert(&iEvent,&pxlEvent);
-    jetCollection_.convert(&iEvent,&pxlEvent);
-    metCollection_.convert(&iEvent,&pxlEvent);
+    muonCollection_.convert(&iEvent,&iSetup,&pxlEvent);
+    electronCollection_.convert(&iEvent,&iSetup,&pxlEvent);
+    jetCollection_.convert(&iEvent,&iSetup,&pxlEvent);
+    metCollection_.convert(&iEvent,&iSetup,&pxlEvent);
     
-    triggerCollection_.convert(&iEvent,&pxlEvent);
+    triggerCollection_.convert(&iEvent,&iSetup,&pxlEvent);
     
     pxlFile_.streamObject(&pxlEvent);
     pxlFile_.writeFileSection();

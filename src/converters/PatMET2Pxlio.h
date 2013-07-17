@@ -37,7 +37,7 @@ class PatMET2Pxlio: public Pat2Pxlio<pat::MET>
         {
         }
         
-        virtual void convert(const edm::Event* edmEvent, pxl::Event* pxlEvent)
+        virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
         {
             for (unsigned index=0; index<Collection2Pxlio<std::vector<pat::MET>>::size(); ++index)
             {
