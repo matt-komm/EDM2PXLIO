@@ -9,6 +9,7 @@
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -37,7 +38,9 @@ class PatMuon2Pxlio: public Pat2Pxlio<pat::Muon>
     public:
         PatMuon2Pxlio(std::string name,std::string vertexInputTag=std::string()):
             Pat2Pxlio<pat::Muon>(name),
+            primaryVertex_(0),
             vertexInputTag_(vertexInputTag)
+            
         {
         }
         
@@ -50,7 +53,6 @@ class PatMuon2Pxlio: public Pat2Pxlio<pat::Muon>
                 primaryVertex_ = &(*vertexList)[0];
             }
             Pat2Pxlio<pat::Muon>::convert(edmEvent,iSetup,pxlEvent);
-            
         }
                 
         virtual void convertObject(const pat::Muon& patObject, pxl::Particle* pxlParticle)

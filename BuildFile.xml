@@ -10,6 +10,7 @@
 <use name="RecoEgamma/EgammaTools"/>
 <use name="MagneticField/Engine"/>
 <use name="MagneticField/Records"/>
+<use name="SimGeneral/HepPDTRecord"/>
 <use name="root"/>
 <use name="boost"/>
 <use name="rootrflx"/>

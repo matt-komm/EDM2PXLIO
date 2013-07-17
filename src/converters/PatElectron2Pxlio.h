@@ -9,6 +9,7 @@
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -39,19 +40,20 @@ class PatElectron2Pxlio: public Pat2Pxlio<pat::Electron>
     public:
         PatElectron2Pxlio(std::string name,std::string vertexInputTag=std::string()):
             Pat2Pxlio<pat::Electron>(name),
+            primaryVertex_(0),
             vertexInputTag_(vertexInputTag)
         {
         }
         
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
         {
-            /*
+            
             if (vertexInputTag_.length()>0) {
                 edm::Handle<std::vector<reco::Vertex>> vertexList;
                 edmEvent->getByLabel(vertexInputTag_,vertexList);
                 primaryVertex_ = &(*vertexList)[0];
             }
-            */
+            
             Pat2Pxlio<pat::Electron>::convert(edmEvent,iSetup,pxlEvent);
             
         }

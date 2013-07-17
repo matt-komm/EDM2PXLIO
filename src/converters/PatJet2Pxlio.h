@@ -9,6 +9,7 @@
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -37,7 +38,8 @@ class PatJet2Pxlio: public Pat2Pxlio<pat::Jet>
     public:
         PatJet2Pxlio(std::string name, std::string puJetInputTag=std::string()):
             Pat2Pxlio<pat::Jet>(name),
-            puJetInputTag_(puJetInputTag)
+            puJetInputTag_(puJetInputTag),
+            jetIDs_(0)
         {
         }
         
