@@ -49,7 +49,7 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/Trigger2Pxlio.h"
 
-//#include "EDM2PXLIO/EDM2PXLIO/src/converters/GenParticle2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/GenParticle2Pxlio.h"
 
 //missing: primary vertex
 
@@ -82,7 +82,7 @@ class EDM2PXLIO : public edm::EDAnalyzer {
       PatJet2Pxlio jetCollection_;
       PatMET2Pxlio metCollection_;
       
-      //GenParticle2Pxlio genParticleCollection_;
+      GenParticle2Pxlio genParticleCollection_;
       
       Trigger2Pxlio triggerCollection_;
       
@@ -106,14 +106,14 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
     electronCollection_("electron"),
     jetCollection_("jet"),
     metCollection_("met"),
-    //genParticleCollection_("gen"),
+    genParticleCollection_("gen"),
     triggerCollection_("trigger")
 {
     muonCollection_.parseParameter(iConfig);
     electronCollection_.parseParameter(iConfig);
     jetCollection_.parseParameter(iConfig);
     metCollection_.parseParameter(iConfig);
-    //genParticleCollection_.parseParameter(iConfig);
+    genParticleCollection_.parseParameter(iConfig);
     triggerCollection_.parseParameter(iConfig);
 }
 
@@ -144,7 +144,7 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     electronCollection_.convert(&iEvent,&iSetup,&pxlEvent);
     jetCollection_.convert(&iEvent,&iSetup,&pxlEvent);
     metCollection_.convert(&iEvent,&iSetup,&pxlEvent);
-    //genParticleCollection_.convert(&iEvent,&iSetup,&pxlEvent);
+    genParticleCollection_.convert(&iEvent,&iSetup,&pxlEvent);
     
     triggerCollection_.convert(&iEvent,&iSetup,&pxlEvent);
     

@@ -13,7 +13,25 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-process.demo = cms.EDAnalyzer('EDM2PXLIO'
+process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
+process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
+    fileName=cms.untracked.string("data.pxlio"),
+    
+    muonSrcs=cms.VInputTag("nonIsolatedLoosePatMuons"),
+    muonNames=cms.vstring("Muon"),
+    
+    electronSrcs=cms.VInputTag("nonIsolatedLoosePatElectrons"),
+    electronNames=cms.vstring("Electron"),
+    
+    jetSrcs=cms.VInputTag("analysisPatJets"),
+    jetNames=cms.vstring("Jet"),
+    
+    metSrcs=cms.VInputTag("patPFMet","patMETs"),
+    metNames=cms.vstring("rawMET","MET"),
+    
+    genSrcs=cms.VInputTag("genParticles"),
+    
+    triggerRegex=cms.vstring("HLT_Mu","HLT_IsoMu","HLT_Ele")
 )
 
 
