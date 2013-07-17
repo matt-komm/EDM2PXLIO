@@ -34,14 +34,29 @@ class Collection2Pxlio
         std::vector<std::string> names_;
         std::vector<std::string> eventViewNames_;
         
+        std::string default_name_;
+        std::string default_eventView_;
+        
     public:    
         Collection2Pxlio(std::string name):
-            name_(name)
+            name_(name),
+            default_name_(name),
+            default_eventView_("Reconstructed")
         {
         }
         
         ~Collection2Pxlio()
         {
+        }
+
+        void setDefaultName(std::string name)
+        {
+            default_name_=name;
+        }
+        
+        void setDefaultEventView(std::string name)
+        {
+            default_eventView_=name;
         }
 
         void parseParameter(const edm::ParameterSet& iConfig)
@@ -60,7 +75,7 @@ class Collection2Pxlio
                     edm::LogInfo(name_+"Names") << "will use the same name for all sources:"<<name_[0];    
                 }
             } else {
-                names_.push_back(name_);
+                names_.push_back(default_name_);
                 edm::LogInfo(name_+"Names") << "no default name defined - will use default name:"<<names_[0];    
             }
             if (iConfig.exists(name_+"TargetEventViews"))
@@ -71,7 +86,7 @@ class Collection2Pxlio
                     edm::LogInfo(name_+"TargetEventViews") << "will use the same eventviewname for all sources:"<<eventViewNames_[0];    
                 }
             } else {
-                eventViewNames_.push_back("Reconstructed");
+                eventViewNames_.push_back(default_eventView_);
                 edm::LogInfo(name_+"TargetEventViews") << "no default event view defined - will use default:"<<eventViewNames_[0];
             }
         }

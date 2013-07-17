@@ -40,6 +40,7 @@ class GenParticle2Pxlio: public Collection2Pxlio<std::vector<reco::GenParticle>>
         GenParticle2Pxlio(std::string name):
             Collection2Pxlio<std::vector<reco::GenParticle>>(name)
         {
+             Collection2Pxlio<std::vector<reco::GenParticle>>::setDefaultEventView("Generated");
         }
         
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
