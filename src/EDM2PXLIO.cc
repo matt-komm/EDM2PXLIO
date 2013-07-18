@@ -75,7 +75,8 @@ class EDM2PXLIO : public edm::EDAnalyzer {
       virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
-      pxl::OutputFile pxlFile_;
+      pxl::OutputFile* pxlFile_;
+      std::string process_;
       
       PatMuon2Pxlio muonCollection_;
       PatElectron2Pxlio electronCollection_;
@@ -85,6 +86,8 @@ class EDM2PXLIO : public edm::EDAnalyzer {
       GenParticle2Pxlio genParticleCollection_;
       
       Trigger2Pxlio triggerCollection_;
+      
+      
       
       // ----------member data ---------------------------
 };
@@ -101,7 +104,7 @@ class EDM2PXLIO : public edm::EDAnalyzer {
 // constructors and destructor
 //
 EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
-    pxlFile_(iConfig.getUntrackedParameter<std::string>("fileName")),
+    pxlFile_(0),
     muonCollection_("muon"),
     electronCollection_("electron"),
     jetCollection_("jet"),
@@ -109,6 +112,21 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
     genParticleCollection_("gen"),
     triggerCollection_("trigger")
 {
+    if (iConfig.exists("fileName")) {
+        pxlFile_ = new pxl::OutputFile(iConfig.getUntrackedParameter<std::string>("fileName"));
+    } else {
+        edm::LogWarning("no output file name configured") << "default name 'data.pxlio' will be used";
+        pxlFile_ = new pxl::OutputFile("data.pxlio");
+    }
+    
+    if (iConfig.exists("process")) {
+        process_ = iConfig.getUntrackedParameter<std::string>("process");
+    } else {
+        process_ = "";
+    }
+    
+    
+    
     muonCollection_.parseParameter(iConfig);
     electronCollection_.parseParameter(iConfig);
     jetCollection_.parseParameter(iConfig);
@@ -138,7 +156,12 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     pxl::Event pxlEvent;
     pxlEvent.setUserRecord<unsigned int>("Run", iEvent.run());
     pxlEvent.setUserRecord<unsigned int>("Event number", iEvent.id().event());
-    //add lumi
+    pxlEvent.setUserRecord<unsigned int>("LuminosityBlock",iEvent.luminosityBlock());
+    pxlEvent.setUserRecord<bool>("isRealData",iEvent.isRealData());
+    if (process_.length()>0) 
+    {
+        pxlEvent.setUserRecord<std::string>("Process", process_);
+    }
     
     muonCollection_.convert(&iEvent,&iSetup,&pxlEvent);
     electronCollection_.convert(&iEvent,&iSetup,&pxlEvent);
@@ -148,8 +171,8 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     
     triggerCollection_.convert(&iEvent,&iSetup,&pxlEvent);
     
-    pxlFile_.streamObject(&pxlEvent);
-    pxlFile_.writeFileSection();
+    pxlFile_->streamObject(&pxlEvent);
+    pxlFile_->writeFileSection();
 }
 
 
@@ -163,7 +186,8 @@ EDM2PXLIO::beginJob()
 void 
 EDM2PXLIO::endJob() 
 {
-    pxlFile_.close();
+    pxlFile_->close();
+    delete pxlFile_;
 }
 
 // ------------ method called when starting to processes a run  ------------

@@ -14,8 +14,17 @@ process.source = cms.Source("PoolSource",
 )
 
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
+process.prunedGenParticles = cms.EDProducer("GenParticlePruner",
+    src=cms.InputTag("genParticles"),
+    select=cms.vstring(
+        "drop  *",
+        "keep status = 3", #keeps all particles from the hard matrix element
+        "+keep abs(pdgId) = 15 & status = 1" #keeps intermediate decaying tau
+        )
+    )
 process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     fileName=cms.untracked.string("data.pxlio"),
+    process=cms.untracked.string("tChannel"),
     
     muonSrcs=cms.VInputTag("nonIsolatedLoosePatMuons"),
     muonNames=cms.vstring("Muon"),
@@ -29,10 +38,10 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     metSrcs=cms.VInputTag("patPFMet","patMETs"),
     metNames=cms.vstring("rawMET","MET"),
     
-    genSrcs=cms.VInputTag("genParticles"),
+    genSrcs=cms.VInputTag("prunedGenParticles"),
     
     triggerRegex=cms.vstring("HLT_Mu","HLT_IsoMu","HLT_Ele")
 )
 
 
-process.p = cms.Path(process.demo)
+process.p = cms.Path(process.source+process.prunedGenParticles+process.pat2pxlio)
