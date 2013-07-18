@@ -3,10 +3,14 @@
 
 // system include files
 #include <memory>
+#include <unordered_map>
 
 // user include files
+#include <boost/math/special_functions/sign.hpp>
+
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Utilities/interface/Exception.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -35,7 +39,7 @@ class GenParticle2Pxlio: public Collection2Pxlio<std::vector<reco::GenParticle>>
 {
     protected:
         edm::ESHandle<ParticleDataTable> pdt_;
-        std::vector<pxl::Particle*> pxlCollection;
+        std::unordered_map<long,pxl::Particle*> pxlCollectionMap;
     public:
         GenParticle2Pxlio(std::string name):
             Collection2Pxlio<std::vector<reco::GenParticle>>(name)
@@ -48,6 +52,7 @@ class GenParticle2Pxlio: public Collection2Pxlio<std::vector<reco::GenParticle>>
             iSetup->getData(pdt_);
             for (unsigned index=0; index<Collection2Pxlio<std::vector<reco::GenParticle>>::size(); ++index)
             {
+                pxlCollectionMap.clear();
                 const std::vector<reco::GenParticle>* collection = Collection2Pxlio<std::vector<reco::GenParticle>>::getCollection(edmEvent,index);
                 pxl::EventView* pxlEventView = Collection2Pxlio<std::vector<reco::GenParticle>>::findEventView(pxlEvent,Collection2Pxlio<std::vector<reco::GenParticle>>::getEventViewName(index));
                 
@@ -55,13 +60,37 @@ class GenParticle2Pxlio: public Collection2Pxlio<std::vector<reco::GenParticle>>
                     for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) {
                         const reco::GenParticle genObject = (*collection)[iparticle];
                         pxl::Particle* pxlParticle = pxlEventView->create<pxl::Particle>();
-                        pxlCollection.push_back(pxlParticle);
                         pxlParticle->setName(getNameFromID(genObject.pdgId()));
                         convertP4(genObject,pxlParticle);
                         convertObject(genObject,pxlParticle);
-                        pxlCollection.push_back(pxlParticle);
+                        if (pxlCollectionMap.find (getHash(&genObject))!=pxlCollectionMap.end())
+                        {
+			                /*
+                            std::cout<<"collision detected"<<std::endl;
+                            std::cout<<getNameFromID(genObject.pdgId())<<"\t"<<genObject.px()<<"\t"<<genObject.py()<<"\t"<<genObject.pz()<<"\t"<<std::endl;
+                            std::cout<<pxlCollectionMap[getHash(&genObject)]->getName()<<"\t"<<pxlCollectionMap[getHash(&genObject)]->getPx()<<"\t"<<pxlCollectionMap[getHash(&genObject)]->getPy()<<"\t"<<pxlCollectionMap[getHash(&genObject)]->getPz()<<"\t"<<std::endl;
+                            getHash(&genObject);
+			                */
+			                throw cms::Exception("EDM2PXLIO::GenParticle2Pxlio::convert") << "hash collision detected - report to the developer!";
+			            }
+                        pxlCollectionMap[getHash(&genObject)]=pxlParticle;
+                        
                     }
-                    convertCollection(collection,pxlCollection);
+                    connect(collection);
+                }
+            }
+        }
+        
+        virtual void connect(const std::vector<reco::GenParticle>* collection)
+        {
+            for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) {
+                const reco::GenParticle genObject = (*collection)[iparticle];
+                pxl::Particle* pxlParticle = pxlCollectionMap[getHash(&genObject)];
+                for (unsigned idaughter=0; idaughter<genObject.numberOfDaughters(); ++idaughter)
+                {
+                    const reco::Candidate* daughterObject = genObject.daughter(idaughter);
+                    pxl::Particle* pxlDaughter = pxlCollectionMap[getHash(daughterObject)];
+                    pxlParticle->linkDaughter(pxlDaughter);
                 }
             }
         }
@@ -82,9 +111,18 @@ class GenParticle2Pxlio: public Collection2Pxlio<std::vector<reco::GenParticle>>
         virtual void convertObject(const reco::GenParticle& genObject, pxl::Particle* pxlParticle)
         {
         }
-        
-        virtual void convertCollection(const std::vector<reco::GenParticle>* genObjectList, std::vector<pxl::Particle*> pxlParticleList)
+        /*
+        virtual int getHash(pxl::Particle* particle)
         {
+            return int(particle->getPz()*1000000)+int(particle->getPx()*10000)+int(100*particle->getPy());
+        }
+        */
+        virtual long getHash(const reco::Candidate* particle)
+        {
+            long hash1=long(fabs(particle->pz())*1000000*(boost::math::sign(particle->pz())+2));
+            long hash2=long(fabs(particle->px())*10000*(boost::math::sign(particle->px())+2));
+            long hash3=long(fabs(particle->py())*100*(boost::math::sign(particle->py())+2));
+            return hash1+hash2+hash3;
         }
         
         virtual void convertP4(const reco::GenParticle& genObject, pxl::Particle* pxlParticle)
