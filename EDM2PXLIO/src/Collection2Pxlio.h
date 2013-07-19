@@ -24,9 +24,11 @@
 
 #include "Pxl/Pxl/interface/Pxl.h"
 
+#include "EDM2PXLIO/EDM2PXLIO/src/Converter.h"
+
 
 template<class CollectionClass>
-class Collection2Pxlio
+class Collection2Pxlio: public Converter
 {
     protected:
         std::string name_;
@@ -39,6 +41,7 @@ class Collection2Pxlio
         
     public:    
         Collection2Pxlio(std::string name):
+        	Converter(),
             name_(name),
             default_name_(name),
             default_eventView_("Reconstructed")
@@ -59,8 +62,9 @@ class Collection2Pxlio
             default_eventView_=name;
         }
 
-        void parseParameter(const edm::ParameterSet& iConfig)
+        virtual void parseParameter(const edm::ParameterSet& iConfig)
         {
+        	Converter::parseParameter(iConfig);
             if (iConfig.exists(name_+"Srcs")) 
             {
                 srcs_ = iConfig.getParameter<std::vector<edm::InputTag> >(name_+"Srcs");
@@ -89,6 +93,7 @@ class Collection2Pxlio
                 eventViewNames_.push_back(default_eventView_);
                 edm::LogInfo(name_+"TargetEventViews") << "no default event view defined - will use default:"<<eventViewNames_[0];
             }
+
         }
 
         pxl::EventView* findEventView(pxl::Event* pxlEvent, std::string name)
@@ -137,10 +142,6 @@ class Collection2Pxlio
             return eventViewName;
         }
 
-
-        virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
-        {
-        }
 };
 
 #endif

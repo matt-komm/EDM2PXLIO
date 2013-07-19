@@ -87,8 +87,7 @@ class EDM2PXLIO : public edm::EDAnalyzer {
       
       Trigger2Pxlio triggerCollection_;
       
-      
-      
+
       // ----------member data ---------------------------
 };
 
@@ -124,9 +123,7 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
     } else {
         process_ = "";
     }
-    
-    
-    
+
     muonCollection_.parseParameter(iConfig);
     electronCollection_.parseParameter(iConfig);
     jetCollection_.parseParameter(iConfig);

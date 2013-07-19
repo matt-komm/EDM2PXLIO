@@ -30,30 +30,19 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/Pat2Pxlio.h"
 
+#include "EDM2PXLIO/EDM2PXLIO/src/provider/PrimaryVertexProvider.h"
+
 class PatMuon2Pxlio: public Pat2Pxlio<pat::Muon>
 {
-    protected:
-        const reco::Vertex* primaryVertex_;
-        std::string vertexInputTag_;
+	protected:
+		PrimaryVertexProvider* primaryVertexProvider_;
     public:
-        PatMuon2Pxlio(std::string name,std::string vertexInputTag=std::string()):
+        PatMuon2Pxlio(std::string name):
             Pat2Pxlio<pat::Muon>(name),
-            primaryVertex_(0),
-            vertexInputTag_(vertexInputTag)
-            
-        {
-        }
-        
-        virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
-        {
-            
-            if (vertexInputTag_.length()>0) {
-                edm::Handle<std::vector<reco::Vertex>> vertexList;
-                edmEvent->getByLabel(vertexInputTag_,vertexList);
-                primaryVertex_ = &(*vertexList)[0];
-            }
-            Pat2Pxlio<pat::Muon>::convert(edmEvent,iSetup,pxlEvent);
-        }
+            primaryVertexProvider_(0)
+		{
+			primaryVertexProvider_=createProvider<PrimaryVertexProvider>();
+		}
                 
         virtual void convertObject(const pat::Muon& patObject, pxl::Particle* pxlParticle)
         {
@@ -70,11 +59,14 @@ class PatMuon2Pxlio: public Pat2Pxlio<pat::Muon>
             pxlParticle->setUserRecord<int>("numberOfMatchedStations",patObject.numberOfMatchedStations());
             pxlParticle->setUserRecord<int>("numberOfValidPixelHits",patObject.innerTrack()->hitPattern().numberOfValidPixelHits());
             pxlParticle->setUserRecord<int>("trackerLayersWithMeasurement",patObject.track()->hitPattern().trackerLayersWithMeasurement());
-            if (primaryVertex_)
+
+
+            if (primaryVertexProvider_->getPrimaryVertex())
             {
-                double dz = patObject.innerTrack()->dz(primaryVertex_->position());
+                double dz = patObject.innerTrack()->dz(primaryVertexProvider_->getPrimaryVertex()->position());
                 pxlParticle->setUserRecord<float>("dz",dz);
             }
+
             pxlParticle->setUserRecord<float>("chi2",patObject.globalTrack()->normalizedChi2());
         }
         

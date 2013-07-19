@@ -32,32 +32,21 @@
 
 #include <iostream>
 
+#include "EDM2PXLIO/EDM2PXLIO/src/provider/PrimaryVertexProvider.h"
+
 class PatElectron2Pxlio: public Pat2Pxlio<pat::Electron>
 {
-    protected:
-        const reco::Vertex* primaryVertex_;
-        std::string vertexInputTag_;
+	protected:
+		PrimaryVertexProvider* primaryVertexProvider_;
+
     public:
-        PatElectron2Pxlio(std::string name,std::string vertexInputTag=std::string()):
+        PatElectron2Pxlio(std::string name):
             Pat2Pxlio<pat::Electron>(name),
-            primaryVertex_(0),
-            vertexInputTag_(vertexInputTag)
+            primaryVertexProvider_(0)
         {
+        	primaryVertexProvider_=createProvider<PrimaryVertexProvider>();
         }
-        
-        virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
-        {
-            
-            if (vertexInputTag_.length()>0) {
-                edm::Handle<std::vector<reco::Vertex>> vertexList;
-                edmEvent->getByLabel(vertexInputTag_,vertexList);
-                primaryVertex_ = &(*vertexList)[0];
-            }
-            
-            Pat2Pxlio<pat::Electron>::convert(edmEvent,iSetup,pxlEvent);
-            
-        }
-                
+
         virtual void convertObject(const pat::Electron& patObject, pxl::Particle* pxlParticle)
         {
             pxlParticle->setCharge(patObject.charge());
@@ -69,13 +58,12 @@ class PatElectron2Pxlio: public Pat2Pxlio<pat::Electron>
             
             pxlParticle->setUserRecord<bool>("passConversionVeto",patObject.passConversionVeto());
             pxlParticle->setUserRecord<int>("numberOfHits",patObject.gsfTrack()->trackerExpectedHitsInner().numberOfHits());
-            
-            if (primaryVertex_)
+
+            if (primaryVertexProvider_->getPrimaryVertex())
             {
-                double dz =fabs(patObject.gsfTrack()->dxy(primaryVertex_->position()));
+                double dz =fabs(patObject.gsfTrack()->dxy(primaryVertexProvider_->getPrimaryVertex()->position()));
 	            pxlParticle->setUserRecord<float>("dz",dz);
             }
-
         }
         
         virtual void convertP4(const pat::Electron& patObject, pxl::Particle* pxlParticle)

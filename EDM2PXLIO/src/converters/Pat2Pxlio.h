@@ -35,11 +35,13 @@ class Pat2Pxlio: public Collection2Pxlio<std::vector<PatClass>>
     public:
         Pat2Pxlio(std::string name):
             Collection2Pxlio<std::vector<PatClass>>(name)
+
         {
         }
         
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
         {
+        	Collection2Pxlio<std::vector<PatClass>>::convert(edmEvent, iSetup, pxlEvent);
             for (unsigned index=0; index<Collection2Pxlio<std::vector<PatClass>>::size(); ++index)
             {
                 const std::vector<PatClass>* collection = Collection2Pxlio<std::vector<PatClass>>::getCollection(edmEvent,index);
