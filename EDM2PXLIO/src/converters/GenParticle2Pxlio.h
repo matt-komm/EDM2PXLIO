@@ -35,28 +35,28 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/Pat2Pxlio.h"
 
-class GenParticle2Pxlio: public Collection2Pxlio<std::vector<reco::GenParticle>>
+class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
 {
     protected:
         edm::ESHandle<ParticleDataTable> pdt_;
         std::unordered_map<long,pxl::Particle*> pxlCollectionMap;
     public:
         GenParticle2Pxlio(std::string name):
-            Collection2Pxlio<std::vector<reco::GenParticle>>(name)
+            Collection2Pxlio<edm::View<reco::GenParticle>>(name)
         {
-             Collection2Pxlio<std::vector<reco::GenParticle>>::setDefaultEventView("Generated");
+             Collection2Pxlio<edm::View<reco::GenParticle>>::setDefaultEventView("Generated");
         }
         
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
         {
             iSetup->getData(pdt_);
-            for (unsigned index=0; index<Collection2Pxlio<std::vector<reco::GenParticle>>::size(); ++index)
+            for (unsigned index=0; index<Collection2Pxlio<edm::View<reco::GenParticle>>::size(); ++index)
             {
                 pxlCollectionMap.clear();
-                const std::vector<reco::GenParticle>* collection = Collection2Pxlio<std::vector<reco::GenParticle>>::getCollection(edmEvent,index);
-                pxl::EventView* pxlEventView = Collection2Pxlio<std::vector<reco::GenParticle>>::findEventView(pxlEvent,Collection2Pxlio<std::vector<reco::GenParticle>>::getEventViewName(index));
+                const edm::Handle<edm::View<reco::GenParticle>> collection = Collection2Pxlio<edm::View<reco::GenParticle>>::getCollection(edmEvent,index);
+                pxl::EventView* pxlEventView = Collection2Pxlio<edm::View<reco::GenParticle>>::findEventView(pxlEvent,Collection2Pxlio<edm::View<reco::GenParticle>>::getEventViewName(index));
                 
-                if (collection) {
+                if (collection.product()) {
                     for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) {
                         const reco::GenParticle genObject = (*collection)[iparticle];
                         pxl::Particle* pxlParticle = pxlEventView->create<pxl::Particle>();
@@ -81,7 +81,7 @@ class GenParticle2Pxlio: public Collection2Pxlio<std::vector<reco::GenParticle>>
             }
         }
         
-        virtual void connect(const std::vector<reco::GenParticle>* collection)
+        virtual void connect(const edm::Handle<edm::View<reco::GenParticle>> collection)
         {
             for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) {
                 const reco::GenParticle genObject = (*collection)[iparticle];

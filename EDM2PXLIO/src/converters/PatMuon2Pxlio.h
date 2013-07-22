@@ -70,7 +70,7 @@ class PatMuon2Pxlio: public Pat2Pxlio<pat::Muon>
             pxlParticle->setUserRecord<float>("chi2",patObject.globalTrack()->normalizedChi2());
         }
         
-        virtual void convertCollection(const std::vector<pat::Muon>* patObjectList, std::vector<pxl::Particle*> pxlParticleList)
+        virtual void convertCollection(const edm::Handle<edm::View<pat::Muon>> patObjectList, std::vector<pxl::Particle*> pxlParticleList)
         {
         }
         

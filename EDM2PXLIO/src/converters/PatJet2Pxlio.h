@@ -9,6 +9,7 @@
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Utilities/interface/Exception.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
@@ -30,30 +31,20 @@
 
 #include "CMGTools/External/interface/PileupJetIdentifier.h"
 
+#include "EDM2PXLIO/EDM2PXLIO/src/provider/PuJetIdProvider.h"
+
 class PatJet2Pxlio: public Pat2Pxlio<pat::Jet>
 {
-    protected:
-        std::string puJetInputTag_;
-        const edm::ValueMap<StoredPileupJetIdentifier>* jetIDs_;
+	protected:
+		PuJetIdProvider* puJetIdProvider_;
+
     public:
-        PatJet2Pxlio(std::string name, std::string puJetInputTag=std::string()):
+        PatJet2Pxlio(std::string name):
             Pat2Pxlio<pat::Jet>(name),
-            puJetInputTag_(puJetInputTag),
-            jetIDs_(0)
+            puJetIdProvider_(0)
         {
+        	puJetIdProvider_=createProvider<PuJetIdProvider>();
         }
-        
-        virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
-        {
-            
-            if (puJetInputTag_.length()>0) 
-            {
-                edm::Handle<edm::ValueMap<StoredPileupJetIdentifier> > jetIDs;
-                edmEvent->getByLabel(puJetInputTag_, jetIDs);
-                jetIDs_=jetIDs.product();
-            }
-            Pat2Pxlio<pat::Jet>::convert(edmEvent,iSetup,pxlEvent);
-        } 
                 
         virtual void convertObject(const pat::Jet& patObject, pxl::Particle* pxlParticle)
         {
@@ -79,7 +70,6 @@ class PatJet2Pxlio: public Pat2Pxlio<pat::Jet>
 
             
             
-            
             const reco::SecondaryVertexTagInfo *svTagInfo = patObject.tagInfoSecondaryVertex();
             if (svTagInfo  &&  svTagInfo->nVertices() > 0)
             {
@@ -89,15 +79,24 @@ class PatJet2Pxlio: public Pat2Pxlio<pat::Jet>
             {
                 pxlParticle->setUserRecord<int>("partonFlavour",patObject.partonFlavour());
             }
-            
-            if (jetIDs_)
-            {
-                pxlParticle->setUserRecord<float>("RMS",((*jetIDs_)[patObject.originalObjectRef()]).RMS());
-            }
+
         }
         
-        virtual void convertCollection(const std::vector<pat::Jet>* patObjectList, std::vector<pxl::Particle*> pxlParticleList)
+        virtual void convertCollection(const edm::Handle<edm::View<pat::Jet>> patObjectList, std::vector<pxl::Particle*> pxlParticleList)
         {
+        	if (puJetIdProvider_->getPuJetIds())
+        	{
+        		if (puJetIdProvider_->getPuJetIds()->size()!=patObjectList->size())
+        		{
+        			throw cms::Exception("PatJet2Pxlio::convertCollection") << "jet's pu id value map differs in size compared to provided pat jets";
+        		}
+				for (unsigned ijet=0; ijet<patObjectList->size(); ++ijet)
+				{
+					StoredPileupJetIdentifier puid = (*puJetIdProvider_->getPuJetIds())[patObjectList->refAt(ijet)];
+					pxlParticleList[ijet]->setUserRecord<float>("puRMS",puid.RMS());
+				}
+        	}
+
         }
         
         ~PatJet2Pxlio()

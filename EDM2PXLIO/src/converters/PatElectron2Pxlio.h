@@ -71,7 +71,7 @@ class PatElectron2Pxlio: public Pat2Pxlio<pat::Electron>
             pxlParticle->setP4(patObject.ecalDrivenMomentum().px(),patObject.ecalDrivenMomentum().py(),patObject.ecalDrivenMomentum().pz(),patObject.ecalDrivenMomentum().energy());
         }
         
-        virtual void convertCollection(const std::vector<pat::Electron>* patObjectList, std::vector<pxl::Particle*> pxlParticleList)
+        virtual void convertCollection(const edm::Handle<edm::View<pat::Electron>> patObjectList, std::vector<pxl::Particle*> pxlParticleList)
         {
         }
         

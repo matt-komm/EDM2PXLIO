@@ -53,7 +53,7 @@ class PrimaryVertexProvider: public Provider
 		virtual void process(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
 		{
 			if (vertexInputTag_.label().length()>0) {
-				edm::Handle<std::vector<reco::Vertex>> vertexList;
+				edm::Handle<edm::View<reco::Vertex>> vertexList;
 				edmEvent->getByLabel(vertexInputTag_,vertexList);
 				primaryVertex_ = &(*vertexList)[0];
 			}

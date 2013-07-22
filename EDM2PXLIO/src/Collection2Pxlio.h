@@ -111,15 +111,15 @@ class Collection2Pxlio: public Converter
             return srcs_.size();
         }
         
-        const virtual CollectionClass* getCollection(const edm::Event* edmEvent, unsigned index)
+        const virtual edm::Handle<CollectionClass> getCollection(const edm::Event* edmEvent, unsigned index)
         {
             if (srcs_.size()>index)
             {
                 edm::Handle<CollectionClass> collectionObjects;
                 edmEvent->getByLabel(srcs_[index],collectionObjects);
-                return &(*collectionObjects);
+                return collectionObjects;
             }
-            return nullptr;
+            return edm::Handle<CollectionClass>(nullptr,nullptr);
         }
         
         virtual std::string getCollectionName(unsigned index)

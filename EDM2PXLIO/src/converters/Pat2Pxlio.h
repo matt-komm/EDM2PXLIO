@@ -27,34 +27,38 @@
 #include "EDM2PXLIO/EDM2PXLIO/src/Collection2Pxlio.h"
 
 template<class PatClass>
-class Pat2Pxlio: public Collection2Pxlio<std::vector<PatClass>>
+class Pat2Pxlio: public Collection2Pxlio<edm::View<PatClass>>
 {
     protected:
         std::vector<pxl::Particle*> pxlCollection;
         
     public:
         Pat2Pxlio(std::string name):
-            Collection2Pxlio<std::vector<PatClass>>(name)
+            Collection2Pxlio<edm::View<PatClass>>(name)
 
         {
         }
         
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
         {
-        	Collection2Pxlio<std::vector<PatClass>>::convert(edmEvent, iSetup, pxlEvent);
-            for (unsigned index=0; index<Collection2Pxlio<std::vector<PatClass>>::size(); ++index)
+        	Collection2Pxlio<edm::View<PatClass>>::convert(edmEvent, iSetup, pxlEvent);
+            for (unsigned index=0; index<Collection2Pxlio<edm::View<PatClass>>::size(); ++index)
             {
-                const std::vector<PatClass>* collection = Collection2Pxlio<std::vector<PatClass>>::getCollection(edmEvent,index);
-                pxl::EventView* pxlEventView = Collection2Pxlio<std::vector<PatClass>>::findEventView(pxlEvent,Collection2Pxlio<std::vector<PatClass>>::getEventViewName(index));
-                
-                if (collection) {
+                const edm::Handle<edm::View<PatClass>> collection = Collection2Pxlio<edm::View<PatClass>>::getCollection(edmEvent,index);
+                pxl::EventView* pxlEventView = Collection2Pxlio<edm::View<PatClass>>::findEventView(pxlEvent,Collection2Pxlio<edm::View<PatClass>>::getEventViewName(index));
+                pxlCollection.clear();
+                if (collection.product()) {
                     for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) {
                         const PatClass patObject = (*collection)[iparticle];
                         pxl::Particle* pxlParticle = pxlEventView->create<pxl::Particle>();
                         pxlCollection.push_back(pxlParticle);
-                        pxlParticle->setName(Collection2Pxlio<std::vector<PatClass>>::getCollectionName(index));
+                        pxlParticle->setName(Collection2Pxlio<edm::View<PatClass>>::getCollectionName(index));
                         convertP4(patObject,pxlParticle);
                         convertObject(patObject,pxlParticle);
+                    }
+                    if (collection->size()!=pxlCollection.size())
+                    {
+                    	throw cms::Exception("Pat2Pxlio::convert") << "converted pxl particles differ in size compared to input collection";
                     }
                     convertCollection(collection,pxlCollection);
                 }
@@ -65,7 +69,7 @@ class Pat2Pxlio: public Collection2Pxlio<std::vector<PatClass>>
         {
         }
         
-        virtual void convertCollection(const std::vector<PatClass>* patObjectList, std::vector<pxl::Particle*> pxlParticleList)
+        virtual void convertCollection(const edm::Handle<edm::View<PatClass>> patObjectList, std::vector<pxl::Particle*> pxlParticleList)
         {
         }
         

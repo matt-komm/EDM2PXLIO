@@ -23,4 +23,5 @@
 <use name="TrackingTools/IPTools"/>
 <use name="TrackingTools/TransientTrack"/>
 <use name="HLTrigger/HLTcore"/>
+<use name="CMGTools/External"/>
 <flags EDM_PLUGIN="1"/>

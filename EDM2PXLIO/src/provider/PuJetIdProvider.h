@@ -1,5 +1,5 @@
-#ifndef _PRIMARYVERTEXPROVIDER_H_
-#define _PRIMARYVERTEXPROVIDER_H_
+#ifndef _PUJETIDPROVIDER_H_
+#define _PUJETIDPROVIDER_H_
 
 // system include files
 #include <memory>
@@ -28,45 +28,49 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/provider/Provider.h"
 
+#include "CMGTools/External/interface/PileupJetIdentifier.h"
+
 #include <iostream>
 
-class PrimaryVertexProvider: public Provider
+class PuJetIdProvider: public Provider
 {
 	protected:
-    	const reco::Vertex* primaryVertex_;
-    	edm::InputTag vertexInputTag_;
+        edm::InputTag puJetInputTag_;
+        const edm::ValueMap<StoredPileupJetIdentifier>* jetIDs_;
 	public:
-		PrimaryVertexProvider():
-			 primaryVertex_(0),
-			 vertexInputTag_()
+        PuJetIdProvider():
+    		Provider(),
+    		puJetInputTag_(),
+			jetIDs_(0)
 		{
 		}
 
 		virtual void parseParameter(const edm::ParameterSet& iConfig)
 		{
-			if (iConfig.exists("primaryVertex"))
+			if (iConfig.exists("puJetId"))
 			{
-				vertexInputTag_ = iConfig.getParameter<edm::InputTag>("primaryVertex");
+				puJetInputTag_ = iConfig.getParameter<edm::InputTag>("puJetId");
 			}
 		}
 
 		virtual void process(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
 		{
-			if (vertexInputTag_.label().length()>0) {
-				edm::Handle<std::vector<reco::Vertex>> vertexList;
-				edmEvent->getByLabel(vertexInputTag_,vertexList);
-				primaryVertex_ = &(*vertexList)[0];
+			if (puJetInputTag_.label().length()>0)
+			{
+				edm::Handle<edm::ValueMap<StoredPileupJetIdentifier> > jetIDs;
+				edmEvent->getByLabel(puJetInputTag_, jetIDs);
+				jetIDs_=jetIDs.product();
 			}
 		}
 
-		virtual const reco::Vertex* getPrimaryVertex()
+		virtual const edm::ValueMap<StoredPileupJetIdentifier>* getPuJetIds()
 		{
-			return primaryVertex_;
+			return jetIDs_;
 		}
 
-		~PrimaryVertexProvider()
+		~PuJetIdProvider()
 		{
-			delete primaryVertex_;
+			delete jetIDs_;
 		}
 };
 

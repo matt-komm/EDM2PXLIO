@@ -40,17 +40,17 @@ class PatMET2Pxlio: public Pat2Pxlio<pat::MET>
         
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
         {
-            for (unsigned index=0; index<Collection2Pxlio<std::vector<pat::MET>>::size(); ++index)
+            for (unsigned index=0; index<Collection2Pxlio<edm::View<pat::MET>>::size(); ++index)
             {
-                const std::vector<pat::MET>* collection = Collection2Pxlio<std::vector<pat::MET>>::getCollection(edmEvent,index);
-                pxl::EventView* pxlEventView = Collection2Pxlio<std::vector<pat::MET>>::findEventView(pxlEvent,Collection2Pxlio<std::vector<pat::MET>>::getEventViewName(index));
+                const edm::Handle<edm::View<pat::MET>> collection = Collection2Pxlio<edm::View<pat::MET>>::getCollection(edmEvent,index);
+                pxl::EventView* pxlEventView = Collection2Pxlio<edm::View<pat::MET>>::findEventView(pxlEvent,Collection2Pxlio<edm::View<pat::MET>>::getEventViewName(index));
                 
-                if (collection) {
+                if (collection.product()) {
                     
                     const pat::MET patObject = collection->front();
                     pxl::Particle* pxlParticle = pxlEventView->create<pxl::Particle>();
                     pxlCollection.push_back(pxlParticle);
-                    pxlParticle->setName(Collection2Pxlio<std::vector<pat::MET>>::getCollectionName(index));
+                    pxlParticle->setName(Collection2Pxlio<edm::View<pat::MET>>::getCollectionName(index));
                     convertP4(patObject,pxlParticle);
                     convertObject(patObject,pxlParticle);
 
