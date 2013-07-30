@@ -25,6 +25,8 @@
 
 #include "SimGeneral/HepPDTRecord/interface/ParticleDataTable.h"
 
+#include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
+
 //#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
 #include "PhysicsTools/PatUtils/interface/StringParserTools.h"
@@ -40,13 +42,26 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
     protected:
         edm::ESHandle<ParticleDataTable> pdt_;
         std::unordered_map<long,pxl::Particle*> pxlCollectionMap;
+        edm::InputTag genEventInfoProductInputTag_;
+
+
     public:
         GenParticle2Pxlio(std::string name):
-            Collection2Pxlio<edm::View<reco::GenParticle>>(name)
+            Collection2Pxlio<edm::View<reco::GenParticle>>(name),
+            genEventInfoProductInputTag_()
         {
              Collection2Pxlio<edm::View<reco::GenParticle>>::setDefaultEventView("Generated");
         }
         
+        virtual void parseParameter(const edm::ParameterSet& iConfig)
+        {
+            Collection2Pxlio<edm::View<reco::GenParticle>>::parseParameter(iConfig);
+            if (iConfig.exists(Collection2Pxlio<edm::View<reco::GenParticle>>::name_+"EventInfo"))
+            {
+                genEventInfoProductInputTag_ = iConfig.getParameter<edm::InputTag>(Collection2Pxlio<edm::View<reco::GenParticle>>::name_+"EventInfo");
+            }
+        }
+
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
         {
             iSetup->getData(pdt_);
@@ -56,6 +71,27 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
                 const edm::Handle<edm::View<reco::GenParticle>> collection = Collection2Pxlio<edm::View<reco::GenParticle>>::getCollection(edmEvent,index);
                 pxl::EventView* pxlEventView = Collection2Pxlio<edm::View<reco::GenParticle>>::findEventView(pxlEvent,Collection2Pxlio<edm::View<reco::GenParticle>>::getEventViewName(index));
                 
+                if (genEventInfoProductInputTag_.label().length()>0)
+                {
+                    edm::Handle<GenEventInfoProduct> genEventInfoProduct;
+                    edmEvent->getByLabel(genEventInfoProductInputTag_,genEventInfoProduct);
+                    pxlEventView->setUserRecord<unsigned int>("signalProcessID",genEventInfoProduct->signalProcessID());
+                    pxlEventView->setUserRecord<unsigned int>("genweight",genEventInfoProduct->weight());
+                    pxlEventView->setUserRecord<unsigned int>("alphaQCD",genEventInfoProduct->alphaQCD());
+                    pxlEventView->setUserRecord<unsigned int>("alphaQED",genEventInfoProduct->alphaQED());
+                    pxlEventView->setUserRecord<unsigned int>("qscale",genEventInfoProduct->qScale());
+
+                    const GenEventInfoProduct::PDF* pdf = genEventInfoProduct->pdf();
+                    pxlEventView->setUserRecord<int>("id1",pdf->id.first);
+                    pxlEventView->setUserRecord<int>("id2",pdf->id.second);
+                    pxlEventView->setUserRecord<float>("x1",pdf->x.first);
+                    pxlEventView->setUserRecord<float>("x2",pdf->x.second);
+                    pxlEventView->setUserRecord<float>("scalePDF",pdf->scalePDF);
+
+
+                }
+
+
                 if (collection.product()) {
                     for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) {
                         const reco::GenParticle genObject = (*collection)[iparticle];
@@ -65,14 +101,14 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
                         convertObject(genObject,pxlParticle);
                         if (pxlCollectionMap.find (getHash(&genObject))!=pxlCollectionMap.end())
                         {
-			                /*
+                            /*
                             std::cout<<"collision detected"<<std::endl;
                             std::cout<<getNameFromID(genObject.pdgId())<<"\t"<<genObject.px()<<"\t"<<genObject.py()<<"\t"<<genObject.pz()<<"\t"<<std::endl;
                             std::cout<<pxlCollectionMap[getHash(&genObject)]->getName()<<"\t"<<pxlCollectionMap[getHash(&genObject)]->getPx()<<"\t"<<pxlCollectionMap[getHash(&genObject)]->getPy()<<"\t"<<pxlCollectionMap[getHash(&genObject)]->getPz()<<"\t"<<std::endl;
                             getHash(&genObject);
-			                */
-			                throw cms::Exception("EDM2PXLIO::GenParticle2Pxlio::convert") << "hash collision detected - report to the developer!";
-			            }
+                            */
+                            throw cms::Exception("EDM2PXLIO::GenParticle2Pxlio::convert") << "hash collision detected - report to the developer!";
+                        }
                         pxlCollectionMap[getHash(&genObject)]=pxlParticle;
                         
                     }

@@ -34,44 +34,45 @@
 
 class PuJetIdProvider: public Provider
 {
-	protected:
+    protected:
         edm::InputTag puJetInputTag_;
         const edm::ValueMap<StoredPileupJetIdentifier>* jetIDs_;
-	public:
+
+    public:
         PuJetIdProvider():
-    		Provider(),
-    		puJetInputTag_(),
-			jetIDs_(0)
-		{
-		}
+            Provider(),
+            puJetInputTag_(),
+            jetIDs_(0)
+        {
+        }
 
-		virtual void parseParameter(const edm::ParameterSet& iConfig)
-		{
-			if (iConfig.exists("puJetId"))
-			{
-				puJetInputTag_ = iConfig.getParameter<edm::InputTag>("puJetId");
-			}
-		}
+        virtual void parseParameter(const edm::ParameterSet& iConfig)
+        {
+            if (iConfig.exists("puJetId"))
+            {
+                puJetInputTag_ = iConfig.getParameter<edm::InputTag>("puJetId");
+            }
+        }
 
-		virtual void process(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
-		{
-			if (puJetInputTag_.label().length()>0)
-			{
-				edm::Handle<edm::ValueMap<StoredPileupJetIdentifier> > jetIDs;
-				edmEvent->getByLabel(puJetInputTag_, jetIDs);
-				jetIDs_=jetIDs.product();
-			}
-		}
+        virtual void process(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
+        {
+            if (puJetInputTag_.label().length()>0)
+            {
+                edm::Handle<edm::ValueMap<StoredPileupJetIdentifier> > jetIDs;
+                edmEvent->getByLabel(puJetInputTag_, jetIDs);
+                jetIDs_=jetIDs.product();
+            }
+        }
 
-		virtual const edm::ValueMap<StoredPileupJetIdentifier>* getPuJetIds()
-		{
-			return jetIDs_;
-		}
+        virtual const edm::ValueMap<StoredPileupJetIdentifier>* getPuJetIds()
+        {
+            return jetIDs_;
+        }
 
-		~PuJetIdProvider()
-		{
-			delete jetIDs_;
-		}
+        ~PuJetIdProvider()
+        {
+            delete jetIDs_;
+        }
 };
 
 #endif

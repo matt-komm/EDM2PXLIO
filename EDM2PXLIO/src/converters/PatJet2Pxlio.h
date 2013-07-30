@@ -67,10 +67,10 @@ class PatJet2Pxlio: public Pat2Pxlio<pat::Jet>
             pxlParticle->setUserRecord<float>("chargedHadronEnergyFraction",patObject.chargedHadronEnergyFraction());
             pxlParticle->setUserRecord<float>("chargedMultiplicity",patObject.chargedMultiplicity());
             pxlParticle->setUserRecord<float>("neutralHadronEnergyFraction",patObject.neutralHadronEnergyFraction());
-            pxlParticle->setUserRecord<float>("neutralHadronEnergyFraction",patObject.neutralHadronEnergyFraction());
 
-            
-            
+
+            pxlParticle->setUserRecord<float>("jetmass",patObject.mass());
+
             const reco::SecondaryVertexTagInfo *svTagInfo = patObject.tagInfoSecondaryVertex();
             if (svTagInfo  &&  svTagInfo->nVertices() > 0)
             {
