@@ -35,19 +35,20 @@
 
 class PatJet2Pxlio: public Pat2Pxlio<pat::Jet>
 {
-	protected:
-		PuJetIdProvider* puJetIdProvider_;
+    protected:
+        PuJetIdProvider* puJetIdProvider_;
 
     public:
         PatJet2Pxlio(std::string name):
             Pat2Pxlio<pat::Jet>(name),
             puJetIdProvider_(0)
         {
-        	puJetIdProvider_=createProvider<PuJetIdProvider>();
+            puJetIdProvider_=createProvider<PuJetIdProvider>();
         }
                 
         virtual void convertObject(const pat::Jet& patObject, pxl::Particle* pxlParticle)
         {
+
             pxlParticle->setUserRecord<int>("numberOfDaughters",patObject.numberOfDaughters());
             pxlParticle->setUserRecord<int>("electronMultiplicity",patObject.electronMultiplicity());
             pxlParticle->setUserRecord<int>("muonMultiplicity",patObject.muonMultiplicity());
@@ -57,16 +58,16 @@ class PatJet2Pxlio: public Pat2Pxlio<pat::Jet>
             pxlParticle->setUserRecord<float>("jetBProbabilityBJetTags",patObject.bDiscriminator("jetBProbabilityBJetTags"));
             pxlParticle->setUserRecord<float>("jetProbabilityBJetTags",patObject.bDiscriminator("jetProbabilityBJetTags"));
             
-            
+
             float nhf =  ( patObject.neutralHadronEnergy() + patObject.HFHadronEnergy() ) /patObject.energy();
-	        pxlParticle->setUserRecord<float>("neutralHadronEnergyFraction",nhf);
-	        
-	        pxlParticle->setUserRecord<float>("neutralEmEnergyFraction",patObject.neutralEmEnergyFraction());
-	        pxlParticle->setUserRecord<float>("chargedEmEnergyFraction",patObject.chargedEmEnergyFraction());
-	        pxlParticle->setUserRecord<float>("chargedHadronEnergyFraction",patObject.chargedHadronEnergyFraction());
-	        pxlParticle->setUserRecord<float>("chargedMultiplicity",patObject.chargedMultiplicity());
-	        pxlParticle->setUserRecord<float>("neutralHadronEnergyFraction",patObject.neutralHadronEnergyFraction());
-	        pxlParticle->setUserRecord<float>("neutralHadronEnergyFraction",patObject.neutralHadronEnergyFraction());
+            pxlParticle->setUserRecord<float>("neutralHadronEnergyFraction",nhf);
+            
+            pxlParticle->setUserRecord<float>("neutralEmEnergyFraction",patObject.neutralEmEnergyFraction());
+            pxlParticle->setUserRecord<float>("chargedEmEnergyFraction",patObject.chargedEmEnergyFraction());
+            pxlParticle->setUserRecord<float>("chargedHadronEnergyFraction",patObject.chargedHadronEnergyFraction());
+            pxlParticle->setUserRecord<float>("chargedMultiplicity",patObject.chargedMultiplicity());
+            pxlParticle->setUserRecord<float>("neutralHadronEnergyFraction",patObject.neutralHadronEnergyFraction());
+            pxlParticle->setUserRecord<float>("neutralHadronEnergyFraction",patObject.neutralHadronEnergyFraction());
 
             
             
@@ -84,18 +85,20 @@ class PatJet2Pxlio: public Pat2Pxlio<pat::Jet>
         
         virtual void convertCollection(const edm::Handle<edm::View<pat::Jet>> patObjectList, std::vector<pxl::Particle*> pxlParticleList)
         {
-        	if (puJetIdProvider_->getPuJetIds())
-        	{
-        		if (puJetIdProvider_->getPuJetIds()->size()!=patObjectList->size())
-        		{
-        			throw cms::Exception("PatJet2Pxlio::convertCollection") << "jet's pu id value map differs in size compared to provided pat jets";
-        		}
-				for (unsigned ijet=0; ijet<patObjectList->size(); ++ijet)
-				{
-					StoredPileupJetIdentifier puid = (*puJetIdProvider_->getPuJetIds())[patObjectList->refAt(ijet)];
-					pxlParticleList[ijet]->setUserRecord<float>("puRMS",puid.RMS());
-				}
-        	}
+            if (puJetIdProvider_->getPuJetIds())
+            {
+                if (puJetIdProvider_->getPuJetIds()->size()!=patObjectList->size())
+                {
+                    throw cms::Exception("PatJet2Pxlio::convertCollection") << "jet's pu id value map differs in size compared to provided pat jets";
+                }
+                for (unsigned ijet=0; ijet<patObjectList->size(); ++ijet)
+                {
+                    const pat::Jet jet = (*patObjectList)[ijet];
+                    //std::cout<<"jet "<<ijet<<"  "<<jet.originalObjectRef().key()<<":"<<jet.originalObjectRef().id().id()<<" "<<patObjectList->refAt(ijet).key()<<":"<<patObjectList->refAt(ijet).id().id()<<std::endl;
+                    StoredPileupJetIdentifier puid = (*puJetIdProvider_->getPuJetIds())[patObjectList->refAt(ijet)];
+                    pxlParticleList[ijet]->setUserRecord<float>("puRMS",puid.RMS());
+                }
+            }
 
         }
         
