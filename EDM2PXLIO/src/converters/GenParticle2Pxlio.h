@@ -107,7 +107,9 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
                             std::cout<<pxlCollectionMap[getHash(&genObject)]->getName()<<"\t"<<pxlCollectionMap[getHash(&genObject)]->getPx()<<"\t"<<pxlCollectionMap[getHash(&genObject)]->getPy()<<"\t"<<pxlCollectionMap[getHash(&genObject)]->getPz()<<"\t"<<std::endl;
                             getHash(&genObject);
                             */
-                            throw cms::Exception("EDM2PXLIO::GenParticle2Pxlio::convert") << "hash collision detected - report to the developer!";
+                            //throw cms::Exception("EDM2PXLIO::GenParticle2Pxlio::convert") << "hash collision detected - report to the developer!";
+                            pxlParticle->setUserRecord<std::string>("hash_collision",pxlCollectionMap[getHash(&genObject)]->id().toString ());
+                            pxlCollectionMap[getHash(&genObject)]->setUserRecord<std::string>("hash_collision",pxlParticle->id().toString ());
                         }
                         pxlCollectionMap[getHash(&genObject)]=pxlParticle;
                         
@@ -155,10 +157,12 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
         */
         virtual long getHash(const reco::Candidate* particle)
         {
-            long hash1=long(fabs(particle->pz())*1000000*(boost::math::sign(particle->pz())+2));
-            long hash2=long(fabs(particle->px())*10000*(boost::math::sign(particle->px())+2));
-            long hash3=long(fabs(particle->py())*100*(boost::math::sign(particle->py())+2));
-            return hash1+hash2+hash3;
+            long hash1=long(fabs(particle->energy())*100000000*(boost::math::sign(particle->energy())+2));
+            long hash2=long(fabs(particle->pz())*1000000*(boost::math::sign(particle->pz())+2));
+            long hash3=long(fabs(particle->px())*10000*(boost::math::sign(particle->px())+2));
+            long hash4=long(fabs(particle->py())*100*(boost::math::sign(particle->py())+2));
+            long hash5=long(fabs(particle->status())*(boost::math::sign(particle->status())+2));
+            return hash1+hash2+hash3+hash4+hash5;
         }
         
         virtual void convertP4(const reco::GenParticle& genObject, pxl::Particle* pxlParticle)
