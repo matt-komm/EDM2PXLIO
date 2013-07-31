@@ -111,8 +111,8 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
     genParticleCollection_("gen"),
     triggerCollection_("trigger")
 {
-    if (iConfig.exists("fileName")) {
-        pxlFile_ = new pxl::OutputFile(iConfig.getUntrackedParameter<std::string>("fileName"));
+    if (iConfig.exists("OutFileName")) {
+        pxlFile_ = new pxl::OutputFile(iConfig.getUntrackedParameter<std::string>("OutFileName"));
     } else {
         edm::LogWarning("no output file name configured") << "default name 'data.pxlio' will be used";
         pxlFile_ = new pxl::OutputFile("data.pxlio");

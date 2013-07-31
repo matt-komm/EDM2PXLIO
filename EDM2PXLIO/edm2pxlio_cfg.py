@@ -23,7 +23,7 @@ process.prunedGenParticles = cms.EDProducer("GenParticlePruner",
         )
     )
 process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
-    fileName=cms.untracked.string("data.pxlio"),
+    OutFileName=cms.untracked.string("data.pxlio"),
     process=cms.untracked.string("tChannel"),
     
     muonSrcs=cms.VInputTag("nonIsolatedLoosePatMuons"),
