@@ -75,6 +75,8 @@ class EDM2PXLIO : public edm::EDAnalyzer {
       virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
+      bool checkPath(const edm::Event&);
+      std::vector<std::string> outputPathNames_;
       pxl::OutputFile* pxlFile_;
       std::string process_;
       
@@ -111,6 +113,12 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
     genParticleCollection_("gen"),
     triggerCollection_("trigger")
 {
+    if (iConfig.exists("SelectEventsFromPath")) {
+        outputPathNames_ = iConfig.getParameter<std::vector<std::string> >("SelectEventsFromPath");
+    } else {
+        edm::LogWarning("no SelectEventsFromPath configured") << "default path 'p0' will be used";
+        outputPathNames_.push_back("p0");
+    }
     if (iConfig.exists("OutFileName")) {
         pxlFile_ = new pxl::OutputFile(iConfig.getUntrackedParameter<std::string>("OutFileName"));
     } else {
@@ -150,6 +158,10 @@ EDM2PXLIO::~EDM2PXLIO()
 void
 EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+    if (!checkPath(iEvent))
+    {
+        return;
+    }
     pxl::Event pxlEvent;
     pxlEvent.setUserRecord<unsigned int>("Run", iEvent.run());
     pxlEvent.setUserRecord<unsigned int>("Event number", iEvent.id().event());
@@ -170,6 +182,29 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     
     pxlFile_->streamObject(&pxlEvent);
     pxlFile_->writeFileSection();
+}
+
+bool
+EDM2PXLIO::checkPath(const edm::Event& iEvent)
+{
+    bool accept=false;
+    std::string pathLabel("PAT");
+    edm::TriggerResultsByName result = iEvent.triggerResultsByName(pathLabel);
+    if (! result.isValid())
+    {
+        edm::LogWarning("trigger result not valid") << "event will not be processed";
+        return false;
+    }
+    for (unsigned ipath=0; ipath<outputPathNames_.size();++ipath)
+    {
+        if (! result.wasrun(outputPathNames_[ipath]))
+        {
+            edm::LogWarning("TriggerResults('PAT') has no cms.Path named") << outputPathNames_[ipath] << ". The result of this path will be ignored.";
+        } else {
+            accept = accept || result.accept(outputPathNames_[ipath]);
+        }
+    }
+    return accept;
 }
 
 
