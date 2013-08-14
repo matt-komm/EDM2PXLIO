@@ -77,10 +77,22 @@ class PatElectron2Pxlio: public Pat2Pxlio<pat::Electron>
             pxlParticle->setUserRecord<float>("neutralHadronIso",patObject.neutralHadronIso());
             pxlParticle->setUserRecord<float>("photonIso",patObject.photonIso());
             pxlParticle->setUserRecord<float>("superClusterEta",patObject.superCluster()->eta());
-            pxlParticle->setUserRecord<bool>("ecalDrivenSeed",patObject.ecalDrivenSeed());
-            pxlParticle->setUserRecord<bool>("trackerDrivenSeed",patObject.trackerDrivenSeed());
-
-
+            
+            pxlParticle->setUserRecord<float>("sigmaIetaIeta",patObject.sigmaIetaIeta());
+            pxlParticle->setUserRecord<float>("hadronicOverEm",patObject.hadronicOverEm());
+            pxlParticle->setUserRecord<float>("dr03TkSumP",patObject.dr03TkSumPt());
+            pxlParticle->setUserRecord<float>("dr03EcalRecHitSumEt",patObject.dr03EcalRecHitSumEt());
+            pxlParticle->setUserRecord<float>("dr03HcalTowerSumEt",patObject.dr03HcalTowerSumEt());
+            pxlParticle->setUserRecord<float>("numberOfLostHits",patObject.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits());
+        
+            pxlParticle->setUserRecord<float>("patPt",patObject.pt());
+            pxlParticle->setUserRecord<float>("patPx",patObject.px());
+            pxlParticle->setUserRecord<float>("patPy",patObject.py());
+            pxlParticle->setUserRecord<float>("patPz",patObject.pz());
+            pxlParticle->setUserRecord<float>("patEta",patObject.eta());
+            pxlParticle->setUserRecord<float>("patE",patObject.energy());
+            pxlParticle->setUserRecord<float>("patEt",patObject.et());
+        
         }
         
         virtual void convertP4(const pat::Electron& patObject, pxl::Particle* pxlParticle)

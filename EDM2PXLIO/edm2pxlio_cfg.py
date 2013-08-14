@@ -31,6 +31,7 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     
     electronSrcs=cms.VInputTag("nonIsolatedLoosePatElectrons"),
     electronNames=cms.vstring("Electron"),
+        
     
     jetSrcs=cms.VInputTag("analysisPatJets"),
     jetNames=cms.vstring("Jet"),

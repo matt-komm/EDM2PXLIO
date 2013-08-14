@@ -148,6 +148,7 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
         
         virtual void convertObject(const reco::GenParticle& genObject, pxl::Particle* pxlParticle)
         {
+            pxlParticle->setParticleId(genObject.pdgId());
         }
         /*
         virtual int getHash(pxl::Particle* particle)
