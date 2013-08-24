@@ -49,28 +49,35 @@ class PatJet2Pxlio: public Pat2Pxlio<pat::Jet>
         virtual void convertObject(const pat::Jet& patObject, pxl::Particle* pxlParticle)
         {
 
-            pxlParticle->setUserRecord<int>("numberOfDaughters",patObject.numberOfDaughters());
-            pxlParticle->setUserRecord<int>("electronMultiplicity",patObject.electronMultiplicity());
-            pxlParticle->setUserRecord<int>("muonMultiplicity",patObject.muonMultiplicity());
+
             pxlParticle->setUserRecord<float>("trackCountingHighPurBJetTags",patObject.bDiscriminator("trackCountingHighPurBJetTags"));
             pxlParticle->setUserRecord<float>("trackCountingHighEffBJetTags",patObject.bDiscriminator("trackCountingHighEffBJetTags"));
             pxlParticle->setUserRecord<float>("combinedSecondaryVertexBJetTags",patObject.bDiscriminator("combinedSecondaryVertexBJetTags"));
             pxlParticle->setUserRecord<float>("jetBProbabilityBJetTags",patObject.bDiscriminator("jetBProbabilityBJetTags"));
             pxlParticle->setUserRecord<float>("jetProbabilityBJetTags",patObject.bDiscriminator("jetProbabilityBJetTags"));
             
-
-            float nhf =  ( patObject.neutralHadronEnergy() + patObject.HFHadronEnergy() ) /patObject.energy();
-            pxlParticle->setUserRecord<float>("neutralHadronEnergyFraction",nhf);
+            pxlParticle->setUserRecord<int>("numberOfDaughters",patObject.numberOfDaughters());
+            
+            pxlParticle->setUserRecord<float>("neutralEmEnergy",patObject.neutralEmEnergy());
+            pxlParticle->setUserRecord<float>("chargedEmEnergy",patObject.chargedEmEnergy());
+            pxlParticle->setUserRecord<float>("chargedHadronEnergy",patObject.chargedHadronEnergy());
+            pxlParticle->setUserRecord<float>("neutralHadronEnergy",patObject.neutralHadronEnergy());
+            pxlParticle->setUserRecord<float>("HFHadronEnergy",patObject.HFHadronEnergy());
             
             pxlParticle->setUserRecord<float>("neutralEmEnergyFraction",patObject.neutralEmEnergyFraction());
             pxlParticle->setUserRecord<float>("chargedEmEnergyFraction",patObject.chargedEmEnergyFraction());
             pxlParticle->setUserRecord<float>("chargedHadronEnergyFraction",patObject.chargedHadronEnergyFraction());
-            pxlParticle->setUserRecord<float>("chargedMultiplicity",patObject.chargedMultiplicity());
             pxlParticle->setUserRecord<float>("neutralHadronEnergyFraction",patObject.neutralHadronEnergyFraction());
-
-
-            pxlParticle->setUserRecord<float>("jetmass",patObject.mass());
-
+            pxlParticle->setUserRecord<float>("HFHadronEnergyFraction",patObject.HFHadronEnergyFraction());
+            
+            pxlParticle->setUserRecord<float>("chargedMultiplicity",patObject.chargedMultiplicity());
+            pxlParticle->setUserRecord<float>("neutralMultiplicity",patObject.neutralMultiplicity());
+            pxlParticle->setUserRecord<float>("muonMultiplicity",patObject.muonMultiplicity());
+            pxlParticle->setUserRecord<float>("electronMultiplicity",patObject.electronMultiplicity());
+            
+            float nhf =  ( patObject.neutralHadronEnergy() + patObject.HFHadronEnergy() ) /patObject.energy();
+            pxlParticle->setUserRecord<float>("neutralHadronEnergyFraction",nhf);
+            
             const reco::SecondaryVertexTagInfo *svTagInfo = patObject.tagInfoSecondaryVertex();
             if (svTagInfo  &&  svTagInfo->nVertices() > 0)
             {

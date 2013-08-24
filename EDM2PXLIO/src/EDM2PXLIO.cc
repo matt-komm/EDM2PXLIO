@@ -75,7 +75,7 @@ class EDM2PXLIO : public edm::EDAnalyzer {
       virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
-      bool checkPath(const edm::Event&);
+      bool checkPath(const edm::Event&, pxl::Event&);
       std::vector<std::string> outputPathNames_;
       pxl::OutputFile* pxlFile_;
       std::string process_;
@@ -158,11 +158,12 @@ EDM2PXLIO::~EDM2PXLIO()
 void
 EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-    if (!checkPath(iEvent))
+    
+    pxl::Event pxlEvent;
+    if (!checkPath(iEvent,pxlEvent))
     {
         return;
     }
-    pxl::Event pxlEvent;
     pxlEvent.setUserRecord<unsigned int>("Run", iEvent.run());
     pxlEvent.setUserRecord<unsigned int>("Event number", iEvent.id().event());
     pxlEvent.setUserRecord<unsigned int>("LuminosityBlock",iEvent.luminosityBlock());
@@ -185,7 +186,7 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 }
 
 bool
-EDM2PXLIO::checkPath(const edm::Event& iEvent)
+EDM2PXLIO::checkPath(const edm::Event& iEvent, pxl::Event& pxlEvent)
 {
     bool accept=false;
     std::string pathLabel("PAT");
@@ -201,6 +202,7 @@ EDM2PXLIO::checkPath(const edm::Event& iEvent)
         {
             edm::LogWarning("TriggerResults('PAT') has no cms.Path named") << outputPathNames_[ipath] << ". The result of this path will be ignored.";
         } else {
+            //pxlEvent->setUserRecord<bool>(outputPathNames_[ipath],result.accept(outputPathNames_[ipath]));
             accept = accept || result.accept(outputPathNames_[ipath]);
         }
     }

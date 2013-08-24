@@ -51,10 +51,10 @@ class PatMuon2Pxlio: public Pat2Pxlio<pat::Muon>
             float relIso = (patObject.chargedHadronIso() + std::max(0., patObject.neutralHadronIso() +patObject.photonIso() - 0.5*patObject.puChargedHadronIso()))/patObject.pt();
             pxlParticle->setUserRecord<float>("relIso",relIso);
             
-            pxlParticle->setUserRecord<float>("dB",patObject.dB());
             pxlParticle->setUserRecord<bool>("isGlobalMuon",patObject.isGlobalMuon());
             pxlParticle->setUserRecord<bool>("isTrackerMuon",patObject.isTrackerMuon());
             pxlParticle->setUserRecord<bool>("isPFMuon",patObject.isPFMuon());
+            
             pxlParticle->setUserRecord<int>("numberOfValidMuonHits",patObject.globalTrack()->hitPattern().numberOfValidMuonHits());
             pxlParticle->setUserRecord<int>("numberOfMatchedStations",patObject.numberOfMatchedStations());
             pxlParticle->setUserRecord<int>("numberOfValidPixelHits",patObject.innerTrack()->hitPattern().numberOfValidPixelHits());
@@ -67,6 +67,7 @@ class PatMuon2Pxlio: public Pat2Pxlio<pat::Muon>
                 double dxy = patObject.innerTrack()->dxy(primaryVertexProvider_->getPrimaryVertex()->position());
                 pxlParticle->setUserRecord<float>("dz",dz);
                 pxlParticle->setUserRecord<float>("dxy",dxy);
+                pxlParticle->setUserRecord<bool>("isTightMuon",patObject.isTightMuon(*primaryVertexProvider_->getPrimaryVertex()));
             }
 
             pxlParticle->setUserRecord<float>("chi2",patObject.globalTrack()->normalizedChi2());

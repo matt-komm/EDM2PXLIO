@@ -80,7 +80,7 @@ class PatElectron2Pxlio: public Pat2Pxlio<pat::Electron>
             
             pxlParticle->setUserRecord<float>("sigmaIetaIeta",patObject.sigmaIetaIeta());
             pxlParticle->setUserRecord<float>("hadronicOverEm",patObject.hadronicOverEm());
-            pxlParticle->setUserRecord<float>("dr03TkSumP",patObject.dr03TkSumPt());
+            pxlParticle->setUserRecord<float>("dr03TkSumPt",patObject.dr03TkSumPt());
             pxlParticle->setUserRecord<float>("dr03EcalRecHitSumEt",patObject.dr03EcalRecHitSumEt());
             pxlParticle->setUserRecord<float>("dr03HcalTowerSumEt",patObject.dr03HcalTowerSumEt());
             pxlParticle->setUserRecord<float>("numberOfLostHits",patObject.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits());
