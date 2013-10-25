@@ -193,7 +193,7 @@ bool
 EDM2PXLIO::checkPath(const edm::Event& iEvent, pxl::Event& pxlEvent)
 {
     bool accept=false;
-    std::string pathLabel("PAT");
+    std::string pathLabel("SIM");
     edm::TriggerResultsByName result = iEvent.triggerResultsByName(pathLabel);
     if (! result.isValid())
     {
