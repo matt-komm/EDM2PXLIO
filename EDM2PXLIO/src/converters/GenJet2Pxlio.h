@@ -32,7 +32,7 @@
 
 #include <PhysicsTools/CandUtils/interface/EventShapeVariables.h>
 
-bool myfunction (pxl::Particle* i,pxl::Particle* j) { return (i.getPt()<j.getPt()); }
+bool myfunction (pxl::Particle* i,pxl::Particle* j) { return (i->getPt()<j->getPt()); }
 
 class GenJet2Pxlio: public Pat2Pxlio<reco::GenJet>
 {

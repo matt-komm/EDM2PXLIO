@@ -90,7 +90,7 @@ class PatJet2Pxlio: public Pat2Pxlio<pat::Jet>
 
         }
         
-        virtual void convertCollection(const edm::Handle<edm::View<pat::Jet>> patObjectList, std::vector<pxl::Particle*> pxlParticleList)
+        virtual void convertCollection(const edm::Handle<edm::View<pat::Jet>> patObjectList, std::vector<pxl::Particle*>& pxlParticleList)
         {
             if (puJetIdProvider_->getPuJetIds())
             {

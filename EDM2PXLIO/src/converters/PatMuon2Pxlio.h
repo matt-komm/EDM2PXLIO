@@ -78,7 +78,7 @@ class PatMuon2Pxlio: public Pat2Pxlio<pat::Muon>
             pxlParticle->setUserRecord<float>("puChargedHadronIso",patObject.puChargedHadronIso());
         }
         
-        virtual void convertCollection(const edm::Handle<edm::View<pat::Muon>> patObjectList, std::vector<pxl::Particle*> pxlParticleList)
+        virtual void convertCollection(const edm::Handle<edm::View<pat::Muon>> patObjectList, std::vector<pxl::Particle*>& pxlParticleList)
         {
             Pat2Pxlio<pat::Muon>::convertCollection(patObjectList, pxlParticleList);
         }

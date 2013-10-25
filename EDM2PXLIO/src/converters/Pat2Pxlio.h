@@ -77,7 +77,8 @@ class Pat2Pxlio: public Collection2Pxlio<edm::View<PatClass>>
                 pxl::EventView* pxlEventView = Collection2Pxlio<edm::View<PatClass>>::findEventView(pxlEvent,Collection2Pxlio<edm::View<PatClass>>::getEventViewName(index));
                 pxlCollection.clear();
                 if (collection.product()) {
-                    for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) {
+                    for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) 
+                    {
                         const PatClass patObject = (*collection)[iparticle];
                         pxl::Particle* pxlParticle = pxlEventView->create<pxl::Particle>();
                         pxlCollection.push_back(pxlParticle);
@@ -100,7 +101,7 @@ class Pat2Pxlio: public Collection2Pxlio<edm::View<PatClass>>
 
         }
 
-        virtual void convertCollection(const edm::Handle<edm::View<PatClass>> patObjectList, std::vector<pxl::Particle*> pxlParticleList)
+        virtual void convertCollection(const edm::Handle<edm::View<PatClass>> patObjectList, std::vector<pxl::Particle*>& pxlParticleList)
         {
         }
 
