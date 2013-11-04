@@ -76,10 +76,10 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
                     edm::Handle<GenEventInfoProduct> genEventInfoProduct;
                     edmEvent->getByLabel(genEventInfoProductInputTag_,genEventInfoProduct);
                     pxlEventView->setUserRecord<unsigned int>("signalProcessID",genEventInfoProduct->signalProcessID());
-                    pxlEventView->setUserRecord<unsigned int>("genweight",genEventInfoProduct->weight());
-                    pxlEventView->setUserRecord<unsigned int>("alphaQCD",genEventInfoProduct->alphaQCD());
-                    pxlEventView->setUserRecord<unsigned int>("alphaQED",genEventInfoProduct->alphaQED());
-                    pxlEventView->setUserRecord<unsigned int>("qscale",genEventInfoProduct->qScale());
+                    pxlEventView->setUserRecord<float>("genweight",genEventInfoProduct->weight());
+                    pxlEventView->setUserRecord<float>("alphaQCD",genEventInfoProduct->alphaQCD());
+                    pxlEventView->setUserRecord<float>("alphaQED",genEventInfoProduct->alphaQED());
+                    pxlEventView->setUserRecord<float>("qscale",genEventInfoProduct->qScale());
 
                     const GenEventInfoProduct::PDF* pdf = genEventInfoProduct->pdf();
                     pxlEventView->setUserRecord<int>("id1",pdf->id.first);
