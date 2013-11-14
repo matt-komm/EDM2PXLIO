@@ -127,8 +127,13 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
                 for (unsigned idaughter=0; idaughter<genObject.numberOfDaughters(); ++idaughter)
                 {
                     const reco::Candidate* daughterObject = genObject.daughter(idaughter);
-                    pxl::Particle* pxlDaughter = pxlCollectionMap[getHash(daughterObject)];
-                    pxlParticle->linkDaughter(pxlDaughter);
+                    
+                    //connect only if the daughter has also been stored
+                    if (pxlCollectionMap.find(getHash(daughterObject))!=pxlCollectionMap.end())
+                    {
+                        pxl::Particle* pxlDaughter = pxlCollectionMap[getHash(daughterObject)];
+                        pxlParticle->linkDaughter(pxlDaughter);
+                    }
                 }
             }
         }
