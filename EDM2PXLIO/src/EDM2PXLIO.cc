@@ -49,6 +49,7 @@
 
 //#include "EDM2PXLIO/EDM2PXLIO/src/converters/trigger/Trigger2Pxlio.h"
 
+
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/gen/GenParticle2Pxlio.h"
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/gen/GenJet2Pxlio.h"
 
@@ -89,6 +90,7 @@ class EDM2PXLIO : public edm::EDAnalyzer {
       GenParticle2Pxlio genParticleCollection_;
       GenJet2Pxlio genJetCollection_;
       
+      ValueList2Pxlio valueList_;
       //Trigger2Pxlio triggerCollection_;
       
 
@@ -113,7 +115,8 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
     //jetCollection_("jet"),
     //metCollection_("met"),
     genParticleCollection_("gen"),
-    genJetCollection_("genjet")
+    genJetCollection_("genjet"),
+    valueList_("valueList")
     //triggerCollection_("trigger")
 {
     if (iConfig.exists("SelectEventsFromPath")) {
@@ -141,6 +144,7 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
     //metCollection_.parseParameter(iConfig);
     genParticleCollection_.parseParameter(iConfig);
     genJetCollection_.parseParameter(iConfig);
+    valueList_.parseParameter(iConfig);
     //triggerCollection_.parseParameter(iConfig);
 }
 
@@ -183,6 +187,7 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     //metCollection_.convert(&iEvent,&iSetup,&pxlEvent);
     genParticleCollection_.convert(&iEvent,&iSetup,&pxlEvent);
     genJetCollection_.convert(&iEvent,&iSetup,&pxlEvent);
+    valueList_.convert(&iEvent,&iSetup,&pxlEvent);
     //triggerCollection_.convert(&iEvent,&iSetup,&pxlEvent);
     
     pxlFile_->streamObject(&pxlEvent);
