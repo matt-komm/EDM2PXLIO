@@ -1,5 +1,5 @@
-#ifndef _PATJET2PXLIO_H_
-#define _PATJET2PXLIO_H_
+#ifndef _GENJET2PXLIO_H_
+#define _GENJET2PXLIO_H_
 
 // system include files
 #include <memory>
@@ -28,24 +28,26 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
-#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/Pat2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/common/CollectionClass2Pxlio.h"
 
 #include <PhysicsTools/CandUtils/interface/EventShapeVariables.h>
 
 bool myfunction (pxl::Particle* i,pxl::Particle* j) { return (i->getPt()<j->getPt()); }
 
-class GenJet2Pxlio: public Pat2Pxlio<reco::GenJet>
+class GenJet2Pxlio: public CollectionClass2Pxlio<reco::GenJet>
 {
     protected:
 
     public:
         GenJet2Pxlio(std::string name):
-            Pat2Pxlio<reco::GenJet>(name)
+            CollectionClass2Pxlio<reco::GenJet>(name)
         {
         }
                 
         virtual void convertObject(const reco::GenJet& genJet, pxl::Particle* pxlParticle)
         {
+            CollectionClass2Pxlio<reco::GenJet>::convertObject(genJet, pxlParticle);
+            
             pxlParticle->setUserRecord<int>("charge",genJet.charge());
             pxlParticle->setUserRecord<double>("vx",genJet.vx());
             pxlParticle->setUserRecord<double>("vy",genJet.vy());

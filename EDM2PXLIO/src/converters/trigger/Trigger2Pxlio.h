@@ -30,7 +30,7 @@
 
 #include "Pxl/Pxl/interface/Pxl.h"
 
-#include "EDM2PXLIO/EDM2PXLIO/src/Collection2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
 class Trigger2Pxlio: public Collection2Pxlio<edm::TriggerResults>
 {
@@ -43,7 +43,6 @@ class Trigger2Pxlio: public Collection2Pxlio<edm::TriggerResults>
         {
         }
         
-        //todo: enable trigger name filter parameter
         void parseParameter(const edm::ParameterSet& iConfig)
         {
             if (iConfig.exists(name_+"Regex")) 
@@ -66,6 +65,8 @@ class Trigger2Pxlio: public Collection2Pxlio<edm::TriggerResults>
         
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
         {
+            Collection2Pxlio<edm::TriggerResults>::convert(edmEvent, iSetup, pxlEvent);
+        
             edm::Handle<edm::TriggerResults> trigResults;
             edm::InputTag trigResultsTag("TriggerResults","","HLT");
             edmEvent->getByLabel(trigResultsTag,trigResults);

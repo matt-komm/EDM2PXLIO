@@ -26,19 +26,19 @@
 
 #include "Pxl/Pxl/interface/Pxl.h"
 
-#include "EDM2PXLIO/EDM2PXLIO/src/common/sCollection2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
-#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/Pat2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/common/CollectionClass2Pxlio.h"
 
 #include "EDM2PXLIO/EDM2PXLIO/src/provider/PrimaryVertexProvider.h"
 
-class PatMuon2Pxlio: public Pat2Pxlio<pat::Muon>
+class PatMuon2Pxlio: public CollectionClass2Pxlio<pat::Muon>
 {
     protected:
         PrimaryVertexProvider* primaryVertexProvider_;
     public:
         PatMuon2Pxlio(std::string name):
-            Pat2Pxlio<pat::Muon>(name),
+            CollectionClass2Pxlio<pat::Muon>(name),
             primaryVertexProvider_(0)
         {
             primaryVertexProvider_=createProvider<PrimaryVertexProvider>();
@@ -46,6 +46,8 @@ class PatMuon2Pxlio: public Pat2Pxlio<pat::Muon>
                 
         virtual void convertObject(const pat::Muon& patObject, pxl::Particle* pxlParticle)
         {
+            CollectionClass2Pxlio<pat::Muon>::convertObject(patObject, pxlParticle);
+        
             pxlParticle->setCharge(patObject.charge());
             
             float relIso = (patObject.chargedHadronIso() + std::max(0., patObject.neutralHadronIso() +patObject.photonIso() - 0.5*patObject.puChargedHadronIso()))/patObject.pt();
@@ -80,7 +82,7 @@ class PatMuon2Pxlio: public Pat2Pxlio<pat::Muon>
         
         virtual void convertCollection(const edm::Handle<edm::View<pat::Muon>> patObjectList, std::vector<pxl::Particle*>& pxlParticleList)
         {
-            Pat2Pxlio<pat::Muon>::convertCollection(patObjectList, pxlParticleList);
+            CollectionClass2Pxlio<pat::Muon>::convertCollection(patObjectList, pxlParticleList);
         }
         
         ~PatMuon2Pxlio()

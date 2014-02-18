@@ -28,7 +28,7 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
-#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/Pat2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/common/CollectionClass2Pxlio.h"
 
 #include <iostream>
 
@@ -36,7 +36,7 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/provider/EffectiveAreaIsolationProvider.h"
 
-class PatElectron2Pxlio: public Pat2Pxlio<pat::Electron>
+class PatElectron2Pxlio: public CollectionClass2Pxlio<pat::Electron>
 {
     protected:
         PrimaryVertexProvider* primaryVertexProvider_;
@@ -44,7 +44,7 @@ class PatElectron2Pxlio: public Pat2Pxlio<pat::Electron>
 
     public:
         PatElectron2Pxlio(std::string name):
-            Pat2Pxlio<pat::Electron>(name),
+            CollectionClass2Pxlio<pat::Electron>(name),
             primaryVertexProvider_(0),
             effectiveAreaIsolationProvider_(0)
         {
@@ -54,7 +54,8 @@ class PatElectron2Pxlio: public Pat2Pxlio<pat::Electron>
 
         virtual void convertObject(const pat::Electron& patObject, pxl::Particle* pxlParticle)
         {
-            Pat2Pxlio<pat::Electron>::convertObject(patObject, pxlParticle);
+            CollectionClass2Pxlio<pat::Electron>::convertObject(patObject, pxlParticle);
+            
             pxlParticle->setCharge(patObject.charge());
             pxlParticle->setUserRecord<float>("dB",patObject.dB());
             pxlParticle->setUserRecord<float>("mva",patObject.electronID("mvaTrigV0"));
@@ -102,7 +103,8 @@ class PatElectron2Pxlio: public Pat2Pxlio<pat::Electron>
         
         virtual void convertCollection(const edm::Handle<edm::View<pat::Electron>> patObjectList, std::vector<pxl::Particle*>& pxlParticleList)
         {
-            Pat2Pxlio<pat::Electron>::convertCollection(patObjectList, pxlParticleList);
+            CollectionClass2Pxlio<pat::Electron>::convertCollection(patObjectList, pxlParticleList);
+            
             if (effectiveAreaIsolationProvider_->getEARho())
             {
                 //besides reco eletrons, gsf electrons are also present in the map so the numbers do not match...

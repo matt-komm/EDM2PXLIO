@@ -28,18 +28,21 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
-#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/Pat2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/common/CollectionClass2Pxlio.h"
 
-class PatMET2Pxlio: public Pat2Pxlio<pat::MET>
+class PatMET2Pxlio: public CollectionClass2Pxlio<pat::MET>
 {
     public:
         PatMET2Pxlio(std::string name):
-            Pat2Pxlio<pat::MET>(name)
+            CollectionClass2Pxlio<pat::MET>(name)
         {
         }
         
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
         {
+        
+            CollectionClass2Pxlio<pat::MET>::convert(edmEvent, iSetup, pxlEvent);
+            
             for (unsigned index=0; index<Collection2Pxlio<edm::View<pat::MET>>::size(); ++index)
             {
                 const edm::Handle<edm::View<pat::MET>> collection = Collection2Pxlio<edm::View<pat::MET>>::getCollection(edmEvent,index);
@@ -60,6 +63,7 @@ class PatMET2Pxlio: public Pat2Pxlio<pat::MET>
         
         virtual void convertObject(const pat::MET& patObject, pxl::Particle* pxlParticle)
         {
+            CollectionClass2Pxlio<pat::MET>::convertObject(patObject, pxlParticle);
         }
         
         

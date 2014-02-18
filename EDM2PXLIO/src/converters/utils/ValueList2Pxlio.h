@@ -1,5 +1,5 @@
-#ifndef _TRIGGER2PXLIO_H_
-#define _TRIGGER2PXLIO_H_
+#ifndef _VALUELIST2PXLIO_H_
+#define _VALUELIST2PXLIO_H_
 
 // system include files
 #include <memory>
@@ -27,7 +27,7 @@
 
 #include "Pxl/Pxl/interface/Pxl.h"
 
-#include "EDM2PXLIO/EDM2PXLIO/src/Collection2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
 class ValueList2Pxlio: public Collection2Pxlio<std::vector<double>>
 {

@@ -35,7 +35,7 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
-#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/Pat2Pxlio.h"
+//#include "EDM2PXLIO/EDM2PXLIO/src/common/CollectionClass2Pxlio.h"
 
 class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
 {
@@ -64,6 +64,8 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
 
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
         {
+            Collection2Pxlio<edm::View<reco::GenParticle>>::convert(edmEvent, iSetup, pxlEvent);
+        
             iSetup->getData(pdt_);
             for (unsigned index=0; index<Collection2Pxlio<edm::View<reco::GenParticle>>::size(); ++index)
             {
@@ -153,6 +155,7 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
         
         virtual void convertObject(const reco::GenParticle& genObject, pxl::Particle* pxlParticle)
         {
+        
             pxlParticle->setParticleId(genObject.pdgId());
         }
         /*

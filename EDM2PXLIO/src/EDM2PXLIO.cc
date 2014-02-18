@@ -42,17 +42,18 @@
 #include "Pxl/Pxl/interface/Pxl.h"
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
-//#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/PatMuon2Pxlio.h"
-//#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/PatElectron2Pxlio.h"
-//#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/PatJet2Pxlio.h"
-//#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/PatMET2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/PatMuon2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/PatElectron2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/PatJet2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/PatMET2Pxlio.h"
 
-//#include "EDM2PXLIO/EDM2PXLIO/src/converters/trigger/Trigger2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/trigger/Trigger2Pxlio.h"
 
 
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/gen/GenParticle2Pxlio.h"
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/gen/GenJet2Pxlio.h"
 
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/utils/ValueList2Pxlio.h"
 //missing: primary vertex
 
 //
@@ -81,6 +82,7 @@ class EDM2PXLIO : public edm::EDAnalyzer {
       std::vector<std::string> outputPathNames_;
       pxl::OutputFile* pxlFile_;
       std::string process_;
+      
       
       //PatMuon2Pxlio muonCollection_;
       //PatElectron2Pxlio electronCollection_;

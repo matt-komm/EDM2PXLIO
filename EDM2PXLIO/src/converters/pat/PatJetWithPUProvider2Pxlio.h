@@ -29,22 +29,27 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/CollectionClass2Pxlio.h"
 
+#include "CMGTools/External/interface/PileupJetIdentifier.h"
 
-class PatJet2Pxlio: public CollectionClass2Pxlio<pat::Jet>
+#include "EDM2PXLIO/EDM2PXLIO/src/provider/PuJetIdProvider.h"
+
+class PatJetWithPUPovider2Pxlio: public CollectionClass2Pxlio<pat::Jet>
 {
     protected:
+        PuJetIdProvider* puJetIdProvider_;
 
     public:
-        PatJet2Pxlio(std::string name):
-            CollectionClass2Pxlio<pat::Jet>(name)
+        PatJetWithPUPovider2Pxlio(std::string name):
+            CollectionClassPxlio<pat::Jet>(name),
+            puJetIdProvider_(0)
         {
+            puJetIdProvider_=createProvider<PuJetIdProvider>();
         }
                 
         virtual void convertObject(const pat::Jet& patObject, pxl::Particle* pxlParticle)
         {
-
             CollectionClass2Pxlio<pat::Jet>::convertObject(patObject, pxlParticle);
-            
+
             pxlParticle->setUserRecord<float>("trackCountingHighPurBJetTags",patObject.bDiscriminator("trackCountingHighPurBJetTags"));
             pxlParticle->setUserRecord<float>("trackCountingHighEffBJetTags",patObject.bDiscriminator("trackCountingHighEffBJetTags"));
             pxlParticle->setUserRecord<float>("combinedSecondaryVertexBJetTags",patObject.bDiscriminator("combinedSecondaryVertexBJetTags"));
@@ -88,9 +93,24 @@ class PatJet2Pxlio: public CollectionClass2Pxlio<pat::Jet>
         virtual void convertCollection(const edm::Handle<edm::View<pat::Jet>> patObjectList, std::vector<pxl::Particle*>& pxlParticleList)
         {
             CollectionClass2Pxlio<pat::Jet>::convertCollection(patObjectList, pxlParticleList);
+            if (puJetIdProvider_->getPuJetIds())
+            {
+                if (puJetIdProvider_->getPuJetIds()->size()!=patObjectList->size())
+                {
+                    throw cms::Exception("PatJet2Pxlio::convertCollection") << "jet's pu id value map differs in size compared to provided pat jets";
+                }
+                for (unsigned ijet=0; ijet<patObjectList->size(); ++ijet)
+                {
+                    const pat::Jet jet = (*patObjectList)[ijet];
+                    //std::cout<<"jet "<<ijet<<"  "<<jet.originalObjectRef().key()<<":"<<jet.originalObjectRef().id().id()<<" "<<patObjectList->refAt(ijet).key()<<":"<<patObjectList->refAt(ijet).id().id()<<std::endl;
+                    StoredPileupJetIdentifier puid = (*puJetIdProvider_->getPuJetIds())[patObjectList->refAt(ijet)];
+                    pxlParticleList[ijet]->setUserRecord<float>("puRMS",puid.RMS());
+                }
+            }
+
         }
         
-        ~PatJet2Pxlio()
+        ~PatJetWithPUPovider2Pxlio()
         {
         }
 };
