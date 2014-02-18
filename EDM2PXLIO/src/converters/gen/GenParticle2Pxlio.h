@@ -33,9 +33,9 @@
 
 #include "Pxl/Pxl/interface/Pxl.h"
 
-#include "EDM2PXLIO/EDM2PXLIO/src/Collection2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
-#include "EDM2PXLIO/EDM2PXLIO/src/converters/Pat2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/Pat2Pxlio.h"
 
 class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
 {

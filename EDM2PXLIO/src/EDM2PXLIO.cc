@@ -41,16 +41,16 @@
 
 #include "Pxl/Pxl/interface/Pxl.h"
 
-#include "EDM2PXLIO/EDM2PXLIO/src/Collection2Pxlio.h"
-//#include "EDM2PXLIO/EDM2PXLIO/src/converters/PatMuon2Pxlio.h"
-//#include "EDM2PXLIO/EDM2PXLIO/src/converters/PatElectron2Pxlio.h"
-//#include "EDM2PXLIO/EDM2PXLIO/src/converters/PatJet2Pxlio.h"
-//#include "EDM2PXLIO/EDM2PXLIO/src/converters/PatMET2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
+//#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/PatMuon2Pxlio.h"
+//#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/PatElectron2Pxlio.h"
+//#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/PatJet2Pxlio.h"
+//#include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/PatMET2Pxlio.h"
 
-//#include "EDM2PXLIO/EDM2PXLIO/src/converters/Trigger2Pxlio.h"
+//#include "EDM2PXLIO/EDM2PXLIO/src/converters/trigger/Trigger2Pxlio.h"
 
-#include "EDM2PXLIO/EDM2PXLIO/src/converters/GenParticle2Pxlio.h"
-#include "EDM2PXLIO/EDM2PXLIO/src/converters/GenJet2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/gen/GenParticle2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/gen/GenJet2Pxlio.h"
 
 //missing: primary vertex
 

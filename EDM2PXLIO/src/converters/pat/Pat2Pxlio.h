@@ -25,7 +25,7 @@
 
 #include "Pxl/Pxl/interface/Pxl.h"
 
-#include "EDM2PXLIO/EDM2PXLIO/src/Collection2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
 template<class PatClass>
 class Pat2Pxlio: public Collection2Pxlio<edm::View<PatClass>>

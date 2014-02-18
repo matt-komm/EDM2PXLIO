@@ -24,7 +24,7 @@
 
 #include "Pxl/Pxl/interface/Pxl.h"
 
-#include "EDM2PXLIO/EDM2PXLIO/src/Converter.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/common/Converter.h"
 
 
 template<class CollectionClass>
