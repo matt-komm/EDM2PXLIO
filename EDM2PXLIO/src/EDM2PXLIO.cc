@@ -84,17 +84,8 @@ class EDM2PXLIO : public edm::EDAnalyzer {
       std::string process_;
       
       
-      //PatMuon2Pxlio muonCollection_;
-      //PatElectron2Pxlio electronCollection_;
-      //PatJet2Pxlio jetCollection_;
-      //PatMET2Pxlio metCollection_;
-      
-      GenParticle2Pxlio genParticleCollection_;
-      GenJet2Pxlio genJetCollection_;
-      
-      ValueList2Pxlio valueList_;
-      //Trigger2Pxlio triggerCollection_;
-      
+        
+      std::vector<Converter*> _converters; 
 
       // ----------member data ---------------------------
 };
@@ -111,15 +102,7 @@ class EDM2PXLIO : public edm::EDAnalyzer {
 // constructors and destructor
 //
 EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
-    pxlFile_(0),
-    //muonCollection_("muon"),
-    //electronCollection_("electron"),
-    //jetCollection_("jet"),
-    //metCollection_("met"),
-    genParticleCollection_("gen"),
-    genJetCollection_("genjet"),
-    valueList_("valueList")
-    //triggerCollection_("trigger")
+    pxlFile_(0)
 {
     if (iConfig.exists("SelectEventsFromPath")) {
         outputPathNames_ = iConfig.getParameter<std::vector<std::string> >("SelectEventsFromPath");
@@ -139,15 +122,23 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
     } else {
         process_ = "";
     }
+    
+    _converters.push_back(new GenParticle2Pxlio("gen"));
+    _converters.push_back(new GenJet2Pxlio("genjets"));
+    
+    _converters.push_back(new PatMuon2Pxlio("muon"));
+    _converters.push_back(new PatElectron2Pxlio("electron"));
+    _converters.push_back(new PatJet2Pxlio("jet"));
+    _converters.push_back(new PatMET2Pxlio("met"));
+    
+    _converters.push_back(new ValueList2Pxlio("valuelist"));
+    _converters.push_back(new Trigger2Pxlio("trigger"));
 
-    //muonCollection_.parseParameter(iConfig);
-    //electronCollection_.parseParameter(iConfig);
-    //jetCollection_.parseParameter(iConfig);
-    //metCollection_.parseParameter(iConfig);
-    genParticleCollection_.parseParameter(iConfig);
-    genJetCollection_.parseParameter(iConfig);
-    valueList_.parseParameter(iConfig);
-    //triggerCollection_.parseParameter(iConfig);
+    for (unsigned int iconverter = 0; iconverter<_converters.size(); ++iconverter)
+    {
+        _converters[iconverter]->parseParameter(iConfig);
+    }
+    
 }
 
 
@@ -183,14 +174,10 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         pxlEvent.setUserRecord<std::string>("Process", process_);
     }
     
-    //muonCollection_.convert(&iEvent,&iSetup,&pxlEvent);
-    //electronCollection_.convert(&iEvent,&iSetup,&pxlEvent);
-    //jetCollection_.convert(&iEvent,&iSetup,&pxlEvent);
-    //metCollection_.convert(&iEvent,&iSetup,&pxlEvent);
-    genParticleCollection_.convert(&iEvent,&iSetup,&pxlEvent);
-    genJetCollection_.convert(&iEvent,&iSetup,&pxlEvent);
-    valueList_.convert(&iEvent,&iSetup,&pxlEvent);
-    //triggerCollection_.convert(&iEvent,&iSetup,&pxlEvent);
+    for (unsigned int iconverter = 0; iconverter<_converters.size(); ++iconverter)
+    {
+        _converters[iconverter]->convert(&iEvent,&iSetup,&pxlEvent);
+    }
     
     pxlFile_->streamObject(&pxlEvent);
     pxlFile_->writeFileSection();
