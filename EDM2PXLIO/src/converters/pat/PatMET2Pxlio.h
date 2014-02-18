@@ -54,7 +54,7 @@ class PatMET2Pxlio: public CollectionClass2Pxlio<pat::MET>
                     pxl::Particle* pxlParticle = pxlEventView->create<pxl::Particle>();
                     pxlCollection.push_back(pxlParticle);
                     pxlParticle->setName(Collection2Pxlio<edm::View<pat::MET>>::getCollectionName(index));
-                    convertP4(patObject,pxlParticle);
+                    
                     convertObject(patObject,pxlParticle);
 
                 }
@@ -64,6 +64,7 @@ class PatMET2Pxlio: public CollectionClass2Pxlio<pat::MET>
         virtual void convertObject(const pat::MET& patObject, pxl::Particle* pxlParticle)
         {
             CollectionClass2Pxlio<pat::MET>::convertObject(patObject, pxlParticle);
+            pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
         }
         
         

@@ -99,7 +99,6 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
                         const reco::GenParticle genObject = (*collection)[iparticle];
                         pxl::Particle* pxlParticle = pxlEventView->create<pxl::Particle>();
                         pxlParticle->setName(getNameFromID(genObject.pdgId()));
-                        convertP4(genObject,pxlParticle);
                         convertObject(genObject,pxlParticle);
                         if (pxlCollectionMap.find (getHash(&genObject))!=pxlCollectionMap.end())
                         {
@@ -155,7 +154,7 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
         
         virtual void convertObject(const reco::GenParticle& genObject, pxl::Particle* pxlParticle)
         {
-        
+            pxlParticle->setP4(genObject.px(),genObject.py(),genObject.pz(),genObject.energy());
             pxlParticle->setParticleId(genObject.pdgId());
         }
         /*
@@ -172,11 +171,6 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
             long hash4=long(fabs(particle->py())*100*(boost::math::sign(particle->py())+2));
             long hash5=long(fabs(particle->status())*(boost::math::sign(particle->status())+2));
             return hash1+hash2+hash3+hash4+hash5;
-        }
-        
-        virtual void convertP4(const reco::GenParticle& genObject, pxl::Particle* pxlParticle)
-        {
-            pxlParticle->setP4(genObject.px(),genObject.py(),genObject.pz(),genObject.energy());
         }
         
         ~GenParticle2Pxlio()

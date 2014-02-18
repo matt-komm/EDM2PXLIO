@@ -47,7 +47,7 @@ class PatMuon2Pxlio: public CollectionClass2Pxlio<pat::Muon>
         virtual void convertObject(const pat::Muon& patObject, pxl::Particle* pxlParticle)
         {
             CollectionClass2Pxlio<pat::Muon>::convertObject(patObject, pxlParticle);
-        
+            pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
             pxlParticle->setCharge(patObject.charge());
             
             float relIso = (patObject.chargedHadronIso() + std::max(0., patObject.neutralHadronIso() +patObject.photonIso() - 0.5*patObject.puChargedHadronIso()))/patObject.pt();

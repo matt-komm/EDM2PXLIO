@@ -47,6 +47,7 @@ class GenJet2Pxlio: public CollectionClass2Pxlio<reco::GenJet>
         virtual void convertObject(const reco::GenJet& genJet, pxl::Particle* pxlParticle)
         {
             CollectionClass2Pxlio<reco::GenJet>::convertObject(genJet, pxlParticle);
+            pxlParticle->setP4(genJet.px(),genJet.py(),genJet.pz(),genJet.energy());
             
             pxlParticle->setUserRecord<int>("charge",genJet.charge());
             pxlParticle->setUserRecord<double>("vx",genJet.vx());

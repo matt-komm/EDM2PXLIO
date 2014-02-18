@@ -44,7 +44,7 @@ class PatJet2Pxlio: public CollectionClass2Pxlio<pat::Jet>
         {
 
             CollectionClass2Pxlio<pat::Jet>::convertObject(patObject, pxlParticle);
-            
+            pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
             pxlParticle->setUserRecord<float>("trackCountingHighPurBJetTags",patObject.bDiscriminator("trackCountingHighPurBJetTags"));
             pxlParticle->setUserRecord<float>("trackCountingHighEffBJetTags",patObject.bDiscriminator("trackCountingHighEffBJetTags"));
             pxlParticle->setUserRecord<float>("combinedSecondaryVertexBJetTags",patObject.bDiscriminator("combinedSecondaryVertexBJetTags"));

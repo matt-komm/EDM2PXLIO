@@ -55,7 +55,7 @@ class PatElectron2Pxlio: public CollectionClass2Pxlio<pat::Electron>
         virtual void convertObject(const pat::Electron& patObject, pxl::Particle* pxlParticle)
         {
             CollectionClass2Pxlio<pat::Electron>::convertObject(patObject, pxlParticle);
-            
+            pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
             pxlParticle->setCharge(patObject.charge());
             pxlParticle->setUserRecord<float>("dB",patObject.dB());
             pxlParticle->setUserRecord<float>("mva",patObject.electronID("mvaTrigV0"));

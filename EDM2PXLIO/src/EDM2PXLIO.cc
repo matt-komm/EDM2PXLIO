@@ -49,11 +49,13 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/trigger/Trigger2Pxlio.h"
 
-
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/gen/GenParticle2Pxlio.h"
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/gen/GenJet2Pxlio.h"
 
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/utils/ValueList2Pxlio.h"
+
+//#include "EDM2PXLIO/EDM2PXLIO/src/converters/tracking/RecoTrack2Pxlio.h"
+
 //missing: primary vertex
 
 //
@@ -133,6 +135,8 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
     
     _converters.push_back(new ValueList2Pxlio("valuelist"));
     _converters.push_back(new Trigger2Pxlio("trigger"));
+    
+    _converters.push_back(new RecoTrack2Pxlio("track"));
 
     for (unsigned int iconverter = 0; iconverter<_converters.size(); ++iconverter)
     {

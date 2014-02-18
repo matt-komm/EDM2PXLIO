@@ -1,5 +1,5 @@
-#ifndef _PAT2PXLIO_H_
-#define _PAT2PXLIO_H_
+#ifndef _COLLECTIONCLASS2PXLIO_H_
+#define _COLLECTIONCLASS2PXLIO_H_
 
 // system include files
 #include <memory>
@@ -18,8 +18,6 @@
 #include "FWCore/Utilities/interface/InputTag.h"
 
 #include "DataFormats/Common/interface/Handle.h"
-
-#include "DataFormats/PatCandidates/interface/Muon.h"
 
 #include "PhysicsTools/PatUtils/interface/StringParserTools.h"
 
@@ -83,7 +81,7 @@ class CollectionClass2Pxlio: public Collection2Pxlio<edm::View<Class>>
                         pxl::Particle* pxlParticle = pxlEventView->create<pxl::Particle>();
                         pxlCollection.push_back(pxlParticle);
                         pxlParticle->setName(Collection2Pxlio<edm::View<Class>>::getCollectionName(index));
-                        convertP4(classObject,pxlParticle);
+                        
                         convertObject(classObject,pxlParticle);
                         fillUserRecords(classObject,pxlParticle);
                     }
@@ -98,16 +96,10 @@ class CollectionClass2Pxlio: public Collection2Pxlio<edm::View<Class>>
 
         virtual void convertObject(const Class& classObject, pxl::Particle* pxlParticle)
         {
-
         }
 
         virtual void convertCollection(const edm::Handle<edm::View<Class>> classObjectList, std::vector<pxl::Particle*>& pxlParticleList)
         {
-        }
-
-        virtual void convertP4(const Class& classObject, pxl::Particle* pxlParticle)
-        {
-            pxlParticle->setP4(classObject.px(),classObject.py(),classObject.pz(),classObject.energy());
         }
 
         ~CollectionClass2Pxlio()
