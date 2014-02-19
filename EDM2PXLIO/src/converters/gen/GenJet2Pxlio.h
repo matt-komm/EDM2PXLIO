@@ -32,6 +32,8 @@
 
 #include <PhysicsTools/CandUtils/interface/EventShapeVariables.h>
 
+#include "EDM2PXLIO/EDM2PXLIO/src/common/ConverterFactory.h"
+
 bool myfunction (pxl::Particle* i,pxl::Particle* j) { return (i->getPt()<j->getPt()); }
 
 class GenJet2Pxlio: public CollectionClass2Pxlio<reco::GenJet>
@@ -42,6 +44,12 @@ class GenJet2Pxlio: public CollectionClass2Pxlio<reco::GenJet>
         GenJet2Pxlio(std::string name):
             CollectionClass2Pxlio<reco::GenJet>(name)
         {
+        }
+        
+        static void init()
+        {
+            ConverterFactory* fac = ConverterFactory::getInstance();
+            fac->registerConverter(new ConverterProducerTmpl<GenJet2Pxlio>("GenJet2Pxlio"));
         }
                 
         virtual void convertObject(const reco::GenJet& genJet, pxl::Particle* pxlParticle)

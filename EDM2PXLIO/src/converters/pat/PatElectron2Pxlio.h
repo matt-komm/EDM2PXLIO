@@ -36,6 +36,8 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/provider/EffectiveAreaIsolationProvider.h"
 
+#include "EDM2PXLIO/EDM2PXLIO/src/common/ConverterFactory.h"
+
 class PatElectron2Pxlio: public CollectionClass2Pxlio<pat::Electron>
 {
     protected:
@@ -50,6 +52,12 @@ class PatElectron2Pxlio: public CollectionClass2Pxlio<pat::Electron>
         {
             primaryVertexProvider_=createProvider<PrimaryVertexProvider>();
             effectiveAreaIsolationProvider_=createProvider<EffectiveAreaIsolationProvider>();
+        }
+        
+        static void init()
+        {
+            ConverterFactory* fac = ConverterFactory::getInstance();
+            fac->registerConverter(new ConverterProducerTmpl<PatElectron2Pxlio>("PatElectron2Pxlio"));
         }
 
         virtual void convertObject(const pat::Electron& patObject, pxl::Particle* pxlParticle)

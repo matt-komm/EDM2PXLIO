@@ -30,12 +30,20 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/CollectionClass2Pxlio.h"
 
+#include "EDM2PXLIO/EDM2PXLIO/src/common/ConverterFactory.h"
+
 class PatMET2Pxlio: public CollectionClass2Pxlio<pat::MET>
 {
     public:
         PatMET2Pxlio(std::string name):
             CollectionClass2Pxlio<pat::MET>(name)
         {
+        }
+        
+        static void init()
+        {
+            ConverterFactory* fac = ConverterFactory::getInstance();
+            fac->registerConverter(new ConverterProducerTmpl<PatMET2Pxlio>("PatMET2Pxlio"));
         }
         
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)

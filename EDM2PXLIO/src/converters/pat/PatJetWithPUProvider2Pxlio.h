@@ -33,6 +33,8 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/provider/PuJetIdProvider.h"
 
+#include "EDM2PXLIO/EDM2PXLIO/src/common/ConverterFactory.h"
+
 class PatJetWithPUPovider2Pxlio: public CollectionClass2Pxlio<pat::Jet>
 {
     protected:
@@ -44,6 +46,12 @@ class PatJetWithPUPovider2Pxlio: public CollectionClass2Pxlio<pat::Jet>
             puJetIdProvider_(0)
         {
             puJetIdProvider_=createProvider<PuJetIdProvider>();
+        }
+        
+        static void init()
+        {
+            ConverterFactory* fac = ConverterFactory::getInstance();
+            fac->registerConverter(new ConverterProducerTmpl<PatJetWithPUPovider2Pxlio>("PatJetWithPUPovider2Pxlio"));
         }
                 
         virtual void convertObject(const pat::Jet& patObject, pxl::Particle* pxlParticle)

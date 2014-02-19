@@ -29,6 +29,7 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/CollectionClass2Pxlio.h"
 
+#include "EDM2PXLIO/EDM2PXLIO/src/common/ConverterFactory.h"
 
 class PatJet2Pxlio: public CollectionClass2Pxlio<pat::Jet>
 {
@@ -38,6 +39,12 @@ class PatJet2Pxlio: public CollectionClass2Pxlio<pat::Jet>
         PatJet2Pxlio(std::string name):
             CollectionClass2Pxlio<pat::Jet>(name)
         {
+        }
+        
+        static void init()
+        {
+            ConverterFactory* fac = ConverterFactory::getInstance();
+            fac->registerConverter(new ConverterProducerTmpl<PatJet2Pxlio>("PatJet2Pxlio"));
         }
                 
         virtual void convertObject(const pat::Jet& patObject, pxl::Particle* pxlParticle)

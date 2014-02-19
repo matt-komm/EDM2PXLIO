@@ -37,6 +37,8 @@
 
 //#include "EDM2PXLIO/EDM2PXLIO/src/common/CollectionClass2Pxlio.h"
 
+#include "EDM2PXLIO/EDM2PXLIO/src/common/ConverterFactory.h"
+
 class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
 {
     protected:
@@ -53,12 +55,27 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
              Collection2Pxlio<edm::View<reco::GenParticle>>::setDefaultEventView("Generated");
         }
         
-        virtual void parseParameter(const edm::ParameterSet& iConfig)
+        static void init()
         {
-            Collection2Pxlio<edm::View<reco::GenParticle>>::parseParameter(iConfig);
-            if (iConfig.exists(Collection2Pxlio<edm::View<reco::GenParticle>>::name_+"EventInfo"))
-            {
-                genEventInfoProductInputTag_ = iConfig.getParameter<edm::InputTag>(Collection2Pxlio<edm::View<reco::GenParticle>>::name_+"EventInfo");
+            ConverterFactory* fac = ConverterFactory::getInstance();
+            fac->registerConverter(new ConverterProducerTmpl<GenParticle2Pxlio>("GenParticle2Pxlio"));
+        }
+        
+        virtual void parseParameter(const edm::ParameterSet& globalConfig)
+        {
+            Collection2Pxlio<edm::View<reco::GenParticle>>::parseParameter(globalConfig);
+            if (globalConfig.exists(name_))
+        	{
+        	    const edm::ParameterSet& iConfig = globalConfig.getParameter<edm::ParameterSet>(name_);   
+        	
+                if (iConfig.exists("EventInfo"))
+                {
+                    genEventInfoProductInputTag_ = iConfig.getParameter<edm::InputTag>("EventInfo");
+                }
+                else
+                {
+                     edm::LogWarning(name_) << "no EventInfo sources defined";    
+                }
             }
         }
 

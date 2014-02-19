@@ -32,6 +32,8 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
+#include "EDM2PXLIO/EDM2PXLIO/src/common/ConverterFactory.h"
+
 class Trigger2Pxlio: public Collection2Pxlio<edm::TriggerResults>
 {
     protected:
@@ -43,23 +45,37 @@ class Trigger2Pxlio: public Collection2Pxlio<edm::TriggerResults>
         {
         }
         
-        void parseParameter(const edm::ParameterSet& iConfig)
+        static void init()
         {
-            if (iConfig.exists(name_+"Regex")) 
-            {
-                std::vector<std::string> list = iConfig.getParameter<std::vector<std::string>>(name_+"Regex");
-                for (unsigned iregex=0; iregex<list.size(); ++iregex)
+            ConverterFactory* fac = ConverterFactory::getInstance();
+            fac->registerConverter(new ConverterProducerTmpl<Trigger2Pxlio>("Trigger2Pxlio"));
+        }
+        
+        void parseParameter(const edm::ParameterSet& globalConfig)
+        {
+            if (globalConfig.exists(name_))
+        	{
+        	    const edm::ParameterSet& iConfig = globalConfig.getParameter<edm::ParameterSet>(name_);   
+        	
+                if (iConfig.exists("regex")) 
                 {
-                    regexList_.push_back(boost::regex(list[iregex]));
+                    std::vector<std::string> list = iConfig.getParameter<std::vector<std::string>>("regex");
+                    for (unsigned iregex=0; iregex<list.size(); ++iregex)
+                    {
+                        regexList_.push_back(boost::regex(list[iregex]));
+                    }
+                }
+                if (iConfig.exists("targetEventViews"))
+                {
+                    eventViewNames_= iConfig.getParameter<std::vector<std::string> >("targetEventViews");
+                    if (eventViewNames_.size()!=srcs_.size() && eventViewNames_.size()>0)
+                    {
+                        edm::LogInfo(name_) << "will use the same eventviewname for all sources:"<<eventViewNames_[0];    
+                    }
                 }
             }
-            if (iConfig.exists(name_+"TargetEventViews"))
+            else
             {
-                eventViewNames_= iConfig.getParameter<std::vector<std::string> >(name_+"TargetEventViews");
-                if (eventViewNames_.size()!=srcs_.size() && eventViewNames_.size()>0)
-                {
-                    edm::LogInfo(name_+"TargetEventViews") << "will use the same eventviewname for all sources:"<<eventViewNames_[0];    
-                }
             }
         }
         

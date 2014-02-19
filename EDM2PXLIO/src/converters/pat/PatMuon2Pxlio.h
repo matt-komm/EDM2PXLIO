@@ -32,6 +32,8 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/provider/PrimaryVertexProvider.h"
 
+#include "EDM2PXLIO/EDM2PXLIO/src/common/ConverterFactory.h"
+
 class PatMuon2Pxlio: public CollectionClass2Pxlio<pat::Muon>
 {
     protected:
@@ -42,6 +44,12 @@ class PatMuon2Pxlio: public CollectionClass2Pxlio<pat::Muon>
             primaryVertexProvider_(0)
         {
             primaryVertexProvider_=createProvider<PrimaryVertexProvider>();
+        }
+            
+        static void init()
+        {
+            ConverterFactory* fac = ConverterFactory::getInstance();
+            fac->registerConverter(new ConverterProducerTmpl<PatMuon2Pxlio>("PatMuon2Pxlio"));
         }
                 
         virtual void convertObject(const pat::Muon& patObject, pxl::Particle* pxlParticle)

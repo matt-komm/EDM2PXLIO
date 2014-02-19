@@ -20,6 +20,7 @@
 <use name="PhysicsTools/SelectorUtils"/>
 <use name="DataFormats/PatCandidates"/>
 <use name="DataFormats/METReco"/>
+<use name="SimDataFormats/Track"/>
 <use name="TrackingTools/IPTools"/>
 <use name="TrackingTools/TransientTrack"/>
 <use name="HLTrigger/HLTcore"/>

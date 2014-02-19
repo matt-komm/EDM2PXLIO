@@ -42,6 +42,7 @@
 #include "Pxl/Pxl/interface/Pxl.h"
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/common/ConverterFactory.h"
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/PatMuon2Pxlio.h"
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/PatElectron2Pxlio.h"
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/pat/PatJet2Pxlio.h"
@@ -54,7 +55,10 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/utils/ValueList2Pxlio.h"
 
-//#include "EDM2PXLIO/EDM2PXLIO/src/converters/tracking/RecoTrack2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/tracking/SimTrack2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/tracking/SimVertex2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/tracking/TrajectorySeed2Pxlio.h"
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/tracking/RecoTrack2Pxlio.h"
 
 //missing: primary vertex
 
@@ -81,9 +85,10 @@ class EDM2PXLIO : public edm::EDAnalyzer {
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
       bool checkPath(const edm::Event&, pxl::Event&);
-      std::vector<std::string> outputPathNames_;
-      pxl::OutputFile* pxlFile_;
-      std::string process_;
+      std::vector<std::string> _outputPathNames;
+      std::vector<std::string> _outputProcessNames;
+      pxl::OutputFile* _pxlFile;
+      std::string _process;
       
       
         
@@ -91,6 +96,7 @@ class EDM2PXLIO : public edm::EDAnalyzer {
 
       // ----------member data ---------------------------
 };
+
 
 //
 // constants, enums and typedefs
@@ -104,40 +110,70 @@ class EDM2PXLIO : public edm::EDAnalyzer {
 // constructors and destructor
 //
 EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
-    pxlFile_(0)
+    _pxlFile(0)
 {
     if (iConfig.exists("SelectEventsFromPath")) {
-        outputPathNames_ = iConfig.getParameter<std::vector<std::string> >("SelectEventsFromPath");
+        _outputPathNames = iConfig.getParameter<std::vector<std::string> >("SelectEventsFromPath");
     } else {
         edm::LogWarning("no SelectEventsFromPath configured") << "default path 'p0' will be used";
-        outputPathNames_.push_back("p0");
+        _outputPathNames.push_back("p0");
+    }
+    if (iConfig.exists("SelectEventsFromProcess")) {
+        _outputProcessNames = iConfig.getParameter<std::vector<std::string> >("SelectEventsFromProcess");
+    } else {
+        edm::LogWarning("no SelectEventsFromProcess configured") << "default path 'PAT' will be used";
+        _outputProcessNames.push_back("PAT");
     }
     if (iConfig.exists("OutFileName")) {
-        pxlFile_ = new pxl::OutputFile(iConfig.getUntrackedParameter<std::string>("OutFileName"));
+        _pxlFile = new pxl::OutputFile(iConfig.getUntrackedParameter<std::string>("OutFileName"));
     } else {
         edm::LogWarning("no output file name configured") << "default name 'data.pxlio' will be used";
-        pxlFile_ = new pxl::OutputFile("data.pxlio");
+        _pxlFile = new pxl::OutputFile("data.pxlio");
     }
     
     if (iConfig.exists("process")) {
-        process_ = iConfig.getUntrackedParameter<std::string>("process");
+        _process = iConfig.getUntrackedParameter<std::string>("process");
     } else {
-        process_ = "";
+        _process = "";
+    }
+
+    GenParticle2Pxlio::init();
+    GenJet2Pxlio::init();
+    
+    PatMuon2Pxlio::init();
+    PatElectron2Pxlio::init();
+    PatJet2Pxlio::init();
+    PatMET2Pxlio::init();
+    
+    ValueList2Pxlio::init();
+    Trigger2Pxlio::init();
+    
+    SimTrack2Pxlio::init();
+    SimVertex2Pxlio::init();
+    TrajectorySeed2Pxlio::init();
+    RecoTrack2Pxlio::init();
+    
+    
+    const std::vector<std::string> psetNames = iConfig.getParameterNamesForType<edm::ParameterSet>();
+    for (unsigned int iname=0; iname< psetNames.size(); ++iname)
+    {
+        const edm::ParameterSet& localConf = iConfig.getParameter<edm::ParameterSet>(psetNames[iname]);
+        if (localConf.exists("type"))
+        {
+            std::string typeName = localConf.getParameter<std::string>("type");
+            if (ConverterFactory::getInstance()->hasConverter(typeName))
+            {   
+                _converters.push_back(ConverterFactory::getInstance()->createConverter(typeName,psetNames[iname]));
+            }
+            else
+            {
+                edm::LogWarning("converter type not recognized: ") << typeName;
+            }
+        }
+        
     }
     
-    _converters.push_back(new GenParticle2Pxlio("gen"));
-    _converters.push_back(new GenJet2Pxlio("genjets"));
     
-    _converters.push_back(new PatMuon2Pxlio("muon"));
-    _converters.push_back(new PatElectron2Pxlio("electron"));
-    _converters.push_back(new PatJet2Pxlio("jet"));
-    _converters.push_back(new PatMET2Pxlio("met"));
-    
-    _converters.push_back(new ValueList2Pxlio("valuelist"));
-    _converters.push_back(new Trigger2Pxlio("trigger"));
-    
-    _converters.push_back(new RecoTrack2Pxlio("track"));
-
     for (unsigned int iconverter = 0; iconverter<_converters.size(); ++iconverter)
     {
         _converters[iconverter]->parseParameter(iConfig);
@@ -173,9 +209,9 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     pxlEvent.setUserRecord<unsigned int>("Event number", iEvent.id().event());
     pxlEvent.setUserRecord<unsigned int>("LuminosityBlock",iEvent.luminosityBlock());
     pxlEvent.setUserRecord<bool>("isRealData",iEvent.isRealData());
-    if (process_.length()>0) 
+    if (_process.length()>0)
     {
-        pxlEvent.setUserRecord<std::string>("Process", process_);
+        pxlEvent.setUserRecord<std::string>("Process", _process);
     }
     
     for (unsigned int iconverter = 0; iconverter<_converters.size(); ++iconverter)
@@ -183,29 +219,30 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         _converters[iconverter]->convert(&iEvent,&iSetup,&pxlEvent);
     }
     
-    pxlFile_->streamObject(&pxlEvent);
-    pxlFile_->writeFileSection();
+    _pxlFile->streamObject(&pxlEvent);
+    _pxlFile->writeFileSection();
 }
 
 bool
 EDM2PXLIO::checkPath(const edm::Event& iEvent, pxl::Event& pxlEvent)
 {
     bool accept=false;
-    std::string pathLabel("SIM");
-    edm::TriggerResultsByName result = iEvent.triggerResultsByName(pathLabel);
-    if (! result.isValid())
+    for (unsigned int iprocess =0; iprocess < _outputProcessNames.size(); ++iprocess)
     {
-        edm::LogWarning("trigger result not valid") << "event will not be processed";
-        return false;
-    }
-    for (unsigned ipath=0; ipath<outputPathNames_.size();++ipath)
-    {
-        if (! result.wasrun(outputPathNames_[ipath]))
+        edm::TriggerResultsByName result = iEvent.triggerResultsByName(_outputProcessNames[iprocess]);
+        if (! result.isValid())
         {
-            edm::LogWarning("TriggerResults('PAT') has no cms.Path named") << outputPathNames_[ipath] << ". The result of this path will be ignored.";
-        } else {
-            //pxlEvent->setUserRecord<bool>(outputPathNames_[ipath],result.accept(outputPathNames_[ipath]));
-            accept = accept || result.accept(outputPathNames_[ipath]);
+            edm::LogWarning("trigger result not valid") << "event will not be processed";
+            return false;
+        }
+        for (unsigned ipath=0; ipath<_outputPathNames.size();++ipath)
+        {
+            if (! result.wasrun(_outputPathNames[ipath]))
+            {
+                edm::LogWarning("TriggerResults has no cms.Path named: ") << _outputPathNames[ipath] << " in process '"<<_outputProcessNames[iprocess]<<"'. The result of this path will be ignored.";
+            } else {
+                accept = accept || result.accept(_outputPathNames[ipath]);
+            }
         }
     }
     return accept;
@@ -222,8 +259,16 @@ EDM2PXLIO::beginJob()
 void 
 EDM2PXLIO::endJob() 
 {
-    pxlFile_->close();
-    delete pxlFile_;
+    _pxlFile->close();
+    delete _pxlFile;
+    
+    /*
+    TODO: make all destructors virtual first!
+    for (unsigned int iconverter = 0; iconverter<_converters.size(); ++iconverter)
+    {
+        delete _converters[iconverter];
+    }
+    */
 }
 
 // ------------ method called when starting to processes a run  ------------

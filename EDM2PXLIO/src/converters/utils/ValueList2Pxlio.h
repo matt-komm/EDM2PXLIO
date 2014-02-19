@@ -29,6 +29,8 @@
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
+#include "EDM2PXLIO/EDM2PXLIO/src/common/ConverterFactory.h"
+
 class ValueList2Pxlio: public Collection2Pxlio<std::vector<double>>
 {
     protected:
@@ -37,6 +39,12 @@ class ValueList2Pxlio: public Collection2Pxlio<std::vector<double>>
         ValueList2Pxlio(std::string name):
             Collection2Pxlio<std::vector<double>>(name)
         {
+        }
+        
+        static void init()
+        {
+            ConverterFactory* fac = ConverterFactory::getInstance();
+            fac->registerConverter(new ConverterProducerTmpl<ValueList2Pxlio>("ValueList2Pxlio"));
         }
         
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)

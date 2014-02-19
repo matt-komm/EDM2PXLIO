@@ -62,40 +62,48 @@ class Collection2Pxlio: public Converter
             default_eventView_=name;
         }
 
-        virtual void parseParameter(const edm::ParameterSet& iConfig)
+        virtual void parseParameter(const edm::ParameterSet& globalConfig)
         {
-        	Converter::parseParameter(iConfig);
-            if (iConfig.exists(name_+"Srcs")) 
-            {
-                srcs_ = iConfig.getParameter<std::vector<edm::InputTag> >(name_+"Srcs");
-            } else {
-                edm::LogWarning(name_+"Srcs") << "no sources defined";    
-            }
-            if (iConfig.exists(name_+"Names")) 
-            {
-                names_ = iConfig.getParameter<std::vector<std::string> >(name_+"Names");
-                if (names_.size()!=srcs_.size() && names_.size()>0)
+        	Converter::parseParameter(globalConfig);
+        	if (globalConfig.exists(name_))
+        	{
+        	    const edm::ParameterSet& iConfig = globalConfig.getParameter<edm::ParameterSet>(name_);   
+        	
+        	    if (iConfig.exists("srcs")) 
                 {
-                    edm::LogInfo(name_+"Names") << "will use the same name for all sources:"<<name_[0];    
+                    srcs_ = iConfig.getParameter<std::vector<edm::InputTag> >("srcs");
+                } else {
+                    edm::LogWarning(name_) << "no sources defined";    
                 }
-            } else {
-                names_.push_back(default_name_);
-                edm::LogInfo(name_+"Names") << "no default name defined - will use default name:"<<names_[0];    
-            }
-            if (iConfig.exists(name_+"TargetEventViews"))
-            {
-                eventViewNames_= iConfig.getParameter<std::vector<std::string> >(name_+"TargetEventViews");
-                if (eventViewNames_.size()!=srcs_.size() && eventViewNames_.size()>0)
+                if (iConfig.exists("names")) 
                 {
-                    edm::LogInfo(name_+"TargetEventViews") << "will use the same eventviewname for all sources:"<<eventViewNames_[0];    
+                    names_ = iConfig.getParameter<std::vector<std::string> >("names");
+                    if (names_.size()!=srcs_.size() && names_.size()>0)
+                    {
+                        edm::LogInfo(name_) << "will use the same name for all sources: "<<name_[0];    
+                    }
+                } else {
+                    names_.push_back(default_name_);
+                    edm::LogInfo(name_) << "no default name defined - will use default name: "<<names_[0];    
                 }
-            } else {
-                eventViewNames_.push_back(default_eventView_);
-                edm::LogInfo(name_+"TargetEventViews") << "no default event view defined - will use default:"<<eventViewNames_[0];
-            }
-
-        }
-
+                if (iConfig.exists("targetEventViews"))
+                {
+                    eventViewNames_= iConfig.getParameter<std::vector<std::string> >("targetEventViews");
+                    if (eventViewNames_.size()!=srcs_.size() && eventViewNames_.size()>0)
+                    {
+                        edm::LogInfo(name_) << "will use the same eventviewname for all sources: "<<eventViewNames_[0];    
+                    }
+                } else {
+                    eventViewNames_.push_back(default_eventView_);
+                    edm::LogInfo(name_) << "no default event view defined - will use default: "<<eventViewNames_[0];
+                }
+        	}
+        	else
+        	{
+        	}
+        	
+    	}
+    	
         pxl::EventView* findEventView(pxl::Event* pxlEvent, std::string name)
         {
             pxl::EventView* eventView = pxlEvent->findObject<pxl::EventView>(name);
