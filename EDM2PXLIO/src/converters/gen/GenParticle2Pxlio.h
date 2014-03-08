@@ -111,28 +111,68 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
                 }
 
 
-                if (collection.product()) {
-                    for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) {
+                if (collection.product()) 
+                {
+                    //std::map<long,std::vector<pxl::Particle*>> collisions;
+                
+                    for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) 
+                    {
                         const reco::GenParticle genObject = (*collection)[iparticle];
-                        pxl::Particle* pxlParticle = pxlEventView->create<pxl::Particle>();
-                        pxlParticle->setName(getNameFromID(genObject.pdgId()));
-                        convertObject(genObject,pxlParticle);
                         if (pxlCollectionMap.find (getHash(&genObject))!=pxlCollectionMap.end())
                         {
                             /*
-                            std::cout<<"collision detected"<<std::endl;
-                            std::cout<<getNameFromID(genObject.pdgId())<<"\t"<<genObject.px()<<"\t"<<genObject.py()<<"\t"<<genObject.pz()<<"\t"<<std::endl;
-                            std::cout<<pxlCollectionMap[getHash(&genObject)]->getName()<<"\t"<<pxlCollectionMap[getHash(&genObject)]->getPx()<<"\t"<<pxlCollectionMap[getHash(&genObject)]->getPy()<<"\t"<<pxlCollectionMap[getHash(&genObject)]->getPz()<<"\t"<<std::endl;
-                            getHash(&genObject);
+                            //store colliding particles and substitude them after the rest is connected
+                            if (collisions.find(getHash(&genObject))==collisions.end())
+                            {
+                                //this is the connected object which will be substituted
+                                collisions[getHash(&genObject)].push_back(pxlCollectionMap[getHash(&genObject)]);
+                            }
+                            collisions[getHash(&genObject)].push_back(pxlParticle);
                             */
-                            //throw cms::Exception("EDM2PXLIO::GenParticle2Pxlio::convert") << "hash collision detected - report to the developer!";
-                            pxlParticle->setUserRecord<std::string>("hash_collision",pxlCollectionMap[getHash(&genObject)]->id().toString ());
-                            pxlCollectionMap[getHash(&genObject)]->setUserRecord<std::string>("hash_collision",pxlParticle->id().toString ());
                         }
-                        pxlCollectionMap[getHash(&genObject)]=pxlParticle;
-                        
+                        else
+                        {
+                           
+                            pxl::Particle* pxlParticle = pxlEventView->create<pxl::Particle>();
+                            pxlParticle->setName(getNameFromID(genObject.pdgId()));
+                            convertObject(genObject,pxlParticle);
+                            
+                            pxlCollectionMap[getHash(&genObject)]=pxlParticle;
+                        }
                     }
                     connect(collection);
+                    /*
+                    stragtegy does not work due to pxl bug in getting the correct mothers
+                    //now substitudes
+                    for (std::map<long,std::vector<pxl::Particle*>>::iterator it=collisions.begin(); it!=collisions.end(); ++it)
+                    {
+                        pxl::Particle* daughter = (it->second)[0];
+                        std::vector<pxl::Particle*> mothers;
+                        //daughter->getMotherRelations().getObjectsOfType<pxl::Particle>(mothers);
+                        //daughter->unlinkMothers();
+                        const pxl::Relations& motherRel = daughter->getMotherRelations();
+                        
+                        (it->second).front()->setName("First Daughter");
+                        (it->second).back()->setName("Last Daughter");
+                        for (unsigned int iparticle = 1; iparticle< (it->second).size(); ++iparticle)
+                        {
+                            //(it->second)[iparticle]->linkDaughter((it->second)[iparticle-1]);
+                        }
+                        for (pxl::Relations::iterator mrel = motherRel.begin(); mrel!=motherRel.end(); ++mrel)
+                        {
+                            pxl::Particle* mother = dynamic_cast<pxl::Particle*>(*mrel);
+                            mother->setName("Mother");
+                        }
+                        
+                        for (unsigned int imother = 0; imother < mothers.size(); ++imother)
+                        {
+                            std::cout<<mothers[imother]<<std::endl;
+                            //mothers[imother]->setName("Mother");
+                            
+                        }
+                        
+                    }
+                    */
                 }
             }
         }
@@ -182,12 +222,14 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
         */
         virtual long getHash(const reco::Candidate* particle)
         {
-            long hash1=long(fabs(particle->energy())*100000000*(boost::math::sign(particle->energy())+2));
-            long hash2=long(fabs(particle->pz())*1000000*(boost::math::sign(particle->pz())+2));
-            long hash3=long(fabs(particle->px())*10000*(boost::math::sign(particle->px())+2));
-            long hash4=long(fabs(particle->py())*100*(boost::math::sign(particle->py())+2));
-            long hash5=long(fabs(particle->status())*(boost::math::sign(particle->status())+2));
-            return hash1+hash2+hash3+hash4+hash5;
+            long hash1=long(particle->mass()*100000000000);
+            long hash2=long(fabs(particle->energy())*100000000*(boost::math::sign(particle->energy())+2));
+            long hash3=long(fabs(particle->pz())*1000000*(boost::math::sign(particle->pz())+2));
+            long hash4=long(fabs(particle->px())*10000*(boost::math::sign(particle->px())+2));
+            long hash5=long(fabs(particle->py())*100*(boost::math::sign(particle->py())+2));
+            long hash6=long(fabs(particle->status())*(boost::math::sign(particle->status())+2));
+            
+            return hash1+hash2+hash3+hash4+hash5+hash6;
         }
         
         ~GenParticle2Pxlio()
