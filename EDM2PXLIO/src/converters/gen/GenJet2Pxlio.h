@@ -74,6 +74,7 @@ class GenJet2Pxlio: public CollectionClass2Pxlio<reco::GenJet>
             pxlParticle->setUserRecord<double>("jetArea",genJet.jetArea());
             
             
+            /* calculates variables sensitive to substructure
             double sumDR=0.0;
             double jetMeanPt = 0.0;
             double jetMeanMass = 0.0;
@@ -101,6 +102,7 @@ class GenJet2Pxlio: public CollectionClass2Pxlio<reco::GenJet>
             pxlParticle->setUserRecord<double>("D",evVar.D());
             pxlParticle->setUserRecord<double>("aplanarity",evVar.aplanarity());
             pxlParticle->setUserRecord<double>("D",evVar.D());
+            */
         }
         
         ~GenJet2Pxlio()

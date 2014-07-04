@@ -46,11 +46,13 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
         std::unordered_map<long,pxl::Particle*> pxlCollectionMap;
         edm::InputTag genEventInfoProductInputTag_;
 
+        bool _useNameDB;
 
     public:
         GenParticle2Pxlio(std::string name):
             Collection2Pxlio<edm::View<reco::GenParticle>>(name),
-            genEventInfoProductInputTag_()
+            genEventInfoProductInputTag_(),
+            _useNameDB(true)
         {
              Collection2Pxlio<edm::View<reco::GenParticle>>::setDefaultEventView("Generated");
         }
@@ -71,6 +73,10 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
                 if (iConfig.exists("EventInfo"))
                 {
                     genEventInfoProductInputTag_ = iConfig.getParameter<edm::InputTag>("EventInfo");
+                }
+                else if (iConfig.exists("useNameDB"))
+                {
+                    _useNameDB=iConfig.getParameter<bool>("useNameDB");
                 }
                 else
                 {
@@ -134,7 +140,14 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
                         {
                            
                             pxl::Particle* pxlParticle = pxlEventView->create<pxl::Particle>();
-                            pxlParticle->setName(getNameFromID(genObject.pdgId()));
+                            if (_useNameDB)
+                            {
+                                pxlParticle->setName(getNameFromID(genObject.pdgId()));
+                            }
+                            else
+                            {
+                                pxlParticle->setName(Collection2Pxlio<edm::View<reco::GenParticle>>::getCollectionName(index));
+                            }
                             convertObject(genObject,pxlParticle);
                             
                             pxlCollectionMap[getHash(&genObject)]=pxlParticle;
