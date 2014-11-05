@@ -25,24 +25,31 @@ process.prunedGenParticles = cms.EDProducer("GenParticlePruner",
 process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     OutFileName=cms.untracked.string("data.pxlio"),
     process=cms.untracked.string("tChannel"),
+    SelectEvents=cms.untracked.VPSet(
+        cms.untracked.PSet(
+            process=cms.untracked.string("Demo"),
+            paths=cms.untracked.vstring("p0"),
+        )
+    ),
     
-    muonSrcs=cms.VInputTag("nonIsolatedLoosePatMuons"),
-    muonNames=cms.vstring("Muon"),
+    genCollection = cms.PSet(
+        type=cms.string("GenParticle2Pxlio"),
+        srcs=cms.VInputTag(cms.InputTag("prunedGenParticles")),
+        EventInfo=cms.InputTag('generator')
+    ),
     
-    electronSrcs=cms.VInputTag("nonIsolatedLoosePatElectrons"),
-    electronNames=cms.vstring("Electron"),
-        
+    genJets = cms.PSet(
+        type=cms.string("GenJet2Pxlio"),
+        srcs=cms.VInputTag("ak5GenJets","kt4GenJets","kt6GenJets"),
+        names=cms.vstring("AK5GenJets","KT4GenJets","KT6GenJets"),
+        targetEventViews=cms.vstring("GenJets")
+    ),
     
-    jetSrcs=cms.VInputTag("analysisPatJets"),
-    jetNames=cms.vstring("Jet"),
     
-    metSrcs=cms.VInputTag("patPFMet","patMETs"),
-    metNames=cms.vstring("rawMET","MET"),
-    
-    genSrcs=cms.VInputTag("prunedGenParticles"),
-    
-    triggerRegex=cms.vstring("HLT_Mu","HLT_IsoMu","HLT_Ele")
+
 )
 
 
-process.p = cms.Path(process.source+process.prunedGenParticles+process.pat2pxlio)
+process.p0 = cms.Path(process.prunedGenParticles)
+
+process.end=cms.EndPath(process.pat2pxlio)

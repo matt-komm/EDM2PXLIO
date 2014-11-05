@@ -67,32 +67,38 @@
 //
 
 class EDM2PXLIO : public edm::EDAnalyzer {
-   public:
-      explicit EDM2PXLIO(const edm::ParameterSet&);
-      ~EDM2PXLIO();
+    public:
+        explicit EDM2PXLIO(const edm::ParameterSet&);
+        ~EDM2PXLIO();
 
-      static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+        static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 
-   private:
-      virtual void beginJob() ;
-      virtual void analyze(const edm::Event&, const edm::EventSetup&);
-      virtual void endJob() ;
+    private:
+        struct SelectedProcessPaths
+        {
+            std::string processName;
+            std::vector<std::string> paths;
+        };
 
-      virtual void beginRun(edm::Run const&, edm::EventSetup const&);
-      virtual void endRun(edm::Run const&, edm::EventSetup const&);
-      virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
-      virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
+        virtual void beginJob() ;
+        virtual void analyze(const edm::Event&, const edm::EventSetup&);
+        virtual void endJob() ;
 
-      bool checkPath(const edm::Event&, pxl::Event&);
-      std::vector<std::string> _outputPathNames;
-      std::vector<std::string> _outputProcessNames;
-      pxl::OutputFile* _pxlFile;
-      std::string _process;
-      
-      
+        virtual void beginRun(edm::Run const&, edm::EventSetup const&);
+        virtual void endRun(edm::Run const&, edm::EventSetup const&);
+        virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
+        virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
+
+        bool checkPath(const edm::Event&, pxl::Event&);
+        std::vector<SelectedProcessPaths> _selectedProcessPaths;
         
-      std::vector<Converter*> _converters; 
+        pxl::OutputFile* _pxlFile;
+        std::string _process;
+
+
+
+        std::vector<Converter*> _converters; 
 
       // ----------member data ---------------------------
 };
@@ -112,17 +118,24 @@ class EDM2PXLIO : public edm::EDAnalyzer {
 EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
     _pxlFile(0)
 {
-    if (iConfig.exists("SelectEventsFromPath")) {
-        _outputPathNames = iConfig.getParameter<std::vector<std::string> >("SelectEventsFromPath");
-    } else {
-        edm::LogWarning("no SelectEventsFromPath configured") << "default path 'p0' will be used";
-        _outputPathNames.push_back("p0");
+    if (iConfig.exists("SelectEvents"))
+    {
+        const std::vector<edm::ParameterSet>& selectEventPSets = iConfig.getUntrackedParameter<std::vector<edm::ParameterSet>>("SelectEvents");
+        for (unsigned int iset=0; iset<selectEventPSets.size(); ++iset)
+        {
+            SelectedProcessPaths selectedProcessPath;
+            selectedProcessPath.processName=selectEventPSets[iset].getUntrackedParameter<std::string>("process"); 
+            selectedProcessPath.paths=selectEventPSets[iset].getUntrackedParameter<std::vector<std::string>>("paths");
+            _selectedProcessPaths.push_back(selectedProcessPath);
+        }
     }
-    if (iConfig.exists("SelectEventsFromProcess")) {
-        _outputProcessNames = iConfig.getParameter<std::vector<std::string> >("SelectEventsFromProcess");
-    } else {
-        edm::LogWarning("no SelectEventsFromProcess configured") << "default path 'PAT' will be used";
-        _outputProcessNames.push_back("PAT");
+    else
+    {
+        SelectedProcessPaths selectedProcessPath;
+        selectedProcessPath.processName="PAT";
+        selectedProcessPath.paths.push_back("p0");
+        _selectedProcessPaths.push_back(selectedProcessPath);
+        edm::LogWarning("no SelectEvents configured") << "default process 'PAT' with path 'p0' will be used";
     }
     if (iConfig.exists("OutFileName")) {
         _pxlFile = new pxl::OutputFile(iConfig.getUntrackedParameter<std::string>("OutFileName"));
@@ -227,21 +240,23 @@ bool
 EDM2PXLIO::checkPath(const edm::Event& iEvent, pxl::Event& pxlEvent)
 {
     bool accept=false;
-    for (unsigned int iprocess =0; iprocess < _outputProcessNames.size(); ++iprocess)
+    for (unsigned int iprocess =0; iprocess < _selectedProcessPaths.size(); ++iprocess)
     {
-        edm::TriggerResultsByName result = iEvent.triggerResultsByName(_outputProcessNames[iprocess]);
+        const SelectedProcessPaths& selectedProcessPath = _selectedProcessPaths[iprocess];
+        edm::TriggerResultsByName result = iEvent.triggerResultsByName(selectedProcessPath.processName);
         if (! result.isValid())
         {
             edm::LogWarning("trigger result not valid") << "event will not be processed";
             return false;
         }
-        for (unsigned ipath=0; ipath<_outputPathNames.size();++ipath)
+        const std::vector<std::string>& paths = selectedProcessPath.paths;
+        for (unsigned ipath=0; ipath<paths.size();++ipath)
         {
-            if (! result.wasrun(_outputPathNames[ipath]))
+            if (!result.wasrun(paths[ipath]))
             {
-                edm::LogWarning("TriggerResults has no cms.Path named: ") << _outputPathNames[ipath] << " in process '"<<_outputProcessNames[iprocess]<<"'. The result of this path will be ignored.";
+                edm::LogWarning("TriggerResults has no cms.Path named: ") << paths[ipath] << " in process '"<<selectedProcessPath.processName<<"'. The result of this path will be ignored.";
             } else {
-                accept = accept || result.accept(_outputPathNames[ipath]);
+                accept = accept || result.accept(paths[ipath]);
             }
         }
     }

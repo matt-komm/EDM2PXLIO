@@ -74,14 +74,16 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
                 {
                     genEventInfoProductInputTag_ = iConfig.getParameter<edm::InputTag>("EventInfo");
                 }
-                else if (iConfig.exists("useNameDB"))
+                else
+                {
+                    edm::LogWarning(name_) << "no EventInfo sources defined";    
+                }
+                
+                if (iConfig.exists("useNameDB"))
                 {
                     _useNameDB=iConfig.getParameter<bool>("useNameDB");
                 }
-                else
-                {
-                     edm::LogWarning(name_) << "no EventInfo sources defined";    
-                }
+                
             }
         }
 
