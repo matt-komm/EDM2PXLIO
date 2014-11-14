@@ -228,6 +228,7 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
         {
             pxlParticle->setP4(genObject.px(),genObject.py(),genObject.pz(),genObject.energy());
             pxlParticle->setParticleId(genObject.pdgId());
+            pxlParticle->setUserRecord<int>("status",genObject.status());
         }
         /*
         virtual int getHash(pxl::Particle* particle)

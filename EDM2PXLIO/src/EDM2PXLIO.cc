@@ -53,6 +53,8 @@
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/gen/GenParticle2Pxlio.h"
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/gen/GenJet2Pxlio.h"
 
+#include "EDM2PXLIO/EDM2PXLIO/src/converters/reco/Candidate2Pxlio.h"
+
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/utils/ValueList2Pxlio.h"
 
 #include "EDM2PXLIO/EDM2PXLIO/src/converters/tracking/SimTrack2Pxlio.h"
@@ -157,6 +159,8 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
     PatElectron2Pxlio::init();
     PatJet2Pxlio::init();
     PatMET2Pxlio::init();
+    
+    Candidate2Pxlio::init();
     
     ValueList2Pxlio::init();
     Trigger2Pxlio::init();
