@@ -29,6 +29,8 @@
 
 //#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+
 #include "PhysicsTools/PatUtils/interface/StringParserTools.h"
 
 #include "Pxl/Pxl/interface/pxl/core.hh"
@@ -46,7 +48,7 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
         edm::ESHandle<ParticleDataTable> pdt_;
         std::unordered_map<long,pxl::Particle*> pxlCollectionMap;
         edm::InputTag genEventInfoProductInputTag_;
-
+        edm::InputTag lheEventProductInputTag_;
         bool _useNameDB;
 
     public:
@@ -71,13 +73,22 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
         	{
         	    const edm::ParameterSet& iConfig = globalConfig.getParameter<edm::ParameterSet>(name_);   
         	
-                if (iConfig.exists("EventInfo"))
+                if (iConfig.exists("GenEventInfo"))
                 {
-                    genEventInfoProductInputTag_ = iConfig.getParameter<edm::InputTag>("EventInfo");
+                    genEventInfoProductInputTag_ = iConfig.getParameter<edm::InputTag>("GenEventInfo");
                 }
                 else
                 {
-                    edm::LogWarning(name_) << "no EventInfo sources defined";    
+                    edm::LogWarning(name_) << "no EventInfo source defined";    
+                }
+                
+                if (iConfig.exists("LHEEvent"))
+                {
+                    lheEventProductInputTag_ = iConfig.getParameter<edm::InputTag>("LHEEvent");
+                }
+                else
+                {
+                    edm::LogWarning(name_) << "no LHEEvent source defined";    
                 }
                 
                 if (iConfig.exists("useNameDB"))
@@ -117,6 +128,27 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
                     pxlEventView->setUserRecord("scalePDF",pdf->scalePDF);
 
 
+                }
+                if (lheEventProductInputTag_.label().length()>0)
+                {
+                    
+                    edm::Handle<LHEEventProduct> lheEventProduct;
+                    edmEvent->getByLabel(lheEventProductInputTag_,lheEventProduct);
+                    
+                    /*
+                    std::vector<pxl::Variant> comments;
+                    for (LHEEventProduct::comments_const_iterator it = lheEventProduct->comments_begin (); it != lheEventProduct->comments_end (); ++it)
+                    {
+                        comments.push_back(*it);
+                    }
+                    pxlEventView->setUserRecord("lheComments",comments);
+                    */
+                    
+                    const std::vector<LHEEventProduct::WGT>& weights = lheEventProduct->weights();
+                    for (unsigned int iweight = 0; iweight < weights.size(); ++iweight)
+                    {
+                        pxlEventView->setUserRecord("lheweight_"+weights[iweight].id,weights[iweight].wgt);
+                    }
                 }
 
 

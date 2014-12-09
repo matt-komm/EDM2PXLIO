@@ -46,7 +46,8 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     genCollection = cms.PSet(
         type=cms.string("GenParticle2Pxlio"),
         srcs=cms.VInputTag(cms.InputTag("lessGenParticles")),
-        EventInfo=cms.InputTag('generator')
+        GenEventInfo=cms.InputTag('generator'),
+        LHEEvent=cms.InputTag('source')
     ),
     
     jets = cms.PSet(
