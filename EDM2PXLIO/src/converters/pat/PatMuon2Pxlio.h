@@ -59,19 +59,24 @@ class PatMuon2Pxlio: public CollectionClass2Pxlio<pat::Muon>
             pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
             pxlParticle->setCharge(patObject.charge());
             
+            pxlParticle->setUserRecord("chargedHadronIso",patObject.chargedHadronIso());
+            pxlParticle->setUserRecord("neutralHadronIso",patObject.neutralHadronIso());
+            pxlParticle->setUserRecord("photonIso",patObject.photonIso());
+            pxlParticle->setUserRecord("puChargedHadronIso",patObject.puChargedHadronIso());
+            
             float relIso = (patObject.chargedHadronIso() + std::max(0., patObject.neutralHadronIso() +patObject.photonIso() - 0.5*patObject.puChargedHadronIso()))/patObject.pt();
             pxlParticle->setUserRecord("relIso",relIso);
-            
+
             pxlParticle->setUserRecord("isGlobalMuon",patObject.isGlobalMuon());
             pxlParticle->setUserRecord("isTrackerMuon",patObject.isTrackerMuon());
             pxlParticle->setUserRecord("isPFMuon",patObject.isPFMuon());
             
-            pxlParticle->setUserRecord("numberOfValidMuonHits",patObject.globalTrack()->hitPattern().numberOfValidMuonHits());
-            pxlParticle->setUserRecord("numberOfMatchedStations",patObject.numberOfMatchedStations());
-            pxlParticle->setUserRecord("numberOfValidPixelHits",patObject.innerTrack()->hitPattern().numberOfValidPixelHits());
-            pxlParticle->setUserRecord("trackerLayersWithMeasurement",patObject.track()->hitPattern().trackerLayersWithMeasurement());
+            //pxlParticle->setUserRecord("numberOfValidMuonHits",patObject.globalTrack()->hitPattern().numberOfValidMuonHits());
+            //pxlParticle->setUserRecord("numberOfMatchedStations",patObject.numberOfMatchedStations());
+            //pxlParticle->setUserRecord("numberOfValidPixelHits",patObject.innerTrack()->hitPattern().numberOfValidPixelHits());
+            //pxlParticle->setUserRecord("trackerLayersWithMeasurement",patObject.track()->hitPattern().trackerLayersWithMeasurement());
 
-
+            /*
             if (primaryVertexProvider_->getPrimaryVertex())
             {
                 double dz = patObject.innerTrack()->dz(primaryVertexProvider_->getPrimaryVertex()->position());
@@ -80,13 +85,10 @@ class PatMuon2Pxlio: public CollectionClass2Pxlio<pat::Muon>
                 pxlParticle->setUserRecord("dxy",dxy);
                 pxlParticle->setUserRecord("isTightMuon",patObject.isTightMuon(*primaryVertexProvider_->getPrimaryVertex()));
             }
+            */
+            //pxlParticle->setUserRecord("chi2",patObject.globalTrack()->normalizedChi2());
 
-            pxlParticle->setUserRecord("chi2",patObject.globalTrack()->normalizedChi2());
-
-            pxlParticle->setUserRecord("chargedHadronIso",patObject.chargedHadronIso());
-            pxlParticle->setUserRecord("neutralHadronIso",patObject.neutralHadronIso());
-            pxlParticle->setUserRecord("photonIso",patObject.photonIso());
-            pxlParticle->setUserRecord("puChargedHadronIso",patObject.puChargedHadronIso());
+            
         }
         
         virtual void convertCollection(const edm::Handle<edm::View<pat::Muon>> patObjectList, std::vector<pxl::Particle*>& pxlParticleList)

@@ -96,8 +96,11 @@ class Trigger2Pxlio: public Collection2Pxlio<edm::TriggerResults>
                 bool accept = false;
                 for (unsigned iregex=0; (iregex<regexList_.size()) && !accept; ++iregex)
                 {
-
                     accept = accept || regex_search(pathName,regexList_[iregex]);
+                    if (accept)
+                    {
+                        break;
+                    }
                 }
                 if (accept)
                 {

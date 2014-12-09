@@ -53,8 +53,35 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     jets = cms.PSet(
         type=cms.string("PatJet2Pxlio"),
         srcs=cms.VInputTag(cms.InputTag("slimmedJets")),
-        names=cms.vstring("Jets")
+        names=cms.vstring("Jet")
+    ),
+    
+    muons = cms.PSet(
+        type=cms.string("PatMuon2Pxlio"),
+        srcs=cms.VInputTag(cms.InputTag("slimmedMuons")),
+        names=cms.vstring("Muon")
+    ),
+    #TODO: add dxy, dz, chi2
+    
+    electrons = cms.PSet(
+        type=cms.string("PatElectron2Pxlio"),
+        srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
+        names=cms.vstring("Electron")
+    ),
+    
+    mets = cms.PSet(
+        type=cms.string("PatMET2Pxlio"),
+        srcs=cms.VInputTag(cms.InputTag("slimmedMETs")),
+        names=cms.vstring("MET")
+    ),
+
+    triggers = cms.PSet(
+        type=cms.string("TriggerResults"),
+        srcs=cms.VInputTag(cms.InputTag("slimmedMETs")),
+        regex=cms.vstring("Iso[0-9a-zA-z]*")
     )
+    #TODO: add prescale info from: pat::PackedTriggerPrescales "patTrigger" 
+    
     
     
 

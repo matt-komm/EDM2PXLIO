@@ -67,7 +67,12 @@ class PatElectron2Pxlio: public CollectionClass2Pxlio<pat::Electron>
             pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
             pxlParticle->setCharge(patObject.charge());
             pxlParticle->setUserRecord("dB",patObject.dB());
-            pxlParticle->setUserRecord("mva",patObject.electronID("mvaTrigV0"));
+            const std::vector<pat::Electron::IdPair>& electronIds = patObject.electronIDs();
+            for (unsigned int i = 0; i < electronIds.size(); ++i)
+            {
+                pxlParticle->setUserRecord(electronIds[i].first,electronIds[i].second);
+            }
+            
             pxlParticle->setUserRecord("ecalDrivenSeed",patObject.ecalDrivenSeed());
             pxlParticle->setUserRecord("trackerDrivenSeed",patObject.trackerDrivenSeed());
             pxlParticle->setUserRecord("isInEB-EE",(1.4442 < fabs(patObject.eta())) && (fabs(patObject.eta()) < 1.5660));
