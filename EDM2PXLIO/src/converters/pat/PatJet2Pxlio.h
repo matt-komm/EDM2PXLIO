@@ -53,12 +53,12 @@ class PatJet2Pxlio: public CollectionClass2Pxlio<pat::Jet>
 
             CollectionClass2Pxlio<pat::Jet>::convertObject(patObject, pxlParticle);
             pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
-            pxlParticle->setUserRecord("trackCountingHighPurBJetTags",patObject.bDiscriminator("trackCountingHighPurBJetTags"));
-            pxlParticle->setUserRecord("trackCountingHighEffBJetTags",patObject.bDiscriminator("trackCountingHighEffBJetTags"));
-            pxlParticle->setUserRecord("combinedSecondaryVertexBJetTags",patObject.bDiscriminator("combinedSecondaryVertexBJetTags"));
-            pxlParticle->setUserRecord("jetBProbabilityBJetTags",patObject.bDiscriminator("jetBProbabilityBJetTags"));
-            pxlParticle->setUserRecord("jetProbabilityBJetTags",patObject.bDiscriminator("jetProbabilityBJetTags"));
             
+            const std::vector<std::pair<std::string, float>>& bDiscriminators = patObject.getPairDiscri();
+            for (unsigned int i = 0; i<bDiscriminators.size(); ++i)
+            {
+                pxlParticle->setUserRecord(bDiscriminators[i].first,bDiscriminators[i].second);
+            }
             pxlParticle->setUserRecord("numberOfDaughters",patObject.numberOfDaughters());
             
             pxlParticle->setUserRecord("neutralEmEnergy",patObject.neutralEmEnergy());
