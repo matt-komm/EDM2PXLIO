@@ -25,7 +25,8 @@
 
 #include "PhysicsTools/PatUtils/interface/StringParserTools.h"
 
-#include "Pxl/Pxl/interface/Pxl.h"
+#include "Pxl/Pxl/interface/pxl/core.hh"
+#include "Pxl/Pxl/interface/pxl/hep.hh"
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
@@ -57,10 +58,10 @@ class Candidate2Pxlio: public CollectionClass2Pxlio<reco::LeafCandidate>
             CollectionClass2Pxlio<reco::LeafCandidate>::convertObject(candidate, pxlParticle);
             pxlParticle->setP4(candidate.px(),candidate.py(),candidate.pz(),candidate.energy());
             
-            pxlParticle->setUserRecord<int>("charge",candidate.charge());
-            pxlParticle->setUserRecord<double>("vx",candidate.vx());
-            pxlParticle->setUserRecord<double>("vy",candidate.vy());
-            pxlParticle->setUserRecord<double>("vz",candidate.vz());
+            pxlParticle->setUserRecord("charge",candidate.charge());
+            pxlParticle->setUserRecord("vx",candidate.vx());
+            pxlParticle->setUserRecord("vy",candidate.vy());
+            pxlParticle->setUserRecord("vz",candidate.vz());
             
             
             /* calculates variables sensitive to substructure

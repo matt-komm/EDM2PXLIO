@@ -39,7 +39,8 @@
 
 #include "PhysicsTools/PatUtils/interface/StringParserTools.h"
 
-#include "Pxl/Pxl/interface/Pxl.h"
+#include "Pxl/Pxl/interface/pxl/core.hh"
+#include "Pxl/Pxl/interface/pxl/hep.hh"
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 #include "EDM2PXLIO/EDM2PXLIO/src/common/ConverterFactory.h"
@@ -222,13 +223,13 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     {
         return;
     }
-    pxlEvent.setUserRecord<unsigned int>("Run", iEvent.run());
-    pxlEvent.setUserRecord<unsigned int>("Event number", iEvent.id().event());
-    pxlEvent.setUserRecord<unsigned int>("LuminosityBlock",iEvent.luminosityBlock());
-    pxlEvent.setUserRecord<bool>("isRealData",iEvent.isRealData());
+    pxlEvent.setUserRecord("Run", iEvent.run());
+    pxlEvent.setUserRecord("Event number", (uint64_t)iEvent.id().event());
+    pxlEvent.setUserRecord("LuminosityBlock",iEvent.luminosityBlock());
+    pxlEvent.setUserRecord("isRealData",iEvent.isRealData());
     if (_process.length()>0)
     {
-        pxlEvent.setUserRecord<std::string>("Process", _process);
+        pxlEvent.setUserRecord("Process", _process);
     }
     
     for (unsigned int iconverter = 0; iconverter<_converters.size(); ++iconverter)
@@ -254,6 +255,11 @@ EDM2PXLIO::checkPath(const edm::Event& iEvent, pxl::Event& pxlEvent)
             return false;
         }
         const std::vector<std::string>& paths = selectedProcessPath.paths;
+        if (paths.size()==0)
+        {
+            //accept all events
+            return true;
+        }
         for (unsigned ipath=0; ipath<paths.size();++ipath)
         {
             if (!result.wasrun(paths[ipath]))

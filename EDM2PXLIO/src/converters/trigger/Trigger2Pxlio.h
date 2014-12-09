@@ -28,7 +28,8 @@
 
 #include "boost/regex.hpp"
 
-#include "Pxl/Pxl/interface/Pxl.h"
+#include "Pxl/Pxl/interface/pxl/core.hh"
+#include "Pxl/Pxl/interface/pxl/hep.hh"
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
@@ -101,7 +102,7 @@ class Trigger2Pxlio: public Collection2Pxlio<edm::TriggerResults>
                 if (accept)
                 {
                     bool passTrig=trigResults->accept(trigNames.triggerIndex(pathName));
-                    pxlEventView->setUserRecord<bool>(pathName,passTrig);
+                    pxlEventView->setUserRecord(pathName,passTrig);
                 }
             }
         }

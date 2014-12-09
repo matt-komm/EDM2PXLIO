@@ -24,7 +24,8 @@
 
 #include "PhysicsTools/PatUtils/interface/StringParserTools.h"
 
-#include "Pxl/Pxl/interface/Pxl.h"
+#include "Pxl/Pxl/interface/pxl/core.hh"
+#include "Pxl/Pxl/interface/pxl/hep.hh"
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
@@ -65,42 +66,42 @@ class PatElectron2Pxlio: public CollectionClass2Pxlio<pat::Electron>
             CollectionClass2Pxlio<pat::Electron>::convertObject(patObject, pxlParticle);
             pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
             pxlParticle->setCharge(patObject.charge());
-            pxlParticle->setUserRecord<float>("dB",patObject.dB());
-            pxlParticle->setUserRecord<float>("mva",patObject.electronID("mvaTrigV0"));
-            pxlParticle->setUserRecord<bool>("ecalDrivenSeed",patObject.ecalDrivenSeed());
-            pxlParticle->setUserRecord<bool>("trackerDrivenSeed",patObject.trackerDrivenSeed());
-            pxlParticle->setUserRecord<bool>("isInEB-EE",(1.4442 < fabs(patObject.eta())) && (fabs(patObject.eta()) < 1.5660));
+            pxlParticle->setUserRecord("dB",patObject.dB());
+            pxlParticle->setUserRecord("mva",patObject.electronID("mvaTrigV0"));
+            pxlParticle->setUserRecord("ecalDrivenSeed",patObject.ecalDrivenSeed());
+            pxlParticle->setUserRecord("trackerDrivenSeed",patObject.trackerDrivenSeed());
+            pxlParticle->setUserRecord("isInEB-EE",(1.4442 < fabs(patObject.eta())) && (fabs(patObject.eta()) < 1.5660));
             
-            pxlParticle->setUserRecord<bool>("passConversionVeto",patObject.passConversionVeto());
-            pxlParticle->setUserRecord<int>("numberOfHits",patObject.gsfTrack()->trackerExpectedHitsInner().numberOfHits());
+            pxlParticle->setUserRecord("passConversionVeto",patObject.passConversionVeto());
+            //pxlParticle->setUserRecord("numberOfHits",patObject.gsfTrack()->trackerExpectedHitsInner().numberOfHits());
 
             if (primaryVertexProvider_->getPrimaryVertex())
             {
                 double dz =fabs(patObject.gsfTrack()->dz(primaryVertexProvider_->getPrimaryVertex()->position()));
                 double dxy =fabs(patObject.gsfTrack()->dxy(primaryVertexProvider_->getPrimaryVertex()->position()));
-                pxlParticle->setUserRecord<float>("dz",dz);
-                pxlParticle->setUserRecord<float>("dxy",dxy);
+                pxlParticle->setUserRecord("dz",dz);
+                pxlParticle->setUserRecord("dxy",dxy);
             }
 
-            pxlParticle->setUserRecord<float>("chargedHadronIso",patObject.chargedHadronIso());
-            pxlParticle->setUserRecord<float>("neutralHadronIso",patObject.neutralHadronIso());
-            pxlParticle->setUserRecord<float>("photonIso",patObject.photonIso());
-            pxlParticle->setUserRecord<float>("superClusterEta",patObject.superCluster()->eta());
+            pxlParticle->setUserRecord("chargedHadronIso",patObject.chargedHadronIso());
+            pxlParticle->setUserRecord("neutralHadronIso",patObject.neutralHadronIso());
+            pxlParticle->setUserRecord("photonIso",patObject.photonIso());
+            pxlParticle->setUserRecord("superClusterEta",patObject.superCluster()->eta());
             
-            pxlParticle->setUserRecord<float>("sigmaIetaIeta",patObject.sigmaIetaIeta());
-            pxlParticle->setUserRecord<float>("hadronicOverEm",patObject.hadronicOverEm());
-            pxlParticle->setUserRecord<float>("dr03TkSumPt",patObject.dr03TkSumPt());
-            pxlParticle->setUserRecord<float>("dr03EcalRecHitSumEt",patObject.dr03EcalRecHitSumEt());
-            pxlParticle->setUserRecord<float>("dr03HcalTowerSumEt",patObject.dr03HcalTowerSumEt());
-            pxlParticle->setUserRecord<float>("numberOfLostHits",patObject.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits());
+            pxlParticle->setUserRecord("sigmaIetaIeta",patObject.sigmaIetaIeta());
+            pxlParticle->setUserRecord("hadronicOverEm",patObject.hadronicOverEm());
+            pxlParticle->setUserRecord("dr03TkSumPt",patObject.dr03TkSumPt());
+            pxlParticle->setUserRecord("dr03EcalRecHitSumEt",patObject.dr03EcalRecHitSumEt());
+            pxlParticle->setUserRecord("dr03HcalTowerSumEt",patObject.dr03HcalTowerSumEt());
+            //pxlParticle->setUserRecord("numberOfLostHits",patObject.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits());
         
-            pxlParticle->setUserRecord<float>("patPt",patObject.pt());
-            pxlParticle->setUserRecord<float>("patPx",patObject.px());
-            pxlParticle->setUserRecord<float>("patPy",patObject.py());
-            pxlParticle->setUserRecord<float>("patPz",patObject.pz());
-            pxlParticle->setUserRecord<float>("patEta",patObject.eta());
-            pxlParticle->setUserRecord<float>("patE",patObject.energy());
-            pxlParticle->setUserRecord<float>("patEt",patObject.et());
+            pxlParticle->setUserRecord("patPt",patObject.pt());
+            pxlParticle->setUserRecord("patPx",patObject.px());
+            pxlParticle->setUserRecord("patPy",patObject.py());
+            pxlParticle->setUserRecord("patPz",patObject.pz());
+            pxlParticle->setUserRecord("patEta",patObject.eta());
+            pxlParticle->setUserRecord("patE",patObject.energy());
+            pxlParticle->setUserRecord("patEt",patObject.et());
         
         }
         
@@ -128,7 +129,7 @@ class PatElectron2Pxlio: public CollectionClass2Pxlio<pat::Electron>
                     if (effectiveAreaIsolationProvider_->getEARho()->contains(el.originalObjectRef().id()))
                     {
                         double ea03 = (*effectiveAreaIsolationProvider_->getEARho())[el.originalObjectRef()];
-                        pxlParticleList[iel]->setUserRecord<float>("ea03",ea03);
+                        pxlParticleList[iel]->setUserRecord("ea03",ea03);
                     }
 
                 }

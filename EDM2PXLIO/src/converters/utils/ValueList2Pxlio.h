@@ -25,7 +25,8 @@
 
 #include "PhysicsTools/PatUtils/interface/StringParserTools.h"
 
-#include "Pxl/Pxl/interface/Pxl.h"
+#include "Pxl/Pxl/interface/pxl/core.hh"
+#include "Pxl/Pxl/interface/pxl/hep.hh"
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
@@ -62,7 +63,7 @@ class ValueList2Pxlio: public Collection2Pxlio<std::vector<double>>
                     std::string s;
                     ss << ivalue;
                     s = ss.str();
-                    pxlEventView->setUserRecord<double>(name+"_"+s,(*valueList)[ivalue]);
+                    pxlEventView->setUserRecord(name+"_"+s,(*valueList)[ivalue]);
                 }
                 //pxlEventView->setUserRecord<pxl::BasicNVector>(name,vec);
             }

@@ -24,7 +24,8 @@
 
 #include "PhysicsTools/PatUtils/interface/StringParserTools.h"
 
-#include "Pxl/Pxl/interface/Pxl.h"
+#include "Pxl/Pxl/interface/pxl/core.hh"
+#include "Pxl/Pxl/interface/pxl/hep.hh"
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
@@ -57,21 +58,21 @@ class GenJet2Pxlio: public CollectionClass2Pxlio<reco::GenJet>
             CollectionClass2Pxlio<reco::GenJet>::convertObject(genJet, pxlParticle);
             pxlParticle->setP4(genJet.px(),genJet.py(),genJet.pz(),genJet.energy());
             
-            pxlParticle->setUserRecord<int>("charge",genJet.charge());
-            pxlParticle->setUserRecord<double>("vx",genJet.vx());
-            pxlParticle->setUserRecord<double>("vy",genJet.vy());
-            pxlParticle->setUserRecord<double>("vz",genJet.vz());
-            pxlParticle->setUserRecord<int>("numberOfDaughters",genJet.numberOfDaughters());
-            pxlParticle->setUserRecord<int>("nConstituents",genJet.nConstituents());
-            pxlParticle->setUserRecord<double>("maxDistance",genJet.maxDistance());
-            pxlParticle->setUserRecord<double>("emEnergy",genJet.emEnergy());
-            pxlParticle->setUserRecord<double>("hadEnergy",genJet.hadEnergy());
-            pxlParticle->setUserRecord<double>("constituentEtaPhiSpread",genJet.constituentEtaPhiSpread());
-            pxlParticle->setUserRecord<double>("constituentPtDistribution",genJet.constituentPtDistribution());
-            pxlParticle->setUserRecord<double>("etaetaMoment",genJet.etaetaMoment());
-            pxlParticle->setUserRecord<double>("etaphiMoment",genJet.etaphiMoment());
-            pxlParticle->setUserRecord<double>("phiphiMoment",genJet.phiphiMoment());
-            pxlParticle->setUserRecord<double>("jetArea",genJet.jetArea());
+            pxlParticle->setUserRecord("charge",genJet.charge());
+            pxlParticle->setUserRecord("vx",genJet.vx());
+            pxlParticle->setUserRecord("vy",genJet.vy());
+            pxlParticle->setUserRecord("vz",genJet.vz());
+            pxlParticle->setUserRecord("numberOfDaughters",genJet.numberOfDaughters());
+            pxlParticle->setUserRecord("nConstituents",genJet.nConstituents());
+            pxlParticle->setUserRecord("maxDistance",genJet.maxDistance());
+            pxlParticle->setUserRecord("emEnergy",genJet.emEnergy());
+            pxlParticle->setUserRecord("hadEnergy",genJet.hadEnergy());
+            pxlParticle->setUserRecord("constituentEtaPhiSpread",genJet.constituentEtaPhiSpread());
+            pxlParticle->setUserRecord("constituentPtDistribution",genJet.constituentPtDistribution());
+            pxlParticle->setUserRecord("etaetaMoment",genJet.etaetaMoment());
+            pxlParticle->setUserRecord("etaphiMoment",genJet.etaphiMoment());
+            pxlParticle->setUserRecord("phiphiMoment",genJet.phiphiMoment());
+            pxlParticle->setUserRecord("jetArea",genJet.jetArea());
             
             
             /* calculates variables sensitive to substructure

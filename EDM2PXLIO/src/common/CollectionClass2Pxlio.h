@@ -21,7 +21,8 @@
 
 #include "PhysicsTools/PatUtils/interface/StringParserTools.h"
 
-#include "Pxl/Pxl/interface/Pxl.h"
+#include "Pxl/Pxl/interface/pxl/core.hh"
+#include "Pxl/Pxl/interface/pxl/hep.hh"
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
@@ -61,7 +62,7 @@ class CollectionClass2Pxlio: public Collection2Pxlio<edm::View<Class>>
         {
             for (unsigned cnt=0; cnt<userRecordNames_.size();++cnt)
             {
-                pxlObject->setUserRecord<float>(userRecordNames_[cnt],(*userRecordsFunc_[cnt])(classObject));
+                pxlObject->setUserRecord(userRecordNames_[cnt],(*userRecordsFunc_[cnt])(classObject));
             }
 
         }

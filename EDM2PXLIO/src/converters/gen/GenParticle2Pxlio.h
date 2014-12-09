@@ -31,7 +31,8 @@
 
 #include "PhysicsTools/PatUtils/interface/StringParserTools.h"
 
-#include "Pxl/Pxl/interface/Pxl.h"
+#include "Pxl/Pxl/interface/pxl/core.hh"
+#include "Pxl/Pxl/interface/pxl/hep.hh"
 
 #include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
 
@@ -102,18 +103,18 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
                 {
                     edm::Handle<GenEventInfoProduct> genEventInfoProduct;
                     edmEvent->getByLabel(genEventInfoProductInputTag_,genEventInfoProduct);
-                    pxlEventView->setUserRecord<unsigned int>("signalProcessID",genEventInfoProduct->signalProcessID());
-                    pxlEventView->setUserRecord<float>("genweight",genEventInfoProduct->weight());
-                    pxlEventView->setUserRecord<float>("alphaQCD",genEventInfoProduct->alphaQCD());
-                    pxlEventView->setUserRecord<float>("alphaQED",genEventInfoProduct->alphaQED());
-                    pxlEventView->setUserRecord<float>("qscale",genEventInfoProduct->qScale());
+                    pxlEventView->setUserRecord("signalProcessID",genEventInfoProduct->signalProcessID());
+                    pxlEventView->setUserRecord("genweight",genEventInfoProduct->weight());
+                    pxlEventView->setUserRecord("alphaQCD",genEventInfoProduct->alphaQCD());
+                    pxlEventView->setUserRecord("alphaQED",genEventInfoProduct->alphaQED());
+                    pxlEventView->setUserRecord("qscale",genEventInfoProduct->qScale());
 
                     const GenEventInfoProduct::PDF* pdf = genEventInfoProduct->pdf();
-                    pxlEventView->setUserRecord<int>("id1",pdf->id.first);
-                    pxlEventView->setUserRecord<int>("id2",pdf->id.second);
-                    pxlEventView->setUserRecord<float>("x1",pdf->x.first);
-                    pxlEventView->setUserRecord<float>("x2",pdf->x.second);
-                    pxlEventView->setUserRecord<float>("scalePDF",pdf->scalePDF);
+                    pxlEventView->setUserRecord("id1",pdf->id.first);
+                    pxlEventView->setUserRecord("id2",pdf->id.second);
+                    pxlEventView->setUserRecord("x1",pdf->x.first);
+                    pxlEventView->setUserRecord("x2",pdf->x.second);
+                    pxlEventView->setUserRecord("scalePDF",pdf->scalePDF);
 
 
                 }
@@ -227,8 +228,8 @@ class GenParticle2Pxlio: public Collection2Pxlio<edm::View<reco::GenParticle>>
         virtual void convertObject(const reco::GenParticle& genObject, pxl::Particle* pxlParticle)
         {
             pxlParticle->setP4(genObject.px(),genObject.py(),genObject.pz(),genObject.energy());
-            pxlParticle->setParticleId(genObject.pdgId());
-            pxlParticle->setUserRecord<int>("status",genObject.status());
+            pxlParticle->setPdgNumber(genObject.pdgId());
+            pxlParticle->setUserRecord("status",genObject.status());
         }
         /*
         virtual int getHash(pxl::Particle* particle)
