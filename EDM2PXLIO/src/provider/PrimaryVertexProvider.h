@@ -38,9 +38,14 @@ class PrimaryVertexProvider: public Provider
     	edm::InputTag vertexInputTag_;
 	public:
 		PrimaryVertexProvider():
-			 primaryVertex_(0),
+			 primaryVertex_(nullptr),
 			 vertexInputTag_()
 		{
+		}
+		
+		virtual std::string typeName() const
+		{
+		    return "PrimaryVertexProvider";
 		}
 
 		virtual void parseParameter(const edm::ParameterSet& iConfig)
@@ -65,9 +70,12 @@ class PrimaryVertexProvider: public Provider
 			return primaryVertex_;
 		}
 
-		~PrimaryVertexProvider()
+		virtual ~PrimaryVertexProvider()
 		{
-			delete primaryVertex_;
+		    if (primaryVertex_!=nullptr)
+		    {
+			    delete primaryVertex_;
+		    }
 		}
 };
 

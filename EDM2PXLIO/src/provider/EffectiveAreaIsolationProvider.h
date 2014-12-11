@@ -41,9 +41,14 @@ class EffectiveAreaIsolationProvider: public Provider
         EffectiveAreaIsolationProvider():
             Provider(),
             earhoInputTag_(),
-            earho_(0)
+            earho_(nullptr)
         {
         }
+        
+        virtual std::string typeName() const
+		{
+		    return "EffectiveAreaIsolationProvider";
+		}
 
         virtual void parseParameter(const edm::ParameterSet& iConfig)
         {
@@ -69,9 +74,12 @@ class EffectiveAreaIsolationProvider: public Provider
             return earho_;
         }
 
-        ~EffectiveAreaIsolationProvider()
+        virtual ~EffectiveAreaIsolationProvider()
         {
-            delete earho_;
+            if (earho_!=nullptr)
+            {
+                delete earho_;
+            }
         }
 };
 

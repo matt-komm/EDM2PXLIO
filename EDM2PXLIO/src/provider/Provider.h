@@ -37,6 +37,8 @@ class Provider
 		{
 
 		}
+		
+		virtual std::string typeName() const = 0;
 
 		virtual void parseParameter(const edm::ParameterSet& iConfig)
 		{
@@ -46,7 +48,7 @@ class Provider
 		{
 		}
 
-		~Provider()
+		virtual ~Provider()
 		{
 
 		}

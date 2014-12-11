@@ -43,9 +43,14 @@ class PuJetIdProvider: public Provider
         PuJetIdProvider():
             Provider(),
             puJetInputTag_(),
-            jetIDs_(0)
+            jetIDs_(nullptr)
         {
         }
+        
+        virtual std::string typeName() const
+		{
+		    return "PuJetIdProvider";
+		}
 
         virtual void parseParameter(const edm::ParameterSet& iConfig)
         {
@@ -70,9 +75,12 @@ class PuJetIdProvider: public Provider
             return jetIDs_;
         }
 
-        ~PuJetIdProvider()
+        virtual ~PuJetIdProvider()
         {
-            delete jetIDs_;
+            if (jetIDs_!=nullptr)
+            {
+                delete jetIDs_;
+            }
         }
 };
 

@@ -40,9 +40,24 @@ class Converter
 		template<class ProviderClass>
 		ProviderClass* createProvider()
 		{
-			ProviderClass* provider = new ProviderClass();
-			providerList_.push_back(provider);
-			return provider;
+		    
+			ProviderClass* new_provider = new ProviderClass();
+			for (unsigned int i = 0; i < providerList_.size(); ++i)
+		    {
+		        if (new_provider->typeName()==providerList_[i]->typeName())
+		        {
+		            ProviderClass* old_provider = dynamic_cast<ProviderClass*>(providerList_[i]);
+		            if (old_provider)
+		            {
+		                delete new_provider;
+		                return old_provider;
+	                }
+		        }
+		        
+		    }
+			
+			providerList_.push_back(new_provider);
+			return new_provider;
 		}
 
 		virtual void parseParameter(const edm::ParameterSet& iConfig)
