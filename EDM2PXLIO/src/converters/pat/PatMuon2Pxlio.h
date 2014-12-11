@@ -59,36 +59,46 @@ class PatMuon2Pxlio: public CollectionClass2Pxlio<pat::Muon>
             pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
             pxlParticle->setCharge(patObject.charge());
             
-            pxlParticle->setUserRecord("chargedHadronIso",patObject.chargedHadronIso());
-            pxlParticle->setUserRecord("neutralHadronIso",patObject.neutralHadronIso());
-            pxlParticle->setUserRecord("photonIso",patObject.photonIso());
-            pxlParticle->setUserRecord("puChargedHadronIso",patObject.puChargedHadronIso());
             
-            float relIso = (patObject.chargedHadronIso() + std::max(0., patObject.neutralHadronIso() +patObject.photonIso() - 0.5*patObject.puChargedHadronIso()))/patObject.pt();
-            pxlParticle->setUserRecord("relIso",relIso);
-
+            pxlParticle->setUserRecord("R04sumChargedHadronPt",patObject.pfIsolationR04().sumChargedHadronPt);
+            pxlParticle->setUserRecord("R04sumNeutralHadronPt",patObject.pfIsolationR04().sumNeutralHadronEt);
+            pxlParticle->setUserRecord("R04sumPhotonIso",patObject.pfIsolationR04().sumPhotonEt);
+            pxlParticle->setUserRecord("R04sumPUPt",patObject.pfIsolationR04().sumPUPt);
+            
             pxlParticle->setUserRecord("isGlobalMuon",patObject.isGlobalMuon());
             pxlParticle->setUserRecord("isTrackerMuon",patObject.isTrackerMuon());
             pxlParticle->setUserRecord("isPFMuon",patObject.isPFMuon());
             
-            //pxlParticle->setUserRecord("numberOfValidMuonHits",patObject.globalTrack()->hitPattern().numberOfValidMuonHits());
-            //pxlParticle->setUserRecord("numberOfMatchedStations",patObject.numberOfMatchedStations());
-            //pxlParticle->setUserRecord("numberOfValidPixelHits",patObject.innerTrack()->hitPattern().numberOfValidPixelHits());
-            //pxlParticle->setUserRecord("trackerLayersWithMeasurement",patObject.track()->hitPattern().trackerLayersWithMeasurement());
-
-            /*
-            if (primaryVertexProvider_->getPrimaryVertex())
-            {
-                double dz = patObject.innerTrack()->dz(primaryVertexProvider_->getPrimaryVertex()->position());
-                double dxy = patObject.innerTrack()->dxy(primaryVertexProvider_->getPrimaryVertex()->position());
-                pxlParticle->setUserRecord("dz",dz);
-                pxlParticle->setUserRecord("dxy",dxy);
-                pxlParticle->setUserRecord("isTightMuon",patObject.isTightMuon(*primaryVertexProvider_->getPrimaryVertex()));
-            }
-            */
-            //pxlParticle->setUserRecord("chi2",patObject.globalTrack()->normalizedChi2());
-
+            pxlParticle->setUserRecord("numberOfMatchedStations",patObject.numberOfMatchedStations());
             
+            //ref to embedded Track (tracker+muon chambers)
+            if (patObject.combinedMuon().get()!=nullptr)
+            {
+                const reco::Track* combinedTrack = patObject.combinedMuon().get();
+                
+                pxlParticle->setUserRecord("numberOfValidMuonHits",combinedTrack->hitPattern().numberOfValidMuonHits());
+                pxlParticle->setUserRecord("numberOfLostMuonHits",combinedTrack->hitPattern().numberOfLostMuonHits());
+                pxlParticle->setUserRecord("chi2",combinedTrack->normalizedChi2());
+                pxlParticle->setUserRecord("ndof",combinedTrack->ndof());
+            }
+            
+            //ref to embedded Track (tracker only)
+            if (patObject.track().get()!=nullptr)
+            {
+                const reco::Track* trackerTrack = patObject.track().get();
+                pxlParticle->setUserRecord("trackerLayersWithMeasurement",trackerTrack->hitPattern().trackerLayersWithMeasurement());
+                pxlParticle->setUserRecord("numberOfValidPixelHits",trackerTrack->hitPattern().numberOfValidPixelHits());
+                
+                if (primaryVertexProvider_->getPrimaryVertex()!=nullptr)
+                {
+                    double dz = trackerTrack->dz(primaryVertexProvider_->getPrimaryVertex()->position());
+                    double dxy = trackerTrack->dxy(primaryVertexProvider_->getPrimaryVertex()->position());
+                    pxlParticle->setUserRecord("dz",dz);
+                    pxlParticle->setUserRecord("dxy",dxy);
+                    pxlParticle->setUserRecord("isTightMuon",patObject.isTightMuon(*primaryVertexProvider_->getPrimaryVertex()));
+                }     
+            }
+                       
         }
         
         virtual void convertCollection(const edm::Handle<edm::View<pat::Muon>> patObjectList, std::vector<pxl::Particle*>& pxlParticleList)
