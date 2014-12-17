@@ -121,14 +121,14 @@ class EDM2PXLIO : public edm::EDAnalyzer {
 EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
     _pxlFile(0)
 {
-    if (iConfig.exists("SelectEvents"))
+    if (iConfig.exists("selectEvents"))
     {
-        const std::vector<edm::ParameterSet>& selectEventPSets = iConfig.getUntrackedParameter<std::vector<edm::ParameterSet>>("SelectEvents");
+        const std::vector<edm::ParameterSet>& selectEventPSets = iConfig.getParameter<std::vector<edm::ParameterSet>>("selectEvents");
         for (unsigned int iset=0; iset<selectEventPSets.size(); ++iset)
         {
             SelectedProcessPaths selectedProcessPath;
-            selectedProcessPath.processName=selectEventPSets[iset].getUntrackedParameter<std::string>("process"); 
-            selectedProcessPath.paths=selectEventPSets[iset].getUntrackedParameter<std::vector<std::string>>("paths");
+            selectedProcessPath.processName=selectEventPSets[iset].getParameter<std::string>("process"); 
+            selectedProcessPath.paths=selectEventPSets[iset].getParameter<std::vector<std::string>>("paths");
             _selectedProcessPaths.push_back(selectedProcessPath);
         }
     }
@@ -138,17 +138,17 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& iConfig):
         selectedProcessPath.processName="PAT";
         selectedProcessPath.paths.push_back("p0");
         _selectedProcessPaths.push_back(selectedProcessPath);
-        edm::LogWarning("no SelectEvents configured") << "default process 'PAT' with path 'p0' will be used";
+        edm::LogWarning("no selectEvents configured") << "default process 'PAT' with path 'p0' will be used";
     }
-    if (iConfig.exists("OutFileName")) {
-        _pxlFile = new pxl::OutputFile(iConfig.getUntrackedParameter<std::string>("OutFileName"));
+    if (iConfig.exists("outFileName")) {
+        _pxlFile = new pxl::OutputFile(iConfig.getParameter<std::string>("outFileName"));
     } else {
         edm::LogWarning("no output file name configured") << "default name 'data.pxlio' will be used";
         _pxlFile = new pxl::OutputFile("data.pxlio");
     }
     
     if (iConfig.exists("process")) {
-        _process = iConfig.getUntrackedParameter<std::string>("process");
+        _process = iConfig.getParameter<std::string>("process");
     } else {
         _process = "";
     }

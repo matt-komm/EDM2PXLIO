@@ -81,6 +81,14 @@ class PatJet2Pxlio: public CollectionClass2Pxlio<pat::Jet>
             float nhf =  ( patObject.neutralHadronEnergy() + patObject.HFHadronEnergy() ) /patObject.energy();
             pxlParticle->setUserRecord("neutralHadronEnergyFraction",nhf);
             
+            const reco::JetFlavourInfo& flavorInfo = patObject.jetFlavourInfo();
+            pxlParticle->setUserRecord("partonFlavour",flavorInfo.getPartonFlavour());
+            
+            for (unsigned int iname = 0; iname < patObject.userFloatNames ().size(); ++ iname)
+            {
+                pxlParticle->setUserRecord("user_"+patObject.userFloatNames()[iname],patObject.userFloat(patObject.userFloatNames()[iname]));
+            }
+            /*
             const reco::SecondaryVertexTagInfo *svTagInfo = patObject.tagInfoSecondaryVertex();
             if (svTagInfo  &&  svTagInfo->nVertices() > 0)
             {
@@ -90,6 +98,7 @@ class PatJet2Pxlio: public CollectionClass2Pxlio<pat::Jet>
             {
                 pxlParticle->setUserRecord("partonFlavour",patObject.partonFlavour());
             }
+            */
 
         }
         

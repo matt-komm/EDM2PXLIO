@@ -174,12 +174,12 @@ process.OUT = cms.OutputModule("PoolOutputModule",
 
 
 process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
-    OutFileName=cms.untracked.string("projected.pxlio"),
-    process=cms.untracked.string("tChannel"),
-    SelectEvents=cms.untracked.VPSet(
-        cms.untracked.PSet(
-            process=cms.untracked.string("S2"),
-            paths=cms.untracked.vstring("p0"),
+    outFileName=cms.string("projected.pxlio"),
+    process=cms.string("tChannel"),
+    selectEvents=cms.VPSet(
+        cms.PSet(
+            process=cms.string("S2"),
+            paths=cms.vstring("p0"),
         )
     ),
     
@@ -195,7 +195,12 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     jets = cms.PSet(
         type=cms.string("PatJet2Pxlio"),
         srcs=cms.VInputTag(cms.InputTag("slimmedJets"),cms.InputTag("patJets")),
-        names=cms.vstring("Jet","ReclusteredJet")
+        names=cms.vstring("Jet","ReclusteredJet"),
+        select=cms.string("pt>10"),
+        
+        #userRecords=cms.PSet(
+        #    abseta=cms.string("abs(eta)")
+        #)
     ),
 
     
@@ -204,7 +209,6 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         srcs=cms.VInputTag(cms.InputTag("slimmedMuons")),
         names=cms.vstring("Muon")
     ),
-    #TODO: add dxy, dz, chi2
     
     electrons = cms.PSet(
         type=cms.string("PatElectron2Pxlio"),
