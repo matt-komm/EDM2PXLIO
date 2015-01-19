@@ -1,60 +1,55 @@
-#ifndef _COLLECTIONCLASS2PXLIO_H_
-#define _COLLECTIONCLASS2PXLIO_H_
+#ifndef __EDM2PXLIO_CORE_COLLECTIONCLASSCONVERTER_H__
+#define __EDM2PXLIO_CORE_COLLECTIONCLASSCONVERTER_H__
 
 // system include files
-#include <memory>
 #include <unordered_map>
 #include <utility>
 
 // user include files
-#include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "FWCore/Utilities/interface/InputTag.h"
 
 #include "DataFormats/Common/interface/Handle.h"
+#include "DataFormats/Common/interface/View.h"
 
 #include "PhysicsTools/PatUtils/interface/StringParserTools.h"
 
 #include "Pxl/Pxl/interface/pxl/core.hh"
 #include "Pxl/Pxl/interface/pxl/hep.hh"
 
-#include "EDM2PXLIO/EDM2PXLIO/src/common/Collection2Pxlio.h"
+#include "EDM2PXLIO/Core/interface/CollectionConverter.h"
+
+namespace edm2pxlio
+{
 
 template<class Class>
-class CollectionClass2Pxlio: public Collection2Pxlio<edm::View<Class>>
+class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
 {
+    private:
+        typedef CollectionConverter<edm::View<Class>> Base;
     protected:
-        std::vector<pxl::Particle*> pxlCollection;
         std::vector<std::pair<std::string,StringObjectFunction<Class>*>> _userRecordsFcts;
         StringCutObjectSelector<Class>* _cutFct;
 
     public:
-        CollectionClass2Pxlio(std::string name):
-            Collection2Pxlio<edm::View<Class>>(name),
+        CollectionClassConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector):
+            Base(name, globalConfig, consumesCollector),
             _cutFct(nullptr)
         {
-        }
-
-        virtual void parseParameter(const edm::ParameterSet& globalConfig)
-        {
-            Collection2Pxlio<edm::View<Class>>::parseParameter(globalConfig);
-            if (globalConfig.exists(Collection2Pxlio<edm::View<Class>>::name_))
+            if (globalConfig.exists(Base::getName()))
             {
-                const edm::ParameterSet& iConfig = globalConfig.getParameter<edm::ParameterSet>(Collection2Pxlio<edm::View<Class>>::name_);
+                const edm::ParameterSet& iConfig = globalConfig.getParameter<edm::ParameterSet>(Base::getName());
                 if (iConfig.exists("userRecords"))
                 {
                     const edm::ParameterSet& urConfig = iConfig.getParameter<edm::ParameterSet>("userRecords");
                     const std::vector<std::string> userRecordNames = urConfig.getParameterNamesForType<std::string>();
                     for (unsigned int iur=0; iur< userRecordNames.size(); ++iur)
                     {
-
                         StringObjectFunction<Class>* fct = new StringObjectFunction<Class>(urConfig.getParameter<std::string>(userRecordNames[iur]),true);
                         _userRecordsFcts.push_back(std::make_pair(userRecordNames[iur],fct));
                     }
@@ -65,7 +60,8 @@ class CollectionClass2Pxlio: public Collection2Pxlio<edm::View<Class>>
                 }
             }
         }
-        void fillUserRecords(const Class& classObject,pxl::Object* pxlObject)
+        
+        void fillUserRecords(const Class& classObject, pxl::Object* pxlObject) const
         {
             for (unsigned iur=0; iur<_userRecordsFcts.size();++iur)
             {
@@ -73,19 +69,20 @@ class CollectionClass2Pxlio: public Collection2Pxlio<edm::View<Class>>
             }
         }
 
-        virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent)
+        virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent) const
         {
-            Collection2Pxlio<edm::View<Class>>::convert(edmEvent, iSetup, pxlEvent);
-            for (unsigned index=0; index<Collection2Pxlio<edm::View<Class>>::size(); ++index)
+            Base::convert(edmEvent, iSetup, pxlEvent);
+            std::vector<pxl::Particle*> pxlParticles;
+            
+            for (unsigned index=0; index<CollectionConverter<edm::View<Class>>::size(); ++index)
             {
-                const edm::Handle<edm::View<Class>> collection = Collection2Pxlio<edm::View<Class>>::getCollection(edmEvent,index);
-                pxl::EventView* pxlEventView = Collection2Pxlio<edm::View<Class>>::findEventView(pxlEvent,Collection2Pxlio<edm::View<Class>>::getEventViewName(index));
-                pxlCollection.clear();
+                const edm::Handle<edm::View<Class>> collection = Base::getCollection(edmEvent,index);
+                pxl::EventView* pxlEventView = Base::findEventView(pxlEvent,Base::getEventViewName(index));
                 unsigned int nSkipped=0;
                 if (collection.product()) {
                     for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) 
                     {
-                        const Class classObject = (*collection)[iparticle];
+                        const Class& classObject = (*collection)[iparticle];
                         if (_cutFct)
                         {
                             if (!((*_cutFct)(classObject)))
@@ -95,33 +92,35 @@ class CollectionClass2Pxlio: public Collection2Pxlio<edm::View<Class>>
                             }
                         }
                         pxl::Particle* pxlParticle = pxlEventView->create<pxl::Particle>();
-                        pxlCollection.push_back(pxlParticle);
-                        pxlParticle->setName(Collection2Pxlio<edm::View<Class>>::getCollectionName(index));
+                        pxlParticles.push_back(pxlParticle);
+                        pxlParticle->setName(Base::getCollectionName(index));
                         
                         convertObject(classObject,pxlParticle);
                         fillUserRecords(classObject,pxlParticle);
                     }
-                    if (collection->size()!=(pxlCollection.size()+nSkipped))
+                    if (collection->size()!=(pxlParticles.size()+nSkipped))
                     {
-                        throw cms::Exception("Pat2Pxlio::convert") << "converted pxl particles differ in size compared to input collection";
+                        throw cms::Exception(Base::getName()+"::convert") << "converted pxl particles differ in size compared to input collection";
                     }
-                    convertCollection(collection,pxlCollection);
+                    convertCollection(collection,pxlParticles);
                 }
             }
         }
 
-        virtual void convertObject(const Class& classObject, pxl::Particle* pxlParticle)
+        virtual void convertObject(const Class& classObject, pxl::Particle* pxlParticle) const
         {
         }
 
-        virtual void convertCollection(const edm::Handle<edm::View<Class>> classObjectList, std::vector<pxl::Particle*>& pxlParticleList)
+        virtual void convertCollection(const edm::Handle<edm::View<Class>> classCollection, std::vector<pxl::Particle*>& pxlParticles) const
         {
         }
 
-        ~CollectionClass2Pxlio()
+        virtual ~CollectionClassConverter()
         {
         }
 };
+
+}
 
 #endif
 
