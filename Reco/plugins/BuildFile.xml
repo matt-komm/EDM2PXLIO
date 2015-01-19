@@ -2,8 +2,6 @@
 <use name="DataFormats/Common"/>
 <use name="DataFormats/Candidate"/>
 <use name="DataFormats/TrackReco"/>
-
-
 <library   file="CandidateConverter.cc" name="CandidateConverterPlugin">
     <flags   EDM_PLUGIN="1"/>
 </library>

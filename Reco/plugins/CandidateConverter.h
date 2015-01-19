@@ -31,7 +31,7 @@ class CandidateConverter: public CollectionClassConverter<reco::Candidate>
 
     public:
         CandidateConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);    
-        virtual void convertObject(const reco::Candidate& candidate, pxl::Particle* pxlParticle);
+        virtual void convertObject(const reco::Candidate& candidate, pxl::Particle* pxlParticle) const;
         virtual ~CandidateConverter();
 };
 

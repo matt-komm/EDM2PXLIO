@@ -9,7 +9,7 @@ CandidateConverter::CandidateConverter(const std::string& name, const edm::Param
 {
 }
                 
-void CandidateConverter::convertObject(const reco::Candidate& candidate, pxl::Particle* pxlParticle)
+void CandidateConverter::convertObject(const reco::Candidate& candidate, pxl::Particle* pxlParticle) const
 {
     Base::convertObject(candidate, pxlParticle);
     pxlParticle->setP4(candidate.px(),candidate.py(),candidate.pz(),candidate.energy());
@@ -23,7 +23,7 @@ CandidateConverter::~CandidateConverter()
 
 }
 
-DEFINE_EDM_PLUGIN(edm2pxlio::ConverterFactory, edm2pxlio::CandidateConverter, "edm2pxlio::CandidateConverter");
+DEFINE_EDM_PLUGIN(edm2pxlio::ConverterFactory, edm2pxlio::CandidateConverter, "CandidateConverter");
 
 
 

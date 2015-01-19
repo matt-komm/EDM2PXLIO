@@ -95,14 +95,14 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
                         pxlParticles.push_back(pxlParticle);
                         pxlParticle->setName(Base::getCollectionName(index));
                         
-                        convertObject(classObject,pxlParticle);
+                        this->convertObject(classObject,pxlParticle);
                         fillUserRecords(classObject,pxlParticle);
                     }
                     if (collection->size()!=(pxlParticles.size()+nSkipped))
                     {
                         throw cms::Exception(Base::getName()+"::convert") << "converted pxl particles differ in size compared to input collection";
                     }
-                    convertCollection(collection,pxlParticles);
+                    this->convertCollection(collection,pxlParticles);
                 }
             }
         }
