@@ -1,0 +1,9 @@
+<use name="FWCore/Framework"/>
+<use name="FWCore/PluginManager"/>
+<use name="FWCore/ParameterSet"/>
+<use name="CommonTools/Utils"/>
+<use name="Pxl/Pxl"/>
+<use name="EDM2PXLIO/Core"/>
+<library file="EDM2PXLIO.cc" name="EDM2PXLIOPlugin">
+    <flags EDM_PLUGIN="1"/>
+</library>
