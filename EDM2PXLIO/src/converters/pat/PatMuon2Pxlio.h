@@ -60,10 +60,14 @@ class PatMuon2Pxlio: public CollectionClass2Pxlio<pat::Muon>
             pxlParticle->setCharge(patObject.charge());
             
             
-            pxlParticle->setUserRecord("R04sumChargedHadronPt",patObject.pfIsolationR04().sumChargedHadronPt);
-            pxlParticle->setUserRecord("R04sumNeutralHadronPt",patObject.pfIsolationR04().sumNeutralHadronEt);
-            pxlParticle->setUserRecord("R04sumPhotonIso",patObject.pfIsolationR04().sumPhotonEt);
-            pxlParticle->setUserRecord("R04sumPUPt",patObject.pfIsolationR04().sumPUPt);
+            pxlParticle->setUserRecord("R04PFsumChargedHadronPt",patObject.pfIsolationR04().sumChargedHadronPt);
+            pxlParticle->setUserRecord("R04PFsumNeutralHadronPt",patObject.pfIsolationR04().sumNeutralHadronEt);
+            pxlParticle->setUserRecord("R04PFsumPhotonIso",patObject.pfIsolationR04().sumPhotonEt);
+            pxlParticle->setUserRecord("R04PFsumPUPt",patObject.pfIsolationR04().sumPUPt);
+            
+            pxlParticle->setUserRecord("PATchargedHadronIso",patObject.chargedHadronIso);
+            pxlParticle->setUserRecord("PATneutralHadronIso",patObject.neutralHadronIso);
+            pxlParticle->setUserRecord("PATpuChargedHadronIso",patObject.puChargedHadronIso);
             
             pxlParticle->setUserRecord("isGlobalMuon",patObject.isGlobalMuon());
             pxlParticle->setUserRecord("isTrackerMuon",patObject.isTrackerMuon());
