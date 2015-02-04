@@ -22,11 +22,9 @@ namespace edm2pxlio
 class Provider
 {
 	protected:
-		const std::string _name;
 
 	public:
-		Provider(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector):
-		    _name(name)
+		Provider(const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector)
 		{
 		}
 		

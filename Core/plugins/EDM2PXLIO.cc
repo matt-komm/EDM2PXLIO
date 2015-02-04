@@ -24,9 +24,12 @@
 
 #include <string>
 #include <vector>
+#include <thread>
+#include <mutex>
 
 class EDM2PXLIO: 
-    public edm::EDAnalyzer 
+    //public edm::stream::EDAnalyzer<> 
+    public edm::EDAnalyzer
 {
     private: 
         struct SelectedProcessPaths
@@ -34,7 +37,7 @@ class EDM2PXLIO:
             std::string processName;
             std::vector<std::string> paths;
         };
-        
+        std::mutex mutex;
     public:
         explicit EDM2PXLIO(const edm::ParameterSet&);
         ~EDM2PXLIO();
@@ -68,6 +71,9 @@ class EDM2PXLIO:
 EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& globalConfig):
     _pxlFile(nullptr)
 {
+    mutex.lock();
+    std::cout<<"created in thread: "<< std::this_thread::get_id()<<std::endl;
+    mutex.unlock();
     if (globalConfig.exists("selectEvents"))
     {
         const std::vector<edm::ParameterSet>& selectEventPSets = globalConfig.getParameter<std::vector<edm::ParameterSet>>("selectEvents");
@@ -127,7 +133,6 @@ EDM2PXLIO::~EDM2PXLIO()
 void
 EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-    
     pxl::Event pxlEvent;
     if (!checkPath(iEvent,pxlEvent))
     {

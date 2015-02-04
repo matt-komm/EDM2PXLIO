@@ -28,7 +28,7 @@ class PrimaryVertexProvider:
     	const reco::Vertex* _primaryVertex;
     	edm::EDGetTokenT<edm::View<reco::Vertex>> _token;
 	public:
-		PrimaryVertexProvider(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);
+		PrimaryVertexProvider(const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);
 
 		virtual void process(const edm::Event* edmEvent, const edm::EventSetup* iSetup);
 

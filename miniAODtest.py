@@ -142,25 +142,7 @@ process.softPFElectronsTagInfos.jets=cms.InputTag("ak4PFJetsCHS")
 process.softPFElectronsTagInfos.leptons=cms.InputTag("slimmedElectrons")
 
     
-process.p0=cms.Path(
-    process.lessGenParticles*
-    process.pfCHS*
-    process.selectedMuons*process.pfNoMuonCHS*
-    process.selectedElectrons*process.pfNoElectronsCHS*
-    process.ak4PFJetsCHS*process.unpackedTracksAndVertices*
-    
-    #process.recoJetAssociations*
-    #only need this product
-    process.ak4JetTracksAssociatorAtVertexPF* 
-    
-    
-    
-    process.btagging* 
-    
-    
-    
-    process.makePatJets
-)
+
 
 
 process.OUT = cms.OutputModule("PoolOutputModule",
@@ -192,6 +174,12 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         type=cms.string("ElectronConverter"),
         srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
         names=cms.vstring("Electron")
+    ),
+    
+    genParticles= cms.PSet(
+        type=cms.string("GenParticleConverter"),
+        srcs=cms.VInputTag(cms.InputTag("lessGenParticles")),
+        targetEventViews=cms.vstring("Generated")
     )
     
 )
@@ -243,6 +231,28 @@ triggers = cms.PSet(
 #TODO: add prescale info from: pat::PackedTriggerPrescales "patTrigger" 
 '''
 
+
+process.p0=cms.Path(
+    process.lessGenParticles*
+    process.pfCHS*
+    process.selectedMuons*process.pfNoMuonCHS*
+    process.selectedElectrons*process.pfNoElectronsCHS*
+    process.ak4PFJetsCHS*process.unpackedTracksAndVertices*
+    
+    #process.recoJetAssociations*
+    #only need this product
+    process.ak4JetTracksAssociatorAtVertexPF* 
+    
+    
+    
+    process.btagging* 
+    
+    
+    
+    process.makePatJets
+    
+    
+)
 
 process.endpath= cms.EndPath(process.OUT*process.pat2pxlio)
 

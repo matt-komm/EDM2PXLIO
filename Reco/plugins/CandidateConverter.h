@@ -23,7 +23,8 @@
 namespace edm2pxlio
 {
 
-class CandidateConverter: public CollectionClassConverter<reco::Candidate>
+class CandidateConverter: 
+    public CollectionClassConverter<reco::Candidate>
 {
     private:
         typedef CollectionClassConverter<reco::Candidate> Base;

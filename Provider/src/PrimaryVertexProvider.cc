@@ -3,8 +3,8 @@
 namespace edm2pxlio
 {
 
-PrimaryVertexProvider::PrimaryVertexProvider(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector):
-	 Provider(name, globalConfig, consumesCollector),
+PrimaryVertexProvider::PrimaryVertexProvider(const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector):
+	 Provider(globalConfig, consumesCollector),
 	 _vertexInputTag(),
 	 _primaryVertex(nullptr)
 {

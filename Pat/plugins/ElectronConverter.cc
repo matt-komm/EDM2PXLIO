@@ -1,5 +1,6 @@
 #include "EDM2PXLIO/Pat/plugins/ElectronConverter.h"
 #include "EDM2PXLIO/Core/interface/ConverterFactory.h"
+#include "EDM2PXLIO/Core/interface/ProviderFactory.h"
 
 namespace edm2pxlio
 {
@@ -7,6 +8,7 @@ namespace edm2pxlio
 ElectronConverter::ElectronConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector):
     Base(name, globalConfig, consumesCollector)
 {
+    //_primaryVertexProvider=ProviderFactory::get<PrimaryVertexProvider>(globalConfig,consumesCollector);
 }
 
 
@@ -36,6 +38,9 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
         pxlParticle->setUserRecord("chi2",gsfTrack->chi2());
         pxlParticle->setUserRecord("ndof",gsfTrack->ndof());
         pxlParticle->setUserRecord("lostHits",gsfTrack->lost());
+        
+        
+        
         /*
         if (primaryVertexProvider_->getPrimaryVertex())
         {

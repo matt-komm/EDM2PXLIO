@@ -19,6 +19,8 @@
 
 #include "EDM2PXLIO/Core/interface/CollectionClassConverter.h"
 
+#include "EDM2PXLIO/Provider/interface/PrimaryVertexProvider.h"
+
 
 
 
@@ -40,6 +42,7 @@ class ElectronConverter: public CollectionClassConverter<pat::Electron>
     protected:
         //PrimaryVertexProvider* primaryVertexProvider_;
         //EffectiveAreaIsolationProvider* effectiveAreaIsolationProvider_;
+        PrimaryVertexProvider* _primaryVertexProvider;
 
     public:
         ElectronConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);
