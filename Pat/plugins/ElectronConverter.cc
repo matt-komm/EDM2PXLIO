@@ -66,10 +66,8 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     pxlParticle->setUserRecord("sigmaIetaIeta",patObject.sigmaIetaIeta());
     pxlParticle->setUserRecord("hadronicOverEm",patObject.hadronicOverEm());
     pxlParticle->setUserRecord("fbrem",patObject.fbrem());
-    
-    
 
-
+    /*
     pxlParticle->setUserRecord("patPt",patObject.pt());
     pxlParticle->setUserRecord("patPx",patObject.px());
     pxlParticle->setUserRecord("patPy",patObject.py());
@@ -77,6 +75,7 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     pxlParticle->setUserRecord("patEta",patObject.eta());
     pxlParticle->setUserRecord("patE",patObject.energy());
     pxlParticle->setUserRecord("patEt",patObject.et());
+    */
 }
 
 void ElectronConverter::convertP4(const pat::Electron& patObject, pxl::Particle* pxlParticle) const

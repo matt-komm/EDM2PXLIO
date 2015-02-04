@@ -19,12 +19,14 @@
 #include "Pxl/Pxl/interface/pxl/core.hh"
 #include "Pxl/Pxl/interface/pxl/hep.hh"
 
+#include "EDM2PXLIO/Core/interface/Converter.h"
 #include "EDM2PXLIO/Core/interface/ConverterFactory.h"
 
 #include <string>
 #include <vector>
 
-class EDM2PXLIO : public edm::EDAnalyzer 
+class EDM2PXLIO: 
+    public edm::EDAnalyzer 
 {
     private: 
         struct SelectedProcessPaths
@@ -46,7 +48,7 @@ class EDM2PXLIO : public edm::EDAnalyzer
         
         pxl::OutputFile* _pxlFile;
         std::string _processName;
-
+        
         std::vector<edm2pxlio::Converter*> _converters; 
         
         
@@ -59,8 +61,6 @@ class EDM2PXLIO : public edm::EDAnalyzer
         virtual void endRun(edm::Run const&, edm::EventSetup const&);
         virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
         virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
-
-
 
 };
 

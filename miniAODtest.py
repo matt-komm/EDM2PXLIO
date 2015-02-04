@@ -186,6 +186,12 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         type=cms.string("CandidateConverter"),
         srcs=cms.VInputTag(cms.InputTag("slimmedMuons")),
         names=cms.vstring("Muon")
+    ),
+    
+    electrons = cms.PSet(
+        type=cms.string("ElectronConverter"),
+        srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
+        names=cms.vstring("Electron")
     )
     
 )

@@ -26,7 +26,8 @@ namespace edm2pxlio
 {
 
 template<class CollectionClass>
-class CollectionConverter: public edm2pxlio::Converter
+class CollectionConverter: 
+    public edm2pxlio::Converter
 {
     protected:
         std::vector<edm::EDGetTokenT<CollectionClass> > _tokens;
