@@ -160,10 +160,15 @@ class GenParticleConverter:
                         for (unsigned idaughter=0; idaughter<genObject.numberOfDaughters(); ++idaughter)
                         {
                             const reco::Candidate* daughterObject = genObject.daughter(idaughter);
-                            pxl::Particle* daughter = addMap[(size_t)daughterObject].second;
+                            auto daughterIt = addMap.find((size_t)daughterObject);
+                            if (daughterIt==addMap.end())
+                            {
+                                //daughter was not in collection
+                                continue;
+                            }
+                            pxl::Particle* daughter = daughterIt->second.second;
                             mother->linkDaughter(daughter);
                         }
-                        
                     }
                 }
             }
