@@ -6,9 +6,10 @@ namespace edm2pxlio
 {
 
 ElectronConverter::ElectronConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector):
-    Base(name, globalConfig, consumesCollector)
+    Base(name, globalConfig, consumesCollector),
+    _primaryVertexProvider(nullptr)
 {
-    //_primaryVertexProvider=ProviderFactory::get<PrimaryVertexProvider>(globalConfig,consumesCollector);
+    _primaryVertexProvider=ProviderFactory::get<PrimaryVertexProvider>(globalConfig,consumesCollector);
 }
 
 
@@ -41,15 +42,13 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
         
         
         
-        /*
-        if (primaryVertexProvider_->getPrimaryVertex())
+        if (_primaryVertexProvider->getPrimaryVertex())
         {
-            double dz =fabs(patObject.gsfTrack()->dz(primaryVertexProvider_->getPrimaryVertex()->position()));
-            double dxy =fabs(patObject.gsfTrack()->dxy(primaryVertexProvider_->getPrimaryVertex()->position()));
+            double dz =fabs(patObject.gsfTrack()->dz(_primaryVertexProvider->getPrimaryVertex()->position()));
+            double dxy =fabs(patObject.gsfTrack()->dxy(_primaryVertexProvider->getPrimaryVertex()->position()));
             pxlParticle->setUserRecord("dz",dz);
             pxlParticle->setUserRecord("dxy",dxy);
         }
-        */
     }
     
     pxlParticle->setUserRecord("caloIso",patObject.caloIso());

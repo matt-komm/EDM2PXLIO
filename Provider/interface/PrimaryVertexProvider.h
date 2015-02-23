@@ -23,21 +23,21 @@ namespace edm2pxlio
 class PrimaryVertexProvider: 
     public Provider
 {
-	protected:
-	    edm::InputTag _vertexInputTag;
-    	const reco::Vertex* _primaryVertex;
-    	edm::EDGetTokenT<edm::View<reco::Vertex>> _token;
-	public:
-		PrimaryVertexProvider(const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);
+    protected:
+        edm::InputTag _vertexInputTag;
+        const reco::Vertex* _primaryVertex;
+        edm::EDGetTokenT<edm::View<reco::Vertex>> _token;
+    public:
+        PrimaryVertexProvider(const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);
 
-		virtual void process(const edm::Event* edmEvent, const edm::EventSetup* iSetup);
+        virtual void process(const edm::Event* edmEvent, const edm::EventSetup* iSetup);
 
-		inline const reco::Vertex* getPrimaryVertex() const
-		{
-			return _primaryVertex;
-		}
+        inline const reco::Vertex* getPrimaryVertex() const
+        {
+            return _primaryVertex;
+        }
 
-		virtual ~PrimaryVertexProvider();
+        virtual ~PrimaryVertexProvider();
 };
 
 }

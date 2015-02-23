@@ -35,13 +35,12 @@
 namespace edm2pxlio
 {
 
-class ElectronConverter: public CollectionClassConverter<pat::Electron>
+class ElectronConverter:
+    public CollectionClassConverter<pat::Electron>
 {
     private:
         typedef CollectionClassConverter<pat::Electron> Base;
     protected:
-        //PrimaryVertexProvider* primaryVertexProvider_;
-        //EffectiveAreaIsolationProvider* effectiveAreaIsolationProvider_;
         PrimaryVertexProvider* _primaryVertexProvider;
 
     public:

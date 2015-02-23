@@ -21,21 +21,21 @@ namespace edm2pxlio
 
 class Provider
 {
-	protected:
+    protected:
 
-	public:
-		Provider(const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector)
-		{
-		}
-		
-		virtual void process(const edm::Event* edmEvent, const edm::EventSetup* iSetup)
-		{
-		}
+    public:
+        Provider(const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector)
+        {
+        }
+
+        virtual void process(const edm::Event* edmEvent, const edm::EventSetup* iSetup)
+        {
+        }
 
 
-		virtual ~Provider()
-		{
-		}
+        virtual ~Provider()
+        {
+        }
 };
 
 }

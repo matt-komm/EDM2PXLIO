@@ -22,6 +22,9 @@
 #include "EDM2PXLIO/Core/interface/Converter.h"
 #include "EDM2PXLIO/Core/interface/ConverterFactory.h"
 
+#include "EDM2PXLIO/Core/interface/Provider.h"
+#include "EDM2PXLIO/Core/interface/ProviderFactory.h"
+
 #include <string>
 #include <vector>
 #include <thread>
@@ -53,7 +56,7 @@ class EDM2PXLIO:
         std::string _processName;
         
         std::vector<edm2pxlio::Converter*> _converters; 
-        
+        std::vector<edm2pxlio::Provider*> _providers;
         
 
         virtual void beginJob() ;
@@ -130,6 +133,13 @@ EDM2PXLIO::~EDM2PXLIO()
 {
 }
 
+// ------------ method called once each job just before starting event loop  ------------
+void
+EDM2PXLIO::beginJob()
+{
+    _providers = edm2pxlio::ProviderFactory::getInstance().getProviderList();
+}
+
 void
 EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
@@ -146,7 +156,11 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     {
         pxlEvent.setUserRecord("Process", _processName);
     }
-    
+
+    for (unsigned int iprovider = 0; iprovider<_providers.size(); ++iprovider)
+    {
+        _providers[iprovider]->process(&iEvent,&iSetup);
+    }
     for (unsigned int iconverter = 0; iconverter<_converters.size(); ++iconverter)
     {
         _converters[iconverter]->convert(&iEvent,&iSetup,&pxlEvent);
@@ -194,11 +208,7 @@ EDM2PXLIO::checkPath(const edm::Event& iEvent, pxl::Event& pxlEvent)
 }
 
 
-// ------------ method called once each job just before starting event loop  ------------
-void 
-EDM2PXLIO::beginJob()
-{
-}
+
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
