@@ -167,7 +167,7 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     primaryVertex = cms.InputTag("offlineSlimmedPrimaryVertices"),
 
     muons = cms.PSet(
-        type=cms.string("CandidateConverter"),
+        type=cms.string("MuonConverter"),
         srcs=cms.VInputTag(cms.InputTag("slimmedMuons")),
         names=cms.vstring("Muon")
     ),

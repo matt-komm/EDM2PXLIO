@@ -21,11 +21,6 @@
 
 #include "EDM2PXLIO/Provider/interface/PrimaryVertexProvider.h"
 
-
-
-
-
-
 #include "DataFormats/PatCandidates/interface/Electron.h"
 
 #include "DataFormats/VertexReco/interface/Vertex.h"
