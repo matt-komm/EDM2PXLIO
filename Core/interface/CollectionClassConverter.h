@@ -72,14 +72,15 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent) const
         {
             Base::convert(edmEvent, iSetup, pxlEvent);
-            std::vector<pxl::Particle*> pxlParticles;
-            
+
             for (unsigned index=0; index<CollectionConverter<edm::View<Class>>::size(); ++index)
             {
                 const edm::Handle<edm::View<Class>> collection = Base::getCollection(edmEvent,index);
                 pxl::EventView* pxlEventView = Base::findEventView(pxlEvent,Base::getEventViewName(index));
                 unsigned int nSkipped=0;
-                if (collection.product()) {
+                if (collection.product())
+                {
+                    std::vector<pxl::Particle*> pxlParticles;
                     for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) 
                     {
                         const Class& classObject = (*collection)[iparticle];
@@ -100,7 +101,12 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
                     }
                     if (collection->size()!=(pxlParticles.size()+nSkipped))
                     {
-                        throw cms::Exception(Base::getName()+"::convert") << "converted pxl particles differ in size compared to input collection";
+                        throw cms::Exception(Base::getName()+"::convert")
+                        << "converted pxl particles differ in size compared to input collection '"
+                        <<collection.provenance()->moduleLabel ()<<"'"
+                        <<": N(collection)="<<collection->size()<<", "
+                        <<"N(particles)="<<pxlParticles.size()<<", "
+                        <<"N(skipped)="<<nSkipped;
                     }
                     this->convertCollection(collection,pxlParticles);
                 }

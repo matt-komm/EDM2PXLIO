@@ -9,3 +9,6 @@
 <library   file="MuonConverter.cc" name="MuonConverterPlugin">
     <flags   EDM_PLUGIN="1"/>
 </library>
+<library   file="JetConverter.cc" name="JetConverterPlugin">
+    <flags   EDM_PLUGIN="1"/>
+</library>

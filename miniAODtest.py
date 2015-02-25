@@ -177,6 +177,13 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
         names=cms.vstring("Electron")
     ),
+                                 
+    jets = cms.PSet(
+        type=cms.string("JetConverter"),
+        srcs=cms.VInputTag(cms.InputTag("slimmedJets"),cms.InputTag("patJets")),
+        names=cms.vstring("Jet","ReclusteredJet"),
+        select=cms.string("pt>10"),
+    ),
     
     genParticles= cms.PSet(
         type=cms.string("GenParticleConverter"),
