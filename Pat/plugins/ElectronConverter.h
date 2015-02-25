@@ -43,7 +43,6 @@ class ElectronConverter:
         
         virtual void convertObject(const pat::Electron& patObject, pxl::Particle* pxlParticle) const;
         
-        virtual void convertP4(const pat::Electron& patObject, pxl::Particle* pxlParticle) const;
         /*
         virtual void convertCollection(const edm::Handle<edm::View<pat::Electron>> patObjectList, std::vector<pxl::Particle*>& pxlParticleList)
         {

@@ -20,8 +20,6 @@
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
-#include "DataFormats/VertexReco/interface/Vertex.h"
-
 namespace edm2pxlio
 {
 

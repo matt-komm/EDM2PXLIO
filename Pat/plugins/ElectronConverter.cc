@@ -82,12 +82,6 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     */
 }
 
-void ElectronConverter::convertP4(const pat::Electron& patObject, pxl::Particle* pxlParticle) const
-{
-    pxlParticle->setP4(patObject.ecalDrivenMomentum().px(),patObject.ecalDrivenMomentum().py(),patObject.ecalDrivenMomentum().pz(),patObject.ecalDrivenMomentum().energy());
-}
-
-
 }
 
 DEFINE_EDM_PLUGIN(edm2pxlio::ConverterFactory, edm2pxlio::ElectronConverter, "ElectronConverter");

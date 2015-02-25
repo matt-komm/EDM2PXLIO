@@ -12,3 +12,6 @@
 <library   file="JetConverter.cc" name="JetConverterPlugin">
     <flags   EDM_PLUGIN="1"/>
 </library>
+<library   file="METConverter.cc" name="METConverterPlugin">
+    <flags   EDM_PLUGIN="1"/>
+</library>

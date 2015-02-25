@@ -39,9 +39,6 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
     pxlParticle->setUserRecord("muonMultiplicity",patObject.muonMultiplicity());
     pxlParticle->setUserRecord("electronMultiplicity",patObject.electronMultiplicity());
 
-    float nhf =  ( patObject.neutralHadronEnergy() + patObject.HFHadronEnergy() ) /patObject.energy();
-    pxlParticle->setUserRecord("neutralHadronEnergyFraction",nhf);
-
     const reco::JetFlavourInfo& flavorInfo = patObject.jetFlavourInfo();
     pxlParticle->setUserRecord("partonFlavour",flavorInfo.getPartonFlavour());
 

@@ -150,11 +150,6 @@ process.OUT = cms.OutputModule("PoolOutputModule",
     outputCommands = cms.untracked.vstring('keep *','keep patJets_patJetsAK4PF_*_*','keep patJets_patJetsAK4PFCHS_*_*','keep *_*_*_PAT','keep *_*_*_S2')
 )
 
-
-
-
-
-
 process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     outFileName=cms.string("projected.pxlio"),
     process=cms.string("tChannel"),
@@ -189,49 +184,16 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         type=cms.string("GenParticleConverter"),
         srcs=cms.VInputTag(cms.InputTag("lessGenParticles")),
         targetEventViews=cms.vstring("Generated")
-    )
+    ),
+                                 
+    mets = cms.PSet(
+        type=cms.string("METConverter"),
+        srcs=cms.VInputTag(cms.InputTag("slimmedMETs")),
+        names=cms.vstring("MET")
+    ),
     
 )
 '''
-primaryVertex=cms.InputTag("offlineSlimmedPrimaryVertices"),
-
-genCollection = cms.PSet(
-    type=cms.string("GenParticle2Pxlio"),
-    srcs=cms.VInputTag(cms.InputTag("lessGenParticles")),
-    GenEventInfo=cms.InputTag('generator'),
-    LHEEvent=cms.InputTag('source')
-),
-
-jets = cms.PSet(
-    type=cms.string("PatJet2Pxlio"),
-    srcs=cms.VInputTag(cms.InputTag("slimmedJets"),cms.InputTag("patJets")),
-    names=cms.vstring("Jet","ReclusteredJet"),
-    select=cms.string("pt>10"),
-    
-    #userRecords=cms.PSet(
-    #    abseta=cms.string("abs(eta)")
-    #)
-),
-
-
-muons = cms.PSet(
-    type=cms.string("PatMuon2Pxlio"),
-    srcs=cms.VInputTag(cms.InputTag("slimmedMuons")),
-    names=cms.vstring("Muon")
-),
-
-electrons = cms.PSet(
-    type=cms.string("PatElectron2Pxlio"),
-    srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
-    names=cms.vstring("Electron")
-),
-
-mets = cms.PSet(
-    type=cms.string("PatMET2Pxlio"),
-    srcs=cms.VInputTag(cms.InputTag("slimmedMETs")),
-    names=cms.vstring("MET")
-),
-
 triggers = cms.PSet(
     type=cms.string("Trigger2Pxlio"),
     srcs=cms.VInputTag(cms.InputTag("TriggerResults")),
