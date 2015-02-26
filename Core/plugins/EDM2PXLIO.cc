@@ -30,9 +30,9 @@
 #include <thread>
 #include <mutex>
 
-class EDM2PXLIO: 
-    //public edm::stream::EDAnalyzer<> 
-    public edm::EDAnalyzer
+
+class EDM2PXLIO:
+    public edm::one::EDAnalyzer<>
 {
     private: 
         struct SelectedProcessPaths
@@ -74,9 +74,11 @@ class EDM2PXLIO:
 EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& globalConfig):
     _pxlFile(nullptr)
 {
+    /*
     mutex.lock();
     std::cout<<"created in thread: "<< std::this_thread::get_id()<<std::endl;
     mutex.unlock();
+    */
     if (globalConfig.exists("selectEvents"))
     {
         const std::vector<edm::ParameterSet>& selectEventPSets = globalConfig.getParameter<std::vector<edm::ParameterSet>>("selectEvents");
@@ -143,6 +145,11 @@ EDM2PXLIO::beginJob()
 void
 EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+    /*
+    mutex.lock();
+    std::cout<<"process in thread: "<< std::this_thread::get_id()<<std::endl;
+    mutex.unlock();
+    */
     pxl::Event pxlEvent;
     if (!checkPath(iEvent,pxlEvent))
     {
@@ -165,7 +172,7 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     {
         _converters[iconverter]->convert(&iEvent,&iSetup,&pxlEvent);
     }
-    
+
     _pxlFile->streamObject(&pxlEvent);
     _pxlFile->writeFileSection();
 }

@@ -10,6 +10,7 @@ ElectronConverter::ElectronConverter(const std::string& name, const edm::Paramet
     _primaryVertexProvider(nullptr)
 {
     _primaryVertexProvider=ProviderFactory::get<PrimaryVertexProvider>(globalConfig,consumesCollector);
+    std::cout<<"Electron PV provider: "<<_primaryVertexProvider<<std::endl;
 }
 
 

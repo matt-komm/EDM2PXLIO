@@ -39,15 +39,15 @@ class CollectionConverter:
         
     public:    
         CollectionConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector):
-        	Converter(name, globalConfig, consumesCollector),
+            Converter(name, globalConfig, consumesCollector),
             _defaultName(name),
             _defaultEventView("Reconstructed")
         {
-        	if (globalConfig.exists(getName()))
-        	{
-        	    const edm::ParameterSet& iConfig = globalConfig.getParameter<edm::ParameterSet>(getName());   
-        	
-        	    if (iConfig.exists("srcs")) 
+            if (globalConfig.exists(getName()))
+            {
+                const edm::ParameterSet& iConfig = globalConfig.getParameter<edm::ParameterSet>(getName());
+
+                if (iConfig.exists("srcs"))
                 {
                     std::vector<edm::InputTag> tags = iConfig.getParameter<std::vector<edm::InputTag> >("srcs");
                     for (unsigned int itag = 0; itag < tags.size(); ++itag)
@@ -80,10 +80,10 @@ class CollectionConverter:
                     _eventViewNames.push_back(_defaultEventView);
                     edm::LogInfo(getName()) << "no default event view defined - will use default: "<<_eventViewNames[0];
                 }
-        	}
-        	else
-        	{
-        	}
+            }
+            else
+            {
+            }
         }
         
         

@@ -1,6 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("S2")
+process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
+process.options.allowUnscheduled = cms.untracked.bool(False)
+process.options.numberOfThreads = cms.untracked.uint32(4)
+process.options.numberOfStreams = cms.untracked.uint32(4)
 
 process.load("Configuration.EventContent.EventContent_cff")
 process.load('Configuration.StandardSequences.Geometry_cff')
@@ -11,8 +15,6 @@ process.GlobalTag.globaltag = 'POSTLS172_V3::All'
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 10
 process.MessageLogger.suppressWarning = cms.untracked.vstring('ecalLaserCorrFilter','manystripclus53X','toomanystripclus53X')
-process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
-process.options.allowUnscheduled = cms.untracked.bool(False)
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
