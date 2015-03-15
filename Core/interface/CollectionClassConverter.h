@@ -84,7 +84,7 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
                     for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) 
                     {
                         const Class& classObject = (*collection)[iparticle];
-                        if (_cutFct)
+                        if (_cutFct!=nullptr)
                         {
                             if (!((*_cutFct)(classObject)))
                             {
