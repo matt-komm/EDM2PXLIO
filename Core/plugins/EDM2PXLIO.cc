@@ -27,8 +27,6 @@
 
 #include <string>
 #include <vector>
-#include <thread>
-#include <mutex>
 
 
 class EDM2PXLIO:
@@ -40,7 +38,6 @@ class EDM2PXLIO:
             std::string processName;
             std::vector<std::string> paths;
         };
-        std::mutex mutex;
     public:
         explicit EDM2PXLIO(const edm::ParameterSet&);
         ~EDM2PXLIO();
@@ -57,7 +54,6 @@ class EDM2PXLIO:
         
         std::vector<edm2pxlio::Converter*> _converters; 
         std::vector<edm2pxlio::Provider*> _providers;
-        
 
         virtual void beginJob() ;
         virtual void analyze(const edm::Event&, const edm::EventSetup&);
@@ -74,11 +70,6 @@ class EDM2PXLIO:
 EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& globalConfig):
     _pxlFile(nullptr)
 {
-    /*
-    mutex.lock();
-    std::cout<<"created in thread: "<< std::this_thread::get_id()<<std::endl;
-    mutex.unlock();
-    */
     if (globalConfig.exists("selectEvents"))
     {
         const std::vector<edm::ParameterSet>& selectEventPSets = globalConfig.getParameter<std::vector<edm::ParameterSet>>("selectEvents");
@@ -100,6 +91,8 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& globalConfig):
         edm::LogWarning("no output file name configured") << "default name 'out.pxlio' will be used";
         _pxlFile = new pxl::OutputFile("out.pxlio");
     }
+    _pxlFile->setCompressionMode(3);
+    _pxlFile->setMaxNObjects(100);
     
     if (globalConfig.exists("processName")) {
         _processName = globalConfig.getParameter<std::string>("processName");
@@ -145,36 +138,42 @@ EDM2PXLIO::beginJob()
 void
 EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-    /*
-    mutex.lock();
-    std::cout<<"process in thread: "<< std::this_thread::get_id()<<std::endl;
-    mutex.unlock();
-    */
-    pxl::Event pxlEvent;
-    if (!checkPath(iEvent,pxlEvent))
+    try
     {
-        return;
-    }
-    pxlEvent.setUserRecord("Run", iEvent.run());
-    pxlEvent.setUserRecord("Event number", (uint64_t)iEvent.id().event());
-    pxlEvent.setUserRecord("LuminosityBlock",iEvent.luminosityBlock());
-    pxlEvent.setUserRecord("isRealData",iEvent.isRealData());
-    if (_processName.length()>0)
+        pxl::Event pxlEvent;
+        if (!checkPath(iEvent,pxlEvent))
+        {
+            return;
+        }
+        pxlEvent.setUserRecord("Run", iEvent.run());
+        pxlEvent.setUserRecord("Event number", (uint64_t)iEvent.id().event());
+        pxlEvent.setUserRecord("LuminosityBlock",iEvent.luminosityBlock());
+        pxlEvent.setUserRecord("isRealData",iEvent.isRealData());
+        if (_processName.length()>0)
+        {
+            pxlEvent.setUserRecord("Process", _processName);
+        }
+        for (unsigned int iprovider = 0; iprovider<_providers.size(); ++iprovider)
+        {
+            
+            _providers[iprovider]->process(&iEvent,&iSetup);
+        }
+        for (unsigned int iconverter = 0; iconverter<_converters.size(); ++iconverter)
+        {
+            _converters[iconverter]->convert(&iEvent,&iSetup,&pxlEvent);
+        }
+        _pxlFile->streamObject(&pxlEvent);
+    } 
+    catch (...)
     {
-        pxlEvent.setUserRecord("Process", _processName);
+        //store the last event before the exception
+        _pxlFile->writeFileSection();
+        _pxlFile->close();
+        //rethrow the original exception
+        throw;
     }
-
-    for (unsigned int iprovider = 0; iprovider<_providers.size(); ++iprovider)
-    {
-        _providers[iprovider]->process(&iEvent,&iSetup);
-    }
-    for (unsigned int iconverter = 0; iconverter<_converters.size(); ++iconverter)
-    {
-        _converters[iconverter]->convert(&iEvent,&iSetup,&pxlEvent);
-    }
-
-    _pxlFile->streamObject(&pxlEvent);
-    _pxlFile->writeFileSection();
+    
+    
 }
 
 bool
@@ -221,6 +220,7 @@ EDM2PXLIO::checkPath(const edm::Event& iEvent, pxl::Event& pxlEvent)
 void 
 EDM2PXLIO::endJob() 
 {
+    _pxlFile->writeFileSection();
     _pxlFile->close();
     delete _pxlFile;
 }

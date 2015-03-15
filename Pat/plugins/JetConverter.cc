@@ -22,17 +22,17 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
     }
     pxlParticle->setUserRecord("numberOfDaughters",patObject.numberOfDaughters());
 
-    pxlParticle->setUserRecord("neutralEmEnergy",patObject.neutralEmEnergy());
-    pxlParticle->setUserRecord("chargedEmEnergy",patObject.chargedEmEnergy());
-    pxlParticle->setUserRecord("chargedHadronEnergy",patObject.chargedHadronEnergy());
-    pxlParticle->setUserRecord("neutralHadronEnergy",patObject.neutralHadronEnergy());
-    pxlParticle->setUserRecord("HFHadronEnergy",patObject.HFHadronEnergy());
+    pxlParticle->setUserRecord("neutralEmEnergy",PRECISION(patObject.neutralEmEnergy()));
+    pxlParticle->setUserRecord("chargedEmEnergy",PRECISION(patObject.chargedEmEnergy()));
+    pxlParticle->setUserRecord("chargedHadronEnergy",PRECISION(patObject.chargedHadronEnergy()));
+    pxlParticle->setUserRecord("neutralHadronEnergy",PRECISION(patObject.neutralHadronEnergy()));
+    pxlParticle->setUserRecord("HFHadronEnergy",PRECISION(patObject.HFHadronEnergy()));
 
-    pxlParticle->setUserRecord("neutralEmEnergyFraction",patObject.neutralEmEnergyFraction());
-    pxlParticle->setUserRecord("chargedEmEnergyFraction",patObject.chargedEmEnergyFraction());
-    pxlParticle->setUserRecord("chargedHadronEnergyFraction",patObject.chargedHadronEnergyFraction());
-    pxlParticle->setUserRecord("neutralHadronEnergyFraction",patObject.neutralHadronEnergyFraction());
-    pxlParticle->setUserRecord("HFHadronEnergyFraction",patObject.HFHadronEnergyFraction());
+    pxlParticle->setUserRecord("neutralEmEnergyFraction",PRECISION(patObject.neutralEmEnergyFraction()));
+    pxlParticle->setUserRecord("chargedEmEnergyFraction",PRECISION(patObject.chargedEmEnergyFraction()));
+    pxlParticle->setUserRecord("chargedHadronEnergyFraction",PRECISION(patObject.chargedHadronEnergyFraction()));
+    pxlParticle->setUserRecord("neutralHadronEnergyFraction",PRECISION(patObject.neutralHadronEnergyFraction()));
+    pxlParticle->setUserRecord("HFHadronEnergyFraction",PRECISION(patObject.HFHadronEnergyFraction()));
 
     pxlParticle->setUserRecord("chargedMultiplicity",patObject.chargedMultiplicity());
     pxlParticle->setUserRecord("neutralMultiplicity",patObject.neutralMultiplicity());
@@ -45,7 +45,11 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
     
     for (unsigned int iname = 0; iname < patObject.userFloatNames ().size(); ++ iname)
     {
-        pxlParticle->setUserRecord("user_"+patObject.userFloatNames()[iname],patObject.userFloat(patObject.userFloatNames()[iname]));
+        float value = patObject.userFloat(patObject.userFloatNames()[iname]);
+        if (fabs(value)>0.0)
+        {
+            pxlParticle->setUserRecord("user_"+patObject.userFloatNames()[iname],value);
+        }
     }
     
 

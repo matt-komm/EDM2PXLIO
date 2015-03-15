@@ -26,7 +26,7 @@ class ProviderFactory
 
         static ProviderFactory& getInstance()
         {
-            static thread_local ProviderFactory factory;
+            static ProviderFactory factory;
             return factory;
         }
 

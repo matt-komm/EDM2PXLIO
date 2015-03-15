@@ -19,14 +19,14 @@ void MuonConverter::convertObject(const pat::Muon& patObject, pxl::Particle* pxl
     pxlParticle->setCharge(patObject.charge());
 
 
-    pxlParticle->setUserRecord("R04PFsumChargedHadronPt",patObject.pfIsolationR04().sumChargedHadronPt);
-    pxlParticle->setUserRecord("R04PFsumNeutralHadronPt",patObject.pfIsolationR04().sumNeutralHadronEt);
-    pxlParticle->setUserRecord("R04PFsumPhotonIso",patObject.pfIsolationR04().sumPhotonEt);
-    pxlParticle->setUserRecord("R04PFsumPUPt",patObject.pfIsolationR04().sumPUPt);
+    pxlParticle->setUserRecord("R04PFsumChargedHadronPt",PRECISION(patObject.pfIsolationR04().sumChargedHadronPt));
+    pxlParticle->setUserRecord("R04PFsumNeutralHadronPt",PRECISION(patObject.pfIsolationR04().sumNeutralHadronEt));
+    pxlParticle->setUserRecord("R04PFsumPhotonIso",PRECISION(patObject.pfIsolationR04().sumPhotonEt));
+    pxlParticle->setUserRecord("R04PFsumPUPt",PRECISION(patObject.pfIsolationR04().sumPUPt));
 
-    pxlParticle->setUserRecord("PATchargedHadronIso",patObject.chargedHadronIso());
-    pxlParticle->setUserRecord("PATneutralHadronIso",patObject.neutralHadronIso());
-    pxlParticle->setUserRecord("PATpuChargedHadronIso",patObject.puChargedHadronIso());
+    pxlParticle->setUserRecord("PATchargedHadronIso",PRECISION(patObject.chargedHadronIso()));
+    pxlParticle->setUserRecord("PATneutralHadronIso",PRECISION(patObject.neutralHadronIso()));
+    pxlParticle->setUserRecord("PATpuChargedHadronIso",PRECISION(patObject.puChargedHadronIso()));
 
     pxlParticle->setUserRecord("isGlobalMuon",patObject.isGlobalMuon());
     pxlParticle->setUserRecord("isTrackerMuon",patObject.isTrackerMuon());
@@ -41,7 +41,7 @@ void MuonConverter::convertObject(const pat::Muon& patObject, pxl::Particle* pxl
 
         pxlParticle->setUserRecord("numberOfValidMuonHits",combinedTrack->hitPattern().numberOfValidMuonHits());
         pxlParticle->setUserRecord("numberOfLostMuonHits",combinedTrack->hitPattern().numberOfLostMuonHits());
-        pxlParticle->setUserRecord("chi2",combinedTrack->normalizedChi2());
+        pxlParticle->setUserRecord("chi2",PRECISION(combinedTrack->chi2()));
         pxlParticle->setUserRecord("ndof",combinedTrack->ndof());
     }
 
@@ -56,8 +56,8 @@ void MuonConverter::convertObject(const pat::Muon& patObject, pxl::Particle* pxl
         {
             double dz = trackerTrack->dz(_primaryVertexProvider->getPrimaryVertex()->position());
             double dxy = trackerTrack->dxy(_primaryVertexProvider->getPrimaryVertex()->position());
-            pxlParticle->setUserRecord("dz",dz);
-            pxlParticle->setUserRecord("dxy",dxy);
+            pxlParticle->setUserRecord("dz",(float)dz);
+            pxlParticle->setUserRecord("dxy",(float)dxy);
             pxlParticle->setUserRecord("isTightMuon",patObject.isTightMuon(*_primaryVertexProvider->getPrimaryVertex()));
         }
     }

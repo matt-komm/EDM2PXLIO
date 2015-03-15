@@ -19,10 +19,11 @@ namespace pxl
 namespace edm2pxlio
 {
 
+#define PRECISION(VALUE) float(VALUE)
+
 class Converter
 {
     protected:
-        //std::vector<Provider*> providerList_;
         const std::string _name;
 
     public:
@@ -43,12 +44,6 @@ class Converter
 
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent) const
         {
-            /*
-            for (unsigned iprovider=0; iprovider<providerList_.size();++iprovider)
-            {
-                providerList_[iprovider]->process(edmEvent,iSetup,pxlEvent);
-            }
-            */
         }
 
         virtual void endStream()

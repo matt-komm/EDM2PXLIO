@@ -15,22 +15,18 @@ void GenJetConverter::convertObject(const reco::GenJet& genJet, pxl::Particle* p
     Base::convertObject(genJet, pxlParticle);
     pxlParticle->setP4(genJet.px(),genJet.py(),genJet.pz(),genJet.energy());
     
-    pxlParticle->setUserRecord("charge",genJet.charge());
-    pxlParticle->setUserRecord("vx",genJet.vx());
-    pxlParticle->setUserRecord("vy",genJet.vy());
-    pxlParticle->setUserRecord("vz",genJet.vz());
     pxlParticle->setUserRecord("numberOfDaughters",genJet.numberOfDaughters());
     pxlParticle->setUserRecord("nConstituents",genJet.nConstituents());
-    pxlParticle->setUserRecord("maxDistance",genJet.maxDistance());
-    pxlParticle->setUserRecord("emEnergy",genJet.emEnergy());
-    pxlParticle->setUserRecord("hadEnergy",genJet.hadEnergy());
-    pxlParticle->setUserRecord("invisibleEnergy",genJet.invisibleEnergy());
-    pxlParticle->setUserRecord("constituentEtaPhiSpread",genJet.constituentEtaPhiSpread());
-    pxlParticle->setUserRecord("constituentPtDistribution",genJet.constituentPtDistribution());
-    pxlParticle->setUserRecord("etaetaMoment",genJet.etaetaMoment());
-    pxlParticle->setUserRecord("etaphiMoment",genJet.etaphiMoment());
-    pxlParticle->setUserRecord("phiphiMoment",genJet.phiphiMoment());
-    pxlParticle->setUserRecord("jetArea",genJet.jetArea());
+    pxlParticle->setUserRecord("maxDistance",(float)genJet.maxDistance());
+    pxlParticle->setUserRecord("emEnergy",(float)genJet.emEnergy());
+    pxlParticle->setUserRecord("hadEnergy",(float)genJet.hadEnergy());
+    pxlParticle->setUserRecord("invisibleEnergy",(float)genJet.invisibleEnergy());
+    pxlParticle->setUserRecord("constituentEtaPhiSpread",(float)genJet.constituentEtaPhiSpread());
+    pxlParticle->setUserRecord("constituentPtDistribution",(float)genJet.constituentPtDistribution());
+    pxlParticle->setUserRecord("etaetaMoment",(float)genJet.etaetaMoment());
+    pxlParticle->setUserRecord("etaphiMoment",(float)genJet.etaphiMoment());
+    pxlParticle->setUserRecord("phiphiMoment",(float)genJet.phiphiMoment());
+    pxlParticle->setUserRecord("jetArea",(float)genJet.jetArea());
 }
 
 GenJetConverter::~GenJetConverter()

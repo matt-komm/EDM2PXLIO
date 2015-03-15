@@ -38,31 +38,6 @@ class METConverter:
         {
             Base::convertObject(patObject,pxlParticle);
             pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
-            /*
-            if (patObject.isCaloMET())
-            {
-                pxlParticle->setUserRecord("metSignificance",patObject.metSignificance());
-                pxlParticle->setUserRecord("emEtFraction",patObject.emEtFraction());
-                pxlParticle->setUserRecord("emEtInEB",patObject.emEtInEB());
-                pxlParticle->setUserRecord("emEtInEE",patObject.emEtInEE());
-                pxlParticle->setUserRecord("emEtInHF",patObject.emEtInHF());
-                pxlParticle->setUserRecord("etFractionHadronic",patObject.etFractionHadronic());
-                pxlParticle->setUserRecord("hadEtInHB",patObject.hadEtInHB());
-                pxlParticle->setUserRecord("hadEtInHE",patObject.hadEtInHE());
-                pxlParticle->setUserRecord("hadEtInHF",patObject.hadEtInHF());
-                pxlParticle->setUserRecord("hadEtInHO",patObject.hadEtInHO());
-                pxlParticle->setUserRecord("maxEtInEmTowers",patObject.maxEtInEmTowers());
-                pxlParticle->setUserRecord("maxEtInHadTowers",patObject.maxEtInHadTowers());
-            }
-
-
-            if (patObject.isPFMET())
-            {
-                pxlParticle->setUserRecord("MuonEtFraction",patObject.MuonEtFraction());
-                pxlParticle->setUserRecord("NeutralEMFraction",patObject.NeutralEMFraction());
-                pxlParticle->setUserRecord("NeutralHadEtFraction",patObject.NeutralHadEtFraction());
-            }
-            */
         }
         
         ~METConverter()

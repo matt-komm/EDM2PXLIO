@@ -10,7 +10,6 @@ ElectronConverter::ElectronConverter(const std::string& name, const edm::Paramet
     _primaryVertexProvider(nullptr)
 {
     _primaryVertexProvider=ProviderFactory::get<PrimaryVertexProvider>(globalConfig,consumesCollector);
-    std::cout<<"Electron PV provider: "<<_primaryVertexProvider<<std::endl;
 }
 
 
@@ -19,12 +18,14 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     Base::convertObject(patObject, pxlParticle);
     pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
     pxlParticle->setCharge(patObject.charge());
-    pxlParticle->setUserRecord("dB",patObject.dB());
+    
     const std::vector<pat::Electron::IdPair>& electronIds = patObject.electronIDs();
     for (unsigned int i = 0; i < electronIds.size(); ++i)
     {
-        pxlParticle->setUserRecord(electronIds[i].first,(bool)electronIds[i].second);
+        pxlParticle->setUserRecord(electronIds[i].first,bool(electronIds[i].second));
     }
+    
+    pxlParticle->setUserRecord("dB",PRECISION(patObject.dB()));
     
     pxlParticle->setUserRecord("ecalDrivenSeed",patObject.ecalDrivenSeed());
     pxlParticle->setUserRecord("trackerDrivenSeed",patObject.trackerDrivenSeed());
@@ -37,50 +38,39 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     if (patObject.gsfTrack().get()!=nullptr)
     {
         const reco::Track* gsfTrack = patObject.gsfTrack().get();
-        pxlParticle->setUserRecord("chi2",gsfTrack->chi2());
+        pxlParticle->setUserRecord("chi2",PRECISION(gsfTrack->chi2()));
         pxlParticle->setUserRecord("ndof",gsfTrack->ndof());
         pxlParticle->setUserRecord("lostHits",gsfTrack->lost());
-        
-        
         
         if (_primaryVertexProvider->getPrimaryVertex())
         {
             double dz =fabs(patObject.gsfTrack()->dz(_primaryVertexProvider->getPrimaryVertex()->position()));
             double dxy =fabs(patObject.gsfTrack()->dxy(_primaryVertexProvider->getPrimaryVertex()->position()));
-            pxlParticle->setUserRecord("dz",dz);
-            pxlParticle->setUserRecord("dxy",dxy);
+            pxlParticle->setUserRecord("dz",PRECISION(dz));
+            pxlParticle->setUserRecord("dxy",PRECISION(dxy));
         }
     }
     
-    pxlParticle->setUserRecord("caloIso",patObject.caloIso());
-    pxlParticle->setUserRecord("ecalIso",patObject.ecalIso());
-    pxlParticle->setUserRecord("hcalIso",patObject.hcalIso());
-    pxlParticle->setUserRecord("trackIso",patObject.trackIso());
+    pxlParticle->setUserRecord("caloIso",PRECISION(patObject.caloIso()));
+    pxlParticle->setUserRecord("ecalIso",PRECISION(patObject.ecalIso()));
+    pxlParticle->setUserRecord("hcalIso",PRECISION(patObject.hcalIso()));
+    pxlParticle->setUserRecord("trackIso",PRECISION(patObject.trackIso()));
 
     
-    pxlParticle->setUserRecord("R03TkSumPt",patObject.dr03TkSumPt());
-    pxlParticle->setUserRecord("R03EcalRecHitSumEt",patObject.dr03EcalRecHitSumEt());
-    pxlParticle->setUserRecord("R03HcalTowerSumEt",patObject.dr03HcalTowerSumEt());
+    pxlParticle->setUserRecord("R03TkSumPt",PRECISION(patObject.dr03TkSumPt()));
+    pxlParticle->setUserRecord("R03EcalRecHitSumEt",PRECISION(patObject.dr03EcalRecHitSumEt()));
+    pxlParticle->setUserRecord("R03HcalTowerSumEt",PRECISION(patObject.dr03HcalTowerSumEt()));
     
 
-    pxlParticle->setUserRecord("chargedHadronIso",patObject.chargedHadronIso());
-    pxlParticle->setUserRecord("neutralHadronIso",patObject.neutralHadronIso());
-    pxlParticle->setUserRecord("photonIso",patObject.photonIso());
-    pxlParticle->setUserRecord("superClusterEta",patObject.superCluster()->eta());
+    pxlParticle->setUserRecord("chargedHadronIso",PRECISION(patObject.chargedHadronIso()));
+    pxlParticle->setUserRecord("neutralHadronIso",PRECISION(patObject.neutralHadronIso()));
+    pxlParticle->setUserRecord("photonIso",PRECISION(patObject.photonIso()));
+    pxlParticle->setUserRecord("superClusterEta",PRECISION(patObject.superCluster()->eta()));
     
-    pxlParticle->setUserRecord("sigmaIetaIeta",patObject.sigmaIetaIeta());
-    pxlParticle->setUserRecord("hadronicOverEm",patObject.hadronicOverEm());
-    pxlParticle->setUserRecord("fbrem",patObject.fbrem());
+    pxlParticle->setUserRecord("sigmaIetaIeta",PRECISION(patObject.sigmaIetaIeta()));
+    pxlParticle->setUserRecord("hadronicOverEm",PRECISION(patObject.hadronicOverEm()));
+    pxlParticle->setUserRecord("fbrem",PRECISION(patObject.fbrem()));
 
-    /*
-    pxlParticle->setUserRecord("patPt",patObject.pt());
-    pxlParticle->setUserRecord("patPx",patObject.px());
-    pxlParticle->setUserRecord("patPy",patObject.py());
-    pxlParticle->setUserRecord("patPz",patObject.pz());
-    pxlParticle->setUserRecord("patEta",patObject.eta());
-    pxlParticle->setUserRecord("patE",patObject.energy());
-    pxlParticle->setUserRecord("patEt",patObject.et());
-    */
 }
 
 }
