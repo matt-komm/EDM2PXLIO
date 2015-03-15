@@ -6,7 +6,13 @@
 <use name="SimDataFormats/GeneratorProducts"/>
 <use name="SimGeneral/HepPDTRecord"/>
 <use name="DataFormats/HepMCCandidate"/>
-<library   file="*.cc" name="CandidateConverterPlugin">
+<use name="DataFormats/JetReco"/>
+<library   file="CandidateConverter.cc" name="CandidateConverterPlugin">
     <flags   EDM_PLUGIN="1"/>
 </library>
-
+<library   file="GenJetConverter.cc" name="GenJetConverterPlugin">
+    <flags   EDM_PLUGIN="1"/>
+</library>
+<library   file="GenParticleConverter.cc" name="GenParticleConverterPlugin">
+    <flags   EDM_PLUGIN="1"/>
+</library>

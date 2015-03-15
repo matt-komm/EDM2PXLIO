@@ -42,12 +42,12 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
     const reco::JetFlavourInfo& flavorInfo = patObject.jetFlavourInfo();
     pxlParticle->setUserRecord("partonFlavour",flavorInfo.getPartonFlavour());
 
-    /*
+    
     for (unsigned int iname = 0; iname < patObject.userFloatNames ().size(); ++ iname)
     {
         pxlParticle->setUserRecord("user_"+patObject.userFloatNames()[iname],patObject.userFloat(patObject.userFloatNames()[iname]));
     }
-    */
+    
 
     /*
     const reco::SecondaryVertexTagInfo *svTagInfo = patObject.tagInfoSecondaryVertex();
