@@ -38,6 +38,7 @@ class METConverter:
         {
             Base::convertObject(patObject,pxlParticle);
             pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
+            //pxlParticle->setUserRecord("metSignificance",patObject.metSignificance());
         }
         
         ~METConverter()

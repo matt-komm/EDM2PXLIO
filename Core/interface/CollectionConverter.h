@@ -86,9 +86,6 @@ class CollectionConverter:
             }
         }
         
-        
-
-
         inline void setDefaultName(const std::string& defaultName)
         {
             _defaultName=defaultName;

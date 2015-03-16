@@ -1,0 +1,11 @@
+<use name="EDM2PXLIO/Core"/>
+<use name="EDM2PXLIO/Provider"/>
+<use name="DataFormats/Common"/>
+<use name="DataFormats/PatCandidates"/>
+<use name="DataFormats/TrackReco"/>
+<library   file="TriggerResultConverter.cc" name="TriggerResultConverterPlugin">
+    <flags   EDM_PLUGIN="1"/>
+</library>
+<library   file="PileupSummaryInfoConverter.cc" name="PileupSummaryInfoConverterPlugin">
+    <flags   EDM_PLUGIN="1"/>
+</library>
