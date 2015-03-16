@@ -30,9 +30,9 @@ process.lessGenParticles = cms.EDProducer("GenParticlePruner",
     src=cms.InputTag("prunedGenParticles"),
     select=cms.vstring(
         "drop  *",
-        "keep abs(status)>20 & abs(status) < 30", #keeps all particles from the hard matrix element
+        "++keep abs(status)>20 & abs(status) < 30", #keeps all particles from the hard matrix element and their mothers
         "keep++ abs(pdgId)=24", #keep W-boson decay
-        "drop abs(status)>30" #drop all intermediate from decay
+        "drop abs(status)>30", #drop all intermediate from decay
     )
 )
 
@@ -73,11 +73,11 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         GenEventInfo=cms.InputTag("generator","","SIM")
     ),
     
-    genJets = cms.PSet(
+    genjets = cms.PSet(
         type=cms.string("GenJetConverter"),
         srcs=cms.VInputTag(cms.InputTag("slimmedGenJets")),
         names=cms.vstring("GenJet"),
-        targetEventViews=cms.vstring("GenJets")
+        targetEventViews=cms.vstring("GenJets"),
     ),
                              
     mets = cms.PSet(
@@ -86,10 +86,10 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         names=cms.vstring("MET")
     ),
     
-    triggers = cms.PSet(
+    triggersHLT = cms.PSet(
         type=cms.string("TriggerResultConverter"),
-        srcs=cms.VInputTag(cms.InputTag("TriggerResults","","HLT"),cms.InputTag("TriggerResults","","PAT")),
-        regex=cms.vstring("Iso[0-9a-zA-z]*","[0-9a-zA-z]*")
+        srcs=cms.VInputTag(cms.InputTag("TriggerResults","","HLT")),
+        regex=cms.vstring("HLT_Iso[0-9a-zA-z]*","HLT_Ele[0-9a-zA-z]*")
     ),
     
     puInfo = cms.PSet(
@@ -98,7 +98,6 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         names=cms.vstring("PU")
     ),
 )
-
 
 
 process.p0=cms.Path(

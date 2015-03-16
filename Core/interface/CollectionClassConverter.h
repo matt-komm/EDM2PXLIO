@@ -75,6 +75,7 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
 
             for (unsigned index=0; index<CollectionConverter<edm::View<Class>>::size(); ++index)
             {
+
                 const edm::Handle<edm::View<Class>> collection = Base::getCollection(edmEvent,index);
                 pxl::EventView* pxlEventView = Base::findEventView(pxlEvent,Base::getEventViewName(index));
                 unsigned int nSkipped=0;
