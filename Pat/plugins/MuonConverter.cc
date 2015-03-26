@@ -18,14 +18,12 @@ void MuonConverter::convertObject(const pat::Muon& patObject, pxl::Particle* pxl
     pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
     pxlParticle->setCharge(patObject.charge());
 
-    /*
     pxlParticle->setUserRecord("R03PFsumChargedHadronPt",PRECISION(patObject.pfIsolationR03().sumChargedHadronPt));
     pxlParticle->setUserRecord("R03PFsumChargedParticlePt",PRECISION(patObject.pfIsolationR03().sumChargedParticlePt));
     pxlParticle->setUserRecord("R03PFsumNeutralHadronEt",PRECISION(patObject.pfIsolationR03().sumNeutralHadronEt));
     pxlParticle->setUserRecord("R03PFsumPhotonEt",PRECISION(patObject.pfIsolationR03().sumPhotonEt));
     pxlParticle->setUserRecord("R03PFsumPUPt",PRECISION(patObject.pfIsolationR03().sumPUPt));
-    */
-    
+
     pxlParticle->setUserRecord("R04PFsumChargedHadronPt",PRECISION(patObject.pfIsolationR04().sumChargedHadronPt));
     pxlParticle->setUserRecord("R04PFsumChargedParticlePt",PRECISION(patObject.pfIsolationR04().sumChargedParticlePt));
     pxlParticle->setUserRecord("R04PFsumNeutralHadronEt",PRECISION(patObject.pfIsolationR04().sumNeutralHadronEt));
@@ -68,8 +66,11 @@ void MuonConverter::convertObject(const pat::Muon& patObject, pxl::Particle* pxl
     {
         const reco::Track* trackerTrack = patObject.track().get();
         pxlParticle->setUserRecord("trackerLayersWithMeasurement",trackerTrack->hitPattern().trackerLayersWithMeasurement());
-        pxlParticle->setUserRecord("numberOfValidPixelHits",trackerTrack->hitPattern().numberOfValidPixelHits());
+        pxlParticle->setUserRecord("numberOfValidTrackerHits",trackerTrack->hitPattern().numberOfValidTrackerHits());
+
         pxlParticle->setUserRecord("pixelLayersWithMeasurement",trackerTrack->hitPattern().pixelLayersWithMeasurement());
+        pxlParticle->setUserRecord("numberOfValidPixelHits",trackerTrack->hitPattern().numberOfValidPixelHits());
+        
         pxlParticle->setUserRecord("track_highPurity",trackerTrack->quality(reco::TrackBase::highPurity));
 
         if (_primaryVertexProvider->getPrimaryVertex()!=nullptr)

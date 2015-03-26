@@ -26,21 +26,29 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     }
     
     pxlParticle->setUserRecord("dB",PRECISION(patObject.dB()));
-    
+    pxlParticle->setUserRecord("isPF",patObject.isPF());
     pxlParticle->setUserRecord("ecalDrivenSeed",patObject.ecalDrivenSeed());
     pxlParticle->setUserRecord("trackerDrivenSeed",patObject.trackerDrivenSeed());
     pxlParticle->setUserRecord("isInEB-EE",(1.4442 < fabs(patObject.eta())) && (fabs(patObject.eta()) < 1.5660));
     
     pxlParticle->setUserRecord("passConversionVeto",patObject.passConversionVeto());
-    //pxlParticle->setUserRecord("numberOfHits",patObject.gsfTrack()->trackerExpectedHitsInner().numberOfHits());
+
 
     
     if (patObject.gsfTrack().get()!=nullptr)
     {
-        const reco::Track* gsfTrack = patObject.gsfTrack().get();
+        const reco::GsfTrack* gsfTrack = patObject.gsfTrack().get();
         pxlParticle->setUserRecord("chi2",PRECISION(gsfTrack->chi2()));
         pxlParticle->setUserRecord("ndof",gsfTrack->ndof());
         pxlParticle->setUserRecord("lostHits",gsfTrack->lost());
+        //pxlParticle->setUserRecord("numberOfHits",gsfTrack->trackerExpectedHitsInner().numberOfHits()));
+        
+        pxlParticle->setUserRecord("trackerLayersWithMeasurement",gsfTrack->hitPattern().trackerLayersWithMeasurement());
+        pxlParticle->setUserRecord("numberOfValidTrackerHits",gsfTrack->hitPattern().numberOfValidTrackerHits());
+
+        pxlParticle->setUserRecord("pixelLayersWithMeasurement",gsfTrack->hitPattern().pixelLayersWithMeasurement());
+        pxlParticle->setUserRecord("numberOfValidPixelHits",gsfTrack->hitPattern().numberOfValidPixelHits());
+        
         
         if (_primaryVertexProvider->getPrimaryVertex())
         {
@@ -56,15 +64,23 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     pxlParticle->setUserRecord("hcalIso",PRECISION(patObject.hcalIso()));
     pxlParticle->setUserRecord("trackIso",PRECISION(patObject.trackIso()));
 
-    
     pxlParticle->setUserRecord("R03TkSumPt",PRECISION(patObject.dr03TkSumPt()));
     pxlParticle->setUserRecord("R03EcalRecHitSumEt",PRECISION(patObject.dr03EcalRecHitSumEt()));
     pxlParticle->setUserRecord("R03HcalTowerSumEt",PRECISION(patObject.dr03HcalTowerSumEt()));
+    pxlParticle->setUserRecord("R03HcalTowerSumEt",PRECISION(patObject.dr03HcalTowerSumEtBc()));
     
-
+    pxlParticle->setUserRecord("R04TkSumPt",PRECISION(patObject.dr04TkSumPt()));
+    pxlParticle->setUserRecord("R04EcalRecHitSumEt",PRECISION(patObject.dr04EcalRecHitSumEt()));
+    pxlParticle->setUserRecord("R04HcalTowerSumEt",PRECISION(patObject.dr04HcalTowerSumEt()));
+    pxlParticle->setUserRecord("R04HcalTowerSumEt",PRECISION(patObject.dr04HcalTowerSumEtBc()));
+    
     pxlParticle->setUserRecord("chargedHadronIso",PRECISION(patObject.chargedHadronIso()));
     pxlParticle->setUserRecord("neutralHadronIso",PRECISION(patObject.neutralHadronIso()));
     pxlParticle->setUserRecord("photonIso",PRECISION(patObject.photonIso()));
+    pxlParticle->setUserRecord("particleIso",PRECISION(patObject.particleIso()));
+    
+    pxlParticle->setUserRecord("puChargedHadronIso",PRECISION(patObject.puChargedHadronIso()));
+    
     pxlParticle->setUserRecord("superClusterEta",PRECISION(patObject.superCluster()->eta()));
     
     pxlParticle->setUserRecord("sigmaIetaIeta",PRECISION(patObject.sigmaIetaIeta()));

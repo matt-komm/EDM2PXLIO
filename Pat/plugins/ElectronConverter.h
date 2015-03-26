@@ -23,6 +23,8 @@
 
 #include "DataFormats/PatCandidates/interface/Electron.h"
 
+#include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
+
 #include "DataFormats/VertexReco/interface/Vertex.h"
 
 //#include "EDM2PXLIO/EDM2PXLIO/src/provider/EffectiveAreaIsolationProvider.h"
