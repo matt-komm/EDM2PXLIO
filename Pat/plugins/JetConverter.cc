@@ -22,25 +22,39 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
     }
     pxlParticle->setUserRecord("numberOfDaughters",patObject.numberOfDaughters());
 
-    pxlParticle->setUserRecord("neutralEmEnergy",PRECISION(patObject.neutralEmEnergy()));
+    
     pxlParticle->setUserRecord("chargedEmEnergy",PRECISION(patObject.chargedEmEnergy()));
-    pxlParticle->setUserRecord("chargedHadronEnergy",PRECISION(patObject.chargedHadronEnergy()));
-    pxlParticle->setUserRecord("neutralHadronEnergy",PRECISION(patObject.neutralHadronEnergy()));
-    pxlParticle->setUserRecord("HFHadronEnergy",PRECISION(patObject.HFHadronEnergy()));
-
-    pxlParticle->setUserRecord("neutralEmEnergyFraction",PRECISION(patObject.neutralEmEnergyFraction()));
     pxlParticle->setUserRecord("chargedEmEnergyFraction",PRECISION(patObject.chargedEmEnergyFraction()));
+   
+    pxlParticle->setUserRecord("chargedHadronEnergy",PRECISION(patObject.chargedHadronEnergy()));
     pxlParticle->setUserRecord("chargedHadronEnergyFraction",PRECISION(patObject.chargedHadronEnergyFraction()));
+    
+    pxlParticle->setUserRecord("neutralHadronEnergy",PRECISION(patObject.neutralHadronEnergy()));
     pxlParticle->setUserRecord("neutralHadronEnergyFraction",PRECISION(patObject.neutralHadronEnergyFraction()));
+    
+    pxlParticle->setUserRecord("HFHadronEnergy",PRECISION(patObject.HFHadronEnergy()));
     pxlParticle->setUserRecord("HFHadronEnergyFraction",PRECISION(patObject.HFHadronEnergyFraction()));
+
+    pxlParticle->setUserRecord("neutralEmEnergy",PRECISION(patObject.neutralEmEnergy()));
+    pxlParticle->setUserRecord("neutralEmEnergyFraction",PRECISION(patObject.neutralEmEnergyFraction()));
+
+    pxlParticle->setUserRecord("chargedMuEnergy",PRECISION(patObject.chargedMuEnergy()));
+    pxlParticle->setUserRecord("chargedMuEnergyFraction",PRECISION(patObject.chargedMuEnergyFraction()));
+
+    pxlParticle->setUserRecord("photonEnergy",PRECISION(patObject.photonEnergy()));
+    pxlParticle->setUserRecord("photonEnergyFraction",PRECISION(patObject.photonEnergyFraction()));
 
     pxlParticle->setUserRecord("chargedMultiplicity",patObject.chargedMultiplicity());
     pxlParticle->setUserRecord("neutralMultiplicity",patObject.neutralMultiplicity());
     pxlParticle->setUserRecord("muonMultiplicity",patObject.muonMultiplicity());
     pxlParticle->setUserRecord("electronMultiplicity",patObject.electronMultiplicity());
+    pxlParticle->setUserRecord("electronMultiplicity",patObject.photonMultiplicity());
 
     const reco::JetFlavourInfo& flavorInfo = patObject.jetFlavourInfo();
     pxlParticle->setUserRecord("partonFlavour",flavorInfo.getPartonFlavour());
+    
+    pxlParticle->setUserRecord("jetArea",PRECISION(patObject.jetArea()));
+    pxlParticle->setUserRecord("jetCharge",PRECISION(patObject.jetCharge()));
 
     
     for (unsigned int iname = 0; iname < patObject.userFloatNames ().size(); ++ iname)
@@ -52,14 +66,6 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
         }
     }
     
-
-    /*
-    const reco::SecondaryVertexTagInfo *svTagInfo = patObject.tagInfoSecondaryVertex();
-    if (svTagInfo  &&  svTagInfo->nVertices() > 0)
-    {
-        pxlParticle->setUserRecord("secondaryVertexMass",svTagInfo->secondaryVertex(0).p4().mass());
-    }
-    */
     if (patObject.genParton())
     {
         pxlParticle->setUserRecord("partonFlavour",patObject.partonFlavour());

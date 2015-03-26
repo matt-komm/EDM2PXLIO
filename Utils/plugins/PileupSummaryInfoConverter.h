@@ -15,6 +15,8 @@
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
+#include "EDM2PXLIO/Provider/interface/PrimaryVertexProvider.h"
+
 #include "Pxl/Pxl/interface/pxl/core.hh"
 #include "Pxl/Pxl/interface/pxl/hep.hh"
 
@@ -29,7 +31,7 @@ class PileupSummaryInfoConverter:
     private:
         typedef CollectionConverter<std::vector<PileupSummaryInfo>> Base;
     protected:
-
+        PrimaryVertexProvider* _primaryVertexProvider;
     public:
         PileupSummaryInfoConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);    
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent) const;

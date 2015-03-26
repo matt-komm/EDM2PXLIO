@@ -30,10 +30,12 @@ void PrimaryVertexProvider::process(const edm::Event* edmEvent, const edm::Event
         if (primaryVertices->size()>0)
         {
             _primaryVertex = &(*primaryVertices)[0];
+            _nVertices = primaryVertices->size();
         }
         else
         {
             _primaryVertex=nullptr;
+            _nVertices=0;
         }
     }
 }

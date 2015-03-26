@@ -26,6 +26,7 @@ class PrimaryVertexProvider:
     protected:
         edm::InputTag _vertexInputTag;
         const reco::Vertex* _primaryVertex;
+        unsigned int _nVertices;
         edm::EDGetTokenT<edm::View<reco::Vertex>> _token;
     public:
         PrimaryVertexProvider(const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);
@@ -35,6 +36,11 @@ class PrimaryVertexProvider:
         inline const reco::Vertex* getPrimaryVertex() const
         {
             return _primaryVertex;
+        }
+        
+        inline int getNVertices() const
+        {
+            return _nVertices;
         }
 
         virtual ~PrimaryVertexProvider();
