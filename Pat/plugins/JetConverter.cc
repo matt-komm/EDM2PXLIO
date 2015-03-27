@@ -18,7 +18,7 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
     const std::vector<std::pair<std::string, float>>& bDiscriminators = patObject.getPairDiscri();
     for (unsigned int i = 0; i<bDiscriminators.size(); ++i)
     {
-        pxlParticle->setUserRecord(bDiscriminators[i].first,bDiscriminators[i].second);
+        pxlParticle->setUserRecord(bDiscriminators[i].first,PRECISION(bDiscriminators[i].second));
     }
     pxlParticle->setUserRecord("numberOfDaughters",patObject.numberOfDaughters());
 
@@ -62,7 +62,7 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
         float value = patObject.userFloat(patObject.userFloatNames()[iname]);
         if (fabs(value)>0.0)
         {
-            pxlParticle->setUserRecord("user_"+patObject.userFloatNames()[iname],value);
+            pxlParticle->setUserRecord("user_"+patObject.userFloatNames()[iname],PRECISION(value));
         }
     }
     

@@ -22,7 +22,7 @@ process.source = cms.Source("PoolSource",
         #'root://xrootd.unl.edu//store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU4bx50_PHYS14_25_V1-v1/00000/003B199E-0F81-E411-8E76-0025905A60B0.root'
     )
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
@@ -38,7 +38,7 @@ process.lessGenParticles = cms.EDProducer("GenParticlePruner",
 
 process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     outFileName=cms.string("output.pxlio"),
-    process=cms.string("tChannel"),
+    processName=cms.string("tChannel"),
     selectEvents=cms.VPSet(
         cms.PSet(
             process=cms.string("PHYS"),
