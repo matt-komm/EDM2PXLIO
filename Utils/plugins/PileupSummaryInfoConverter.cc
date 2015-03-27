@@ -24,15 +24,27 @@ void PileupSummaryInfoConverter::convert(const edm::Event* edmEvent, const edm::
         {
             pxl::Particle* puObject = pxlEventView->create<pxl::Particle>();
             puObject->setName(Base::getCollectionName(index));
+            
+            pxl::BasicNVector nInteractionVector(collection->size());
             for (unsigned int i = 0; i < collection->size(); ++i)
             {
-                puObject->setUserRecord(std::string("nInteractions_")+std::to_string(i),(*collection)[i].getPU_NumInteractions());
+                nInteractionVector.setElement(i,(*collection)[i].getPU_NumInteractions());
+                //puObject->setUserRecord(std::string("nInteractions_")+std::to_string(i),(*collection)[i].getPU_NumInteractions());
             }
-        
+            puObject->setUserRecord("nInteractions",nInteractionVector);
             if (_primaryVertexProvider->getPrimaryVertex())
             {
                 puObject->setUserRecord("nVertices",_primaryVertexProvider->getNVertices());
-            }
+                puObject->setUserRecord("PVx",PRECISION(_primaryVertexProvider->getPrimaryVertex()->x()));
+                puObject->setUserRecord("PVy",PRECISION(_primaryVertexProvider->getPrimaryVertex()->y()));
+                puObject->setUserRecord("PVz",PRECISION(_primaryVertexProvider->getPrimaryVertex()->z()));
+                puObject->setUserRecord("PVxError",PRECISION(_primaryVertexProvider->getPrimaryVertex()->xError()));
+                puObject->setUserRecord("PVyError",PRECISION(_primaryVertexProvider->getPrimaryVertex()->yError()));
+                puObject->setUserRecord("PVzError",PRECISION(_primaryVertexProvider->getPrimaryVertex()->zError()));
+                
+                puObject->setUserRecord("PVchi",PRECISION(_primaryVertexProvider->getPrimaryVertex()->chi2()));
+                puObject->setUserRecord("PVndof",_primaryVertexProvider->getPrimaryVertex()->ndof());
+            }   puObject->setUserRecord("PVvalid",_primaryVertexProvider->getPrimaryVertex()->isValid());
         }
     }
 }
