@@ -20,45 +20,109 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
     {
         pxlParticle->setUserRecord(bDiscriminators[i].first,PRECISION(bDiscriminators[i].second));
     }
-    //pxlParticle->setUserRecord("numberOfDaughters",patObject.numberOfDaughters());
+
     pxlParticle->setUserRecord("nConstituents",patObject.nConstituents());
-    
-    pxlParticle->setUserRecord("chargedEmEnergy",PRECISION(patObject.chargedEmEnergy()));
-    pxlParticle->setUserRecord("chargedEmEnergyFraction",PRECISION(patObject.chargedEmEnergyFraction()));
-   
-    pxlParticle->setUserRecord("chargedHadronEnergy",PRECISION(patObject.chargedHadronEnergy()));
-    pxlParticle->setUserRecord("chargedHadronEnergyFraction",PRECISION(patObject.chargedHadronEnergyFraction()));
-    
-    pxlParticle->setUserRecord("neutralHadronEnergy",PRECISION(patObject.neutralHadronEnergy()));
-    pxlParticle->setUserRecord("neutralHadronEnergyFraction",PRECISION(patObject.neutralHadronEnergyFraction()));
-    
-    pxlParticle->setUserRecord("HFHadronEnergy",PRECISION(patObject.HFHadronEnergy()));
-    pxlParticle->setUserRecord("HFHadronEnergyFraction",PRECISION(patObject.HFHadronEnergyFraction()));
-
-    pxlParticle->setUserRecord("neutralEmEnergy",PRECISION(patObject.neutralEmEnergy()));
-    pxlParticle->setUserRecord("neutralEmEnergyFraction",PRECISION(patObject.neutralEmEnergyFraction()));
-
-    pxlParticle->setUserRecord("chargedMuEnergy",PRECISION(patObject.chargedMuEnergy()));
-    pxlParticle->setUserRecord("chargedMuEnergyFraction",PRECISION(patObject.chargedMuEnergyFraction()));
-
-    pxlParticle->setUserRecord("photonEnergy",PRECISION(patObject.photonEnergy()));
-    pxlParticle->setUserRecord("photonEnergyFraction",PRECISION(patObject.photonEnergyFraction()));
-
-    pxlParticle->setUserRecord("muonEnergy",PRECISION(patObject.muonEnergy()));
-    pxlParticle->setUserRecord("muonEnergyFraction",PRECISION(patObject.muonEnergyFraction()));
+    pxlParticle->setUserRecord("n60",patObject.n60());
+    pxlParticle->setUserRecord("n90",patObject.n90());
     
     pxlParticle->setUserRecord("chargedMultiplicity",patObject.chargedMultiplicity());
+    
+    pxlParticle->setUserRecord("chargedHadronMultiplicity",patObject.chargedHadronMultiplicity ());
+    if (patObject.chargedHadronMultiplicity ()>0.0)
+    {
+        pxlParticle->setUserRecord("chargedHadronEnergy",PRECISION(patObject.chargedHadronEnergy()));
+        pxlParticle->setUserRecord("chargedHadronEnergyFraction",PRECISION(patObject.chargedHadronEnergyFraction()));
+    }
+    /*
+    else if (patObject.chargedHadronEnergy()>0.0)
+    {
+        std::cout<<"chargedHadronEnergy "<<patObject.chargedHadronEnergy()<<std::endl;
+    }*/
+    
+    pxlParticle->setUserRecord("neutralHadronMultiplicity",patObject.neutralHadronMultiplicity());
+    if (patObject.neutralHadronMultiplicity()>0.0)
+    {
+        pxlParticle->setUserRecord("neutralHadronEnergy",PRECISION(patObject.neutralHadronEnergy()));
+        pxlParticle->setUserRecord("neutralHadronEnergyFraction",PRECISION(patObject.neutralHadronEnergyFraction()));
+    } 
+    /*
+    else if (patObject.neutralHadronEnergy()>0.0)
+    {
+        std::cout<<"neutralHadronEnergy "<<patObject.neutralHadronEnergy()<<std::endl;
+    }
+    */
+    
     pxlParticle->setUserRecord("neutralMultiplicity",patObject.neutralMultiplicity());
+    if (patObject.neutralMultiplicity()>0.0)
+    {
+        pxlParticle->setUserRecord("neutralEmEnergy",PRECISION(patObject.neutralEmEnergy()));
+        pxlParticle->setUserRecord("neutralEmEnergyFraction",PRECISION(patObject.neutralEmEnergyFraction()));
+    }
+    /*
+    else if (patObject.neutralEmEnergy()>0.0)
+    {
+        std::cout<<"neutralEmEnergy"<<patObject.neutralEmEnergy()<<std::endl;
+    }
+    */
+    
+    pxlParticle->setUserRecord("photonMultiplicity",patObject.photonMultiplicity());
+    if (patObject.photonMultiplicity()>0.0)
+    {
+        pxlParticle->setUserRecord("photonEnergy",PRECISION(patObject.photonEnergy()));
+        pxlParticle->setUserRecord("photonEnergyFraction",PRECISION(patObject.photonEnergyFraction()));
+    }
+    /*
+    else if (patObject.photonEnergy()>0.0)
+    {
+        std::cout<<"photonEnergy "<<patObject.photonEnergy()<<std::endl;
+    }
+    */
+    
+    pxlParticle->setUserRecord("HFHadronMultiplicity",patObject.HFHadronMultiplicity());
+    if (patObject.HFHadronMultiplicity()>0)
+    {
+        pxlParticle->setUserRecord("HFHadronEnergy",PRECISION(patObject.HFHadronEnergy()));
+        pxlParticle->setUserRecord("HFHadronEnergyFraction",PRECISION(patObject.HFHadronEnergyFraction()));
+    }
+    /*
+    else if (patObject.HFHadronEnergy()>0.0)
+    {
+        std::cout<<"HFHadronEnergy "<<patObject.HFHadronEnergy()<<std::endl;
+    }
+    */
+    
     pxlParticle->setUserRecord("muonMultiplicity",patObject.muonMultiplicity());
+    if (patObject.muonMultiplicity()>0)
+    {
+        //same as 'chargedMuEnergy'
+        pxlParticle->setUserRecord("muonEnergy",PRECISION(patObject.muonEnergy()));
+        pxlParticle->setUserRecord("muonEnergyFraction",PRECISION(patObject.muonEnergyFraction()));
+    }
+    /*
+    else if (patObject.muonEnergy()>0.0)
+    {
+        std::cout<<"muonEnergy "<<patObject.muonEnergy()<<std::endl;
+    }
+    */
+    
     pxlParticle->setUserRecord("electronMultiplicity",patObject.electronMultiplicity());
-    pxlParticle->setUserRecord("electronMultiplicity",patObject.photonMultiplicity());
-
+    if (patObject.electronMultiplicity()>0)
+    {
+        pxlParticle->setUserRecord("electronEnergy",PRECISION(patObject.electronEnergy()));
+        pxlParticle->setUserRecord("electronEnergyFraction",PRECISION(patObject.electronEnergyFraction()));
+    }
+    /*
+    else if (patObject.electronEnergy()>0.0)
+    {
+        std::cout<<"electronEnergy "<<patObject.electronEnergy()<<std::endl;
+    }
+    */
+    
     const reco::JetFlavourInfo& flavorInfo = patObject.jetFlavourInfo();
     pxlParticle->setUserRecord("partonFlavour",flavorInfo.getPartonFlavour());
     
     pxlParticle->setUserRecord("jetArea",PRECISION(patObject.jetArea()));
     pxlParticle->setUserRecord("jetCharge",PRECISION(patObject.jetCharge()));
-
     
     for (unsigned int iname = 0; iname < patObject.userFloatNames ().size(); ++ iname)
     {
