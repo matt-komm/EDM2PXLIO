@@ -44,6 +44,9 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
     pxlParticle->setUserRecord("photonEnergy",PRECISION(patObject.photonEnergy()));
     pxlParticle->setUserRecord("photonEnergyFraction",PRECISION(patObject.photonEnergyFraction()));
 
+    pxlParticle->setUserRecord("muonEnergy",PRECISION(patObject.muonEnergy()));
+    pxlParticle->setUserRecord("muonEnergyFraction",PRECISION(patObject.muonEnergyFraction()));
+    
     pxlParticle->setUserRecord("chargedMultiplicity",patObject.chargedMultiplicity());
     pxlParticle->setUserRecord("neutralMultiplicity",patObject.neutralMultiplicity());
     pxlParticle->setUserRecord("muonMultiplicity",patObject.muonMultiplicity());
