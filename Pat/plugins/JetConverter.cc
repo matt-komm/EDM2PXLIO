@@ -20,8 +20,8 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
     {
         pxlParticle->setUserRecord(bDiscriminators[i].first,PRECISION(bDiscriminators[i].second));
     }
-    pxlParticle->setUserRecord("numberOfDaughters",patObject.numberOfDaughters());
-
+    //pxlParticle->setUserRecord("numberOfDaughters",patObject.numberOfDaughters());
+    pxlParticle->setUserRecord("nConstituents",patObject.nConstituents());
     
     pxlParticle->setUserRecord("chargedEmEnergy",PRECISION(patObject.chargedEmEnergy()));
     pxlParticle->setUserRecord("chargedEmEnergyFraction",PRECISION(patObject.chargedEmEnergyFraction()));
