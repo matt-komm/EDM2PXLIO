@@ -28,55 +28,32 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
     pxlParticle->setUserRecord("chargedMultiplicity",patObject.chargedMultiplicity());
     
     pxlParticle->setUserRecord("chargedHadronMultiplicity",patObject.chargedHadronMultiplicity ());
-    if (patObject.chargedHadronMultiplicity ()>0.0)
+    if (patObject.chargedHadronMultiplicity ()>0)
     {
         pxlParticle->setUserRecord("chargedHadronEnergy",PRECISION(patObject.chargedHadronEnergy()));
         pxlParticle->setUserRecord("chargedHadronEnergyFraction",PRECISION(patObject.chargedHadronEnergyFraction()));
     }
-    /*
-    else if (patObject.chargedHadronEnergy()>0.0)
-    {
-        std::cout<<"chargedHadronEnergy "<<patObject.chargedHadronEnergy()<<std::endl;
-    }*/
     
     pxlParticle->setUserRecord("neutralHadronMultiplicity",patObject.neutralHadronMultiplicity());
-    if (patObject.neutralHadronMultiplicity()>0.0)
+    if (patObject.neutralHadronMultiplicity()>0)
     {
         pxlParticle->setUserRecord("neutralHadronEnergy",PRECISION(patObject.neutralHadronEnergy()));
         pxlParticle->setUserRecord("neutralHadronEnergyFraction",PRECISION(patObject.neutralHadronEnergyFraction()));
     } 
-    /*
-    else if (patObject.neutralHadronEnergy()>0.0)
-    {
-        std::cout<<"neutralHadronEnergy "<<patObject.neutralHadronEnergy()<<std::endl;
-    }
-    */
     
     pxlParticle->setUserRecord("neutralMultiplicity",patObject.neutralMultiplicity());
-    if (patObject.neutralMultiplicity()>0.0)
+    if (patObject.neutralMultiplicity()>0)
     {
         pxlParticle->setUserRecord("neutralEmEnergy",PRECISION(patObject.neutralEmEnergy()));
         pxlParticle->setUserRecord("neutralEmEnergyFraction",PRECISION(patObject.neutralEmEnergyFraction()));
     }
-    /*
-    else if (patObject.neutralEmEnergy()>0.0)
-    {
-        std::cout<<"neutralEmEnergy"<<patObject.neutralEmEnergy()<<std::endl;
-    }
-    */
     
     pxlParticle->setUserRecord("photonMultiplicity",patObject.photonMultiplicity());
-    if (patObject.photonMultiplicity()>0.0)
+    if (patObject.photonMultiplicity()>0)
     {
         pxlParticle->setUserRecord("photonEnergy",PRECISION(patObject.photonEnergy()));
         pxlParticle->setUserRecord("photonEnergyFraction",PRECISION(patObject.photonEnergyFraction()));
     }
-    /*
-    else if (patObject.photonEnergy()>0.0)
-    {
-        std::cout<<"photonEnergy "<<patObject.photonEnergy()<<std::endl;
-    }
-    */
     
     pxlParticle->setUserRecord("HFHadronMultiplicity",patObject.HFHadronMultiplicity());
     if (patObject.HFHadronMultiplicity()>0)
@@ -84,12 +61,6 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
         pxlParticle->setUserRecord("HFHadronEnergy",PRECISION(patObject.HFHadronEnergy()));
         pxlParticle->setUserRecord("HFHadronEnergyFraction",PRECISION(patObject.HFHadronEnergyFraction()));
     }
-    /*
-    else if (patObject.HFHadronEnergy()>0.0)
-    {
-        std::cout<<"HFHadronEnergy "<<patObject.HFHadronEnergy()<<std::endl;
-    }
-    */
     
     pxlParticle->setUserRecord("muonMultiplicity",patObject.muonMultiplicity());
     if (patObject.muonMultiplicity()>0)
@@ -98,25 +69,14 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
         pxlParticle->setUserRecord("muonEnergy",PRECISION(patObject.muonEnergy()));
         pxlParticle->setUserRecord("muonEnergyFraction",PRECISION(patObject.muonEnergyFraction()));
     }
-    /*
-    else if (patObject.muonEnergy()>0.0)
-    {
-        std::cout<<"muonEnergy "<<patObject.muonEnergy()<<std::endl;
-    }
-    */
     
     pxlParticle->setUserRecord("electronMultiplicity",patObject.electronMultiplicity());
     if (patObject.electronMultiplicity()>0)
     {
+        //same as 'chargedEmEnergy'
         pxlParticle->setUserRecord("electronEnergy",PRECISION(patObject.electronEnergy()));
         pxlParticle->setUserRecord("electronEnergyFraction",PRECISION(patObject.electronEnergyFraction()));
     }
-    /*
-    else if (patObject.electronEnergy()>0.0)
-    {
-        std::cout<<"electronEnergy "<<patObject.electronEnergy()<<std::endl;
-    }
-    */
     
     const reco::JetFlavourInfo& flavorInfo = patObject.jetFlavourInfo();
     pxlParticle->setUserRecord("partonFlavour",flavorInfo.getPartonFlavour());
