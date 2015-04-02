@@ -7,3 +7,7 @@
 <library file="EDM2PXLIO.cc" name="EDM2PXLIOPlugin">
     <flags EDM_PLUGIN="1"/>
 </library>
+
+<library file="ValueMapAccessor.cc" name="ValueMapAccessorPlugin">
+    <flags EDM_PLUGIN="1"/>
+</library>

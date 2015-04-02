@@ -24,6 +24,9 @@
 
 #include "EDM2PXLIO/Core/interface/CollectionConverter.h"
 
+#include "EDM2PXLIO/Core/interface/ValueMapAccessor.h"
+#include "EDM2PXLIO/Core/interface/ValueMapAccessorFactory.h"
+
 namespace edm2pxlio
 {
 
@@ -35,6 +38,8 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
     protected:
         std::vector<std::pair<std::string,StringObjectFunction<Class>*>> _userRecordsFcts;
         StringCutObjectSelector<Class>* _cutFct;
+        
+        
 
     public:
         CollectionClassConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector):
@@ -57,6 +62,18 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
                 if (iConfig.exists("select"))
                 {
                     _cutFct = new StringCutObjectSelector<Class>(iConfig.getParameter<std::string>("select"), true);
+                }
+                
+                if (iConfig.exists("valueMaps"))
+                {
+                    const edm::ParameterSet& vmConfigs = iConfig.getParameter<edm::ParameterSet>("valueMaps");
+                    const std::vector<std::string> valueMapConfigs = vmConfigs.getParameterNamesForType<edm::ParameterSet>();
+                    for (unsigned int ivm=0; ivm< valueMapConfigs.size(); ++ivm)
+                    {
+                        const edm::ParameterSet& vmConfig = vmConfigs.getParameter<edm::ParameterSet>(valueMapConfigs[ivm]);
+                        const std::string vmPluginName = vmConfig.getParameter<std::string>("type");
+                        
+                    }
                 }
             }
         }
