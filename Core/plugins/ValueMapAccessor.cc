@@ -18,7 +18,6 @@ class DefaultTypeValueMapAccessorTmpl:
         {
             particle->setUserRecord(ValueMapAccessorTmpl<TYPE>::getName(),value);
         }
-    
 };
 
 typedef DefaultTypeValueMapAccessorTmpl<bool> ValueMapAccessorBool;

@@ -38,7 +38,7 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
     protected:
         std::vector<std::pair<std::string,StringObjectFunction<Class>*>> _userRecordsFcts;
         StringCutObjectSelector<Class>* _cutFct;
-        
+        std::vector<ValueMapAccessor*> _valueMapAccessors;
         
 
     public:
@@ -70,9 +70,18 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
                     const std::vector<std::string> valueMapConfigs = vmConfigs.getParameterNamesForType<edm::ParameterSet>();
                     for (unsigned int ivm=0; ivm< valueMapConfigs.size(); ++ivm)
                     {
-                        const edm::ParameterSet& vmConfig = vmConfigs.getParameter<edm::ParameterSet>(valueMapConfigs[ivm]);
-                        const std::string vmPluginName = vmConfig.getParameter<std::string>("type");
-                        
+                        const std::string& vmPluginName = valueMapConfigs[ivm];
+                        const edm::ParameterSet& vmConfig = vmConfigs.getParameter<edm::ParameterSet>(vmPluginName);
+                        const std::string vmPluginType = vmConfig.getParameter<std::string>("type");
+                        edm2pxlio::ValueMapAccessor* accessor = edm2pxlio::ValueMapAccessorFactory::get()->tryToCreate(vmPluginName,vmPluginName,globalConfig,consumesCollector);
+                        if (accessor)
+                        {
+                            _valueMapAccessors.push_back(accessor);
+                        }
+                        else
+                        {
+                            edm::LogWarning("ValueMapAccessor plugin not found: ") << vmPluginType;
+                        }
                     }
                 }
             }

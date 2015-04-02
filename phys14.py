@@ -37,6 +37,22 @@ process.lessGenParticles = cms.EDProducer("GenParticlePruner",
     )
 )
 
+
+process.load("RecoEgamma.ElectronIdentification.egmGsfElectronIDs_cfi")
+from PhysicsTools.SelectorUtils.centralIDRegistry import central_id_registry
+process.egmGsfElectronIDSequence = cms.Sequence(process.egmGsfElectronIDs)
+
+my_id_modules = ['RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V1_cff']
+
+for idmod in my_id_modules:
+    setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
+
+
+#electronVetoIdMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V1-standalone-veto"),
+#electronTightIdMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V1-standalone-tight")
+
+
+
 process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     outFileName=cms.string("output.pxlio"),
     processName=cms.string("tChannel"),
@@ -56,7 +72,8 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     
     electrons = cms.PSet(
         type=cms.string("ElectronConverter"),
-        srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
+        #srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
+        srcs=cms.VInputTag(cms.InputTag("gedGsfElectrons")),
         names=cms.vstring("Electron")
     ),
                                  
@@ -103,6 +120,7 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
 
 process.p0=cms.Path(
     process.lessGenParticles
+    *process.egmGsfElectronIDSequence
 )
 
 process.endpath= cms.EndPath(process.pat2pxlio)
