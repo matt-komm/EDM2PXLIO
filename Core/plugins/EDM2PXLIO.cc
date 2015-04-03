@@ -30,7 +30,7 @@
 
 
 class EDM2PXLIO:
-    public edm::one::EDAnalyzer<>
+    public edm::EDAnalyzer
 {
     private: 
         struct SelectedProcessPaths
