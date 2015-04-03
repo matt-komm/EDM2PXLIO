@@ -23,7 +23,7 @@ process.source = cms.Source("PoolSource",
         #'root://xrootd.unl.edu//store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU4bx50_PHYS14_25_V1-v1/00000/003B199E-0F81-E411-8E76-0025905A60B0.root'
     )
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
@@ -37,15 +37,23 @@ process.lessGenParticles = cms.EDProducer("GenParticlePruner",
     )
 )
 
+from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
 
 process.load("RecoEgamma.ElectronIdentification.egmGsfElectronIDs_cfi")
+# overwrite a default parameter: for miniAOD, the collection name is a slimmed one
+process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag('slimmedElectrons')
+
 from PhysicsTools.SelectorUtils.centralIDRegistry import central_id_registry
 process.egmGsfElectronIDSequence = cms.Sequence(process.egmGsfElectronIDs)
 
-my_id_modules = ['RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V1_cff']
-
+# Define which IDs we want to produce
+# Each of these two example IDs contains all four standard 
+# cut-based ID working points (only two WP of the PU20bx25 are actually used here).
+my_id_modules = ['RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V1_miniAOD_cff']
+#Add them to the VID producer
 for idmod in my_id_modules:
     setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
+
 
 
 #electronVetoIdMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V1-standalone-veto"),
@@ -72,9 +80,23 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     
     electrons = cms.PSet(
         type=cms.string("ElectronConverter"),
-        #srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
-        srcs=cms.VInputTag(cms.InputTag("gedGsfElectrons")),
-        names=cms.vstring("Electron")
+        srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
+        names=cms.vstring("Electron"),
+        valueMaps = cms.PSet(
+            phys14eleIDVeto=cms.PSet(
+                type=cms.string("ValueMapAccessorBool"),
+                src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-PHYS14-PU20bx25-V1-miniAOD-standalone-veto"),
+            ),
+            phys14eleIDLoose=cms.PSet(
+                type=cms.string("ValueMapAccessorBool"),
+                src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-PHYS14-PU20bx25-V1-miniAOD-standalone-loose"),
+            ),
+            phys14eleIDTight=cms.PSet(
+                type=cms.string("ValueMapAccessorBool"),
+                src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-PHYS14-PU20bx25-V1-miniAOD-standalone-tight"),
+            ),
+        ),
+        
     ),
                                  
     jets = cms.PSet(

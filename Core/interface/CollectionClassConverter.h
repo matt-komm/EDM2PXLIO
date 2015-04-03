@@ -73,7 +73,8 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
                         const std::string& vmPluginName = valueMapConfigs[ivm];
                         const edm::ParameterSet& vmConfig = vmConfigs.getParameter<edm::ParameterSet>(vmPluginName);
                         const std::string vmPluginType = vmConfig.getParameter<std::string>("type");
-                        edm2pxlio::ValueMapAccessor* accessor = edm2pxlio::ValueMapAccessorFactory::get()->tryToCreate(vmPluginName,vmPluginName,globalConfig,consumesCollector);
+                        
+                        edm2pxlio::ValueMapAccessor* accessor = edm2pxlio::ValueMapAccessorFactory::get()->tryToCreate(vmPluginType,vmPluginName,vmConfig,consumesCollector);
                         if (accessor)
                         {
                             _valueMapAccessors.push_back(accessor);
@@ -98,6 +99,11 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent) const
         {
             Base::convert(edmEvent, iSetup, pxlEvent);
+            
+            for (unsigned int ivm = 0; ivm < _valueMapAccessors.size(); ++ ivm)
+            {
+                _valueMapAccessors[ivm]->convert(edmEvent,iSetup,pxlEvent);
+            }
 
             for (unsigned index=0; index<CollectionConverter<edm::View<Class>>::size(); ++index)
             {
@@ -125,6 +131,11 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
                         
                         this->convertObject(classObject,pxlParticle);
                         fillUserRecords(classObject,pxlParticle);
+                        
+                        for (unsigned int ivm = 0; ivm < _valueMapAccessors.size(); ++ ivm)
+                        {
+                            _valueMapAccessors[ivm]->accessValues(collection->id(),collection->refAt(iparticle).key(), pxlParticle);
+                        }
                     }
                     if (collection->size()!=(pxlParticles.size()+nSkipped))
                     {
