@@ -6,8 +6,8 @@ process.options.allowUnscheduled = cms.untracked.bool(False)
 #process.options.numberOfThreads = cms.untracked.uint32(4)
 #process.options.numberOfStreams = cms.untracked.uint32(4)
 
-process.load("Configuration.EventContent.EventContent_cff")
-process.load('Configuration.StandardSequences.GeometryIdeal_cff')
+process.load('Configuration.EventContent.EventContent_cff')
+process.load('Configuration.Geometry.GeometryIdeal_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.GlobalTag.globaltag = 'PHYS14_25_V2'
