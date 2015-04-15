@@ -151,7 +151,7 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         pxlEvent.setUserRecord("isRealData",iEvent.isRealData());
         if (_processName.length()>0)
         {
-            pxlEvent.setUserRecord("Process", _processName);
+            pxlEvent.setUserRecord("ProcessName", _processName);
         }
         for (unsigned int iprovider = 0; iprovider<_providers.size(); ++iprovider)
         {

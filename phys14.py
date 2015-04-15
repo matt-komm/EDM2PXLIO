@@ -1,6 +1,39 @@
 import FWCore.ParameterSet.Config as cms
+from FWCore.ParameterSet.VarParsing import VarParsing
 
-process = cms.Process("PHYS")
+options = VarParsing ('analysis')
+
+#TODO: forward option to plugins
+options.register(
+    'isData',
+    False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "is data"
+)
+
+#TODO: forward option to plugins
+options.register(
+    'isFSim',
+    False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "is fastsim"
+)
+
+options.register(
+    'processName',
+    "unknown",
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.string,
+    "name of process"
+)
+				  
+options.parseArguments()
+
+
+
+process = cms.Process("STEA")
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.options.allowUnscheduled = cms.untracked.bool(False)
 #process.options.numberOfThreads = cms.untracked.uint32(4)
@@ -18,9 +51,11 @@ process.MessageLogger.suppressWarning = cms.untracked.vstring('ecalLaserCorrFilt
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'root://eoscms////eos/cms/store/mc/Phys14DR/TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/0260CBE1-9F6A-E411-88C8-E0CB4E29C514.root'
+        #'root://eoscms////eos/cms/store/mc/Phys14DR/TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/0260CBE1-9F6A-E411-88C8-E0CB4E29C514.root'
         #'root://eoscms///eos/cms/store/mc/Spring14miniaod/TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/MINIAODSIM/PU20bx25_POSTLS170_V5-v2/00000/0082EB4E-0D23-E411-9129-FA163E4A4545.root'
         #'root://xrootd.unl.edu//store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU4bx50_PHYS14_25_V1-v1/00000/003B199E-0F81-E411-8E76-0025905A60B0.root'
+        'root://xrootd.unl.edu//store/mc/Phys14DR/Tbar_tW-channel-DR_Tune4C_13TeV-CSA14-powheg-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/0AFEB3CA-9D72-E411-8ACC-20CF305B057E.root'
+    
     )
 )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
@@ -64,13 +99,13 @@ for idmod in my_id_modules:
 
 process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     outFileName=cms.string("output.pxlio"),
-    processName=cms.string("tChannel"),
+    processName=cms.string(options.processName),
     selectEvents=cms.VPSet(
         cms.PSet(
-            process=cms.string("PHYS"),
+            process=cms.string("STEA"),
             paths=cms.vstring(
-                "phys_filtered",
-                "phys_plain"
+                "STEA_filtered",
+                "STEA_plain"
             ),
         )
     ),
@@ -142,10 +177,10 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         regex=cms.vstring("[0-9a-zA-z]*")
     ),
     
-    triggersPHYS = cms.PSet(
+    triggersSTEA = cms.PSet(
         type=cms.string("TriggerResultConverter"),
-        srcs=cms.VInputTag(cms.InputTag("TriggerResults","","PHYS")),
-        regex=cms.vstring("[0-9a-zA-z]*")
+        srcs=cms.VInputTag(cms.InputTag("TriggerResults","","STEA")),
+        regex=cms.vstring("STEA_filtered")
     ),
     
     puInfo = cms.PSet(
@@ -156,12 +191,12 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
 )
 
 
-process.phys_plain=cms.Path(
+process.STEA_plain=cms.Path(
     process.lessGenParticles
     *process.egmGsfElectronIDSequence
 )
 
-process.phys_filtered=cms.Path(
+process.STEA_filtered=cms.Path(
     process.lessGenParticles
     *process.goodOfflinePrimaryVertices
     *process.egmGsfElectronIDSequence
