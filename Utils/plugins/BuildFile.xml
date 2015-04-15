@@ -9,3 +9,6 @@
 <library   file="PileupSummaryInfoConverter.cc" name="PileupSummaryInfoConverterPlugin">
     <flags   EDM_PLUGIN="1"/>
 </library>
+<library   file="FirstVertexFilter.cc" name="FirstVertexFilterPlugin">
+    <flags   EDM_PLUGIN="1"/>
+</library>

@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("PHYS")
-process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
+process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.options.allowUnscheduled = cms.untracked.bool(False)
 #process.options.numberOfThreads = cms.untracked.uint32(4)
 #process.options.numberOfStreams = cms.untracked.uint32(4)
@@ -24,6 +24,12 @@ process.source = cms.Source("PoolSource",
     )
 )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+
+
+process.goodOfflinePrimaryVertices = cms.EDFilter('FirstVertexFilter',
+    src = cms.InputTag('offlineSlimmedPrimaryVertices'),
+    cut = cms.string('!isFake & ndof >= 4. & abs(z) < 24. & position.Rho < 2.')
+)
 
 
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
@@ -56,18 +62,16 @@ for idmod in my_id_modules:
 
 
 
-#electronVetoIdMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V1-standalone-veto"),
-#electronTightIdMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V1-standalone-tight")
-
-
-
 process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     outFileName=cms.string("output.pxlio"),
     processName=cms.string("tChannel"),
     selectEvents=cms.VPSet(
         cms.PSet(
             process=cms.string("PHYS"),
-            paths=cms.vstring("p0"),
+            paths=cms.vstring(
+                "phys_filtered",
+                "phys_plain"
+            ),
         )
     ),
     primaryVertex = cms.InputTag("offlineSlimmedPrimaryVertices"),
@@ -132,6 +136,18 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         regex=cms.vstring("HLT_Iso[0-9a-zA-z]*","HLT_Ele[0-9a-zA-z]*")
     ),
     
+    triggersPAT = cms.PSet(
+        type=cms.string("TriggerResultConverter"),
+        srcs=cms.VInputTag(cms.InputTag("TriggerResults","","PAT")),
+        regex=cms.vstring("[0-9a-zA-z]*")
+    ),
+    
+    triggersPHYS = cms.PSet(
+        type=cms.string("TriggerResultConverter"),
+        srcs=cms.VInputTag(cms.InputTag("TriggerResults","","PHYS")),
+        regex=cms.vstring("[0-9a-zA-z]*")
+    ),
+    
     puInfo = cms.PSet(
         type=cms.string("PileupSummaryInfoConverter"),
         srcs=cms.VInputTag(cms.InputTag("addPileupInfo","","HLT")),
@@ -140,8 +156,14 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
 )
 
 
-process.p0=cms.Path(
+process.phys_plain=cms.Path(
     process.lessGenParticles
+    *process.egmGsfElectronIDSequence
+)
+
+process.phys_filtered=cms.Path(
+    process.lessGenParticles
+    *process.goodOfflinePrimaryVertices
     *process.egmGsfElectronIDSequence
 )
 
