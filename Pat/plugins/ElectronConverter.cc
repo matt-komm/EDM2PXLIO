@@ -25,15 +25,28 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
         pxlParticle->setUserRecord(electronIds[i].first,bool(electronIds[i].second));
     }
     
-    pxlParticle->setUserRecord("dB",PRECISION(patObject.dB()));
     pxlParticle->setUserRecord("isPF",patObject.isPF());
     pxlParticle->setUserRecord("ecalDrivenSeed",patObject.ecalDrivenSeed());
     pxlParticle->setUserRecord("trackerDrivenSeed",patObject.trackerDrivenSeed());
-    pxlParticle->setUserRecord("isInEB-EE",(1.4442 < fabs(patObject.eta())) && (fabs(patObject.eta()) < 1.5660));
+    pxlParticle->setUserRecord("isEB",patObject.isEB());
+    pxlParticle->setUserRecord("isEE",patObject.isEE());
+    pxlParticle->setUserRecord("isEBEEGap",patObject.isEBEEGap());
     
+    
+    //http://cmslxr.fnal.gov/lxr/source/EgammaAnalysis/ElectronTools/src/EGammaCutBasedEleId.cc#0104
+    //full5x5_sigmaIetaIeta
+    pxlParticle->setUserRecord("full5x5_sigmaIetaIphi",PRECISION(patObject.full5x5_sigmaIetaIphi()));
+    //dEtaIn
+    pxlParticle->setUserRecord("deltaEtaSuperClusterTrackAtVtx",PRECISION(patObject.deltaEtaSuperClusterTrackAtVtx()));
+    //dPhiIn
+    pxlParticle->setUserRecord("deltaPhiSuperClusterTrackAtVtx",PRECISION(patObject.deltaPhiSuperClusterTrackAtVtx()));
+    //hOverE
+    pxlParticle->setUserRecord("hadronicOverEm",PRECISION(patObject.hadronicOverEm()));
+    //ooEmooP='1/E - 1/p'
+    pxlParticle->setUserRecord("ooEmooP",PRECISION((1.0/patObject.ecalEnergy() - patObject.eSuperClusterOverP()/patObject.ecalEnergy())));
+    
+    pxlParticle->setUserRecord("sigmaIetaIeta",PRECISION(patObject.sigmaIetaIeta()));
     pxlParticle->setUserRecord("passConversionVeto",patObject.passConversionVeto());
-
-
     
     if (patObject.gsfTrack().get()!=nullptr)
     {
@@ -41,14 +54,14 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
         pxlParticle->setUserRecord("chi2",PRECISION(gsfTrack->chi2()));
         pxlParticle->setUserRecord("ndof",gsfTrack->ndof());
         pxlParticle->setUserRecord("lostHits",gsfTrack->lost());
-        //pxlParticle->setUserRecord("numberOfHits",gsfTrack->trackerExpectedHitsInner().numberOfHits()));
         
         pxlParticle->setUserRecord("trackerLayersWithMeasurement",gsfTrack->hitPattern().trackerLayersWithMeasurement());
         pxlParticle->setUserRecord("numberOfValidTrackerHits",gsfTrack->hitPattern().numberOfValidTrackerHits());
 
         pxlParticle->setUserRecord("pixelLayersWithMeasurement",gsfTrack->hitPattern().pixelLayersWithMeasurement());
         pxlParticle->setUserRecord("numberOfValidPixelHits",gsfTrack->hitPattern().numberOfValidPixelHits());
-        
+        pxlParticle->setUserRecord("numberOfMissingHitsInner",gsfTrack->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS)); 
+        pxlParticle->setUserRecord("numberOfMissingHitsOuter",gsfTrack->hitPattern().numberOfHits(reco::HitPattern::MISSING_OUTER_HITS)); 
         
         if (_primaryVertexProvider->getPrimaryVertex())
         {
@@ -83,8 +96,6 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     
     pxlParticle->setUserRecord("superClusterEta",PRECISION(patObject.superCluster()->eta()));
     
-    pxlParticle->setUserRecord("sigmaIetaIeta",PRECISION(patObject.sigmaIetaIeta()));
-    pxlParticle->setUserRecord("hadronicOverEm",PRECISION(patObject.hadronicOverEm()));
     pxlParticle->setUserRecord("fbrem",PRECISION(patObject.fbrem()));
 
 }

@@ -51,14 +51,16 @@ process.MessageLogger.suppressWarning = cms.untracked.vstring('ecalLaserCorrFilt
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
+        "root://eoscms////eos/cms/store/mc/Phys14DR/TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/0260CBE1-9F6A-E411-88C8-E0CB4E29C514.root"
         #'root://eoscms////eos/cms/store/mc/Phys14DR/TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/0260CBE1-9F6A-E411-88C8-E0CB4E29C514.root'
         #'root://eoscms///eos/cms/store/mc/Spring14miniaod/TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/MINIAODSIM/PU20bx25_POSTLS170_V5-v2/00000/0082EB4E-0D23-E411-9129-FA163E4A4545.root'
         #'root://xrootd.unl.edu//store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU4bx50_PHYS14_25_V1-v1/00000/003B199E-0F81-E411-8E76-0025905A60B0.root'
         #'root://xrootd.unl.edu//store/mc/Phys14DR/Tbar_tW-channel-DR_Tune4C_13TeV-CSA14-powheg-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/0AFEB3CA-9D72-E411-8ACC-20CF305B057E.root'
         #'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_Pt-20toInf_MuEnrichedPt15_PionKaonDecay_Tune4C_13TeV_pythia8/MINIAODSIM/PU20bx25_PHYS14_25_V1-v3/10000/381E5CF2-8BA7-E411-B4ED-0025B3E05C2C.root'
+        #'root://xrootd.unl.edu//store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/00C90EFC-3074-E411-A845-002590DB9262.root'
     )
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 
 process.goodOfflinePrimaryVertices = cms.EDFilter('FirstVertexFilter',
@@ -104,7 +106,7 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         cms.PSet(
             process=cms.string("STEA"),
             paths=cms.vstring(
-                #"STEA_filtered",
+                "STEA_filtered",
                 "STEA_plain"
             ),
         )
@@ -177,6 +179,12 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         regex=cms.vstring("[0-9a-zA-z]*")
     ),
     
+    triggersSTEA = cms.PSet(
+        type=cms.string("TriggerResultConverter"),
+        srcs=cms.VInputTag(cms.InputTag("TriggerResults","","STEA")),
+        regex=cms.vstring("STEA_filtered")
+    ),
+    
     puInfo = cms.PSet(
         type=cms.string("PileupSummaryInfoConverter"),
         srcs=cms.VInputTag(cms.InputTag("addPileupInfo","","HLT")),
@@ -189,13 +197,13 @@ process.STEA_plain=cms.Path(
     process.lessGenParticles
     *process.egmGsfElectronIDSequence
 )
-'''
+
 process.STEA_filtered=cms.Path(
     process.lessGenParticles
     *process.goodOfflinePrimaryVertices
     *process.egmGsfElectronIDSequence
 )
-'''
+
 process.endpath= cms.EndPath(process.pat2pxlio)
 
 
