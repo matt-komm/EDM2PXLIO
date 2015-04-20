@@ -60,7 +60,7 @@ process.source = cms.Source("PoolSource",
         #'root://xrootd.unl.edu//store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/00C90EFC-3074-E411-A845-002590DB9262.root'
     )
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 
 
 process.goodOfflinePrimaryVertices = cms.EDFilter('FirstVertexFilter',
@@ -80,6 +80,9 @@ process.lessGenParticles = cms.EDProducer("GenParticlePruner",
     )
 )
 
+
+### electron IDs ###
+
 from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
 
 process.load("RecoEgamma.ElectronIdentification.egmGsfElectronIDs_cfi")
@@ -97,6 +100,13 @@ my_id_modules = ['RecoEgamma.ElectronIdentification.Identification.cutBasedElect
 for idmod in my_id_modules:
     setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
 
+
+
+### PUPPI weights ###
+from CommonTools.PileupAlgos.Puppi_cff import puppi
+process.puppi = puppi.clone()
+process.puppi.candName=cms.InputTag("packedPFCandidates")
+process.puppi.vertexName=cms.InputTag("offlineSlimmedPrimaryVertices")
 
 
 process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
@@ -196,12 +206,14 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
 process.STEA_plain=cms.Path(
     process.lessGenParticles
     *process.egmGsfElectronIDSequence
+    *process.puppi
 )
 
 process.STEA_filtered=cms.Path(
     process.lessGenParticles
     *process.goodOfflinePrimaryVertices
     *process.egmGsfElectronIDSequence
+    *process.puppi
 )
 
 process.endpath= cms.EndPath(process.pat2pxlio)
