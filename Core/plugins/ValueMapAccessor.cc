@@ -22,6 +22,7 @@ class DefaultTypeValueMapAccessorTmpl:
 
 typedef DefaultTypeValueMapAccessorTmpl<bool> ValueMapAccessorBool;
 typedef DefaultTypeValueMapAccessorTmpl<float> ValueMapAccessorFloat;
+typedef DefaultTypeValueMapAccessorTmpl<double> ValueMapAccessorDouble;
 typedef DefaultTypeValueMapAccessorTmpl<int> ValueMapAccessorInt;
 typedef DefaultTypeValueMapAccessorTmpl<unsigned int> ValueMapAccessorUInt;
 
@@ -29,6 +30,7 @@ typedef DefaultTypeValueMapAccessorTmpl<unsigned int> ValueMapAccessorUInt;
 
 DEFINE_EDM_PLUGIN(edm2pxlio::ValueMapAccessorFactory, edm2pxlio::ValueMapAccessorBool, "ValueMapAccessorBool");
 DEFINE_EDM_PLUGIN(edm2pxlio::ValueMapAccessorFactory, edm2pxlio::ValueMapAccessorFloat, "ValueMapAccessorFloat");
+DEFINE_EDM_PLUGIN(edm2pxlio::ValueMapAccessorFactory, edm2pxlio::ValueMapAccessorDouble, "ValueMapAccessorDouble");
 DEFINE_EDM_PLUGIN(edm2pxlio::ValueMapAccessorFactory, edm2pxlio::ValueMapAccessorInt, "ValueMapAccessorInt");
 DEFINE_EDM_PLUGIN(edm2pxlio::ValueMapAccessorFactory, edm2pxlio::ValueMapAccessorUInt, "ValueMapAccessorUInt");
 

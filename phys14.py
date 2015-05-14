@@ -51,16 +51,16 @@ process.MessageLogger.suppressWarning = cms.untracked.vstring('ecalLaserCorrFilt
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        "root://eoscms////eos/cms/store/mc/Phys14DR/TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/0260CBE1-9F6A-E411-88C8-E0CB4E29C514.root"
+        #"root://eoscms////eos/cms/store/mc/Phys14DR/TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/0260CBE1-9F6A-E411-88C8-E0CB4E29C514.root"
         #'root://eoscms////eos/cms/store/mc/Phys14DR/TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/0260CBE1-9F6A-E411-88C8-E0CB4E29C514.root'
         #'root://eoscms///eos/cms/store/mc/Spring14miniaod/TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/MINIAODSIM/PU20bx25_POSTLS170_V5-v2/00000/0082EB4E-0D23-E411-9129-FA163E4A4545.root'
-        #'root://xrootd.unl.edu//store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU4bx50_PHYS14_25_V1-v1/00000/003B199E-0F81-E411-8E76-0025905A60B0.root'
+        'root://xrootd.unl.edu//store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU4bx50_PHYS14_25_V1-v1/00000/003B199E-0F81-E411-8E76-0025905A60B0.root'
         #'root://xrootd.unl.edu//store/mc/Phys14DR/Tbar_tW-channel-DR_Tune4C_13TeV-CSA14-powheg-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/0AFEB3CA-9D72-E411-8ACC-20CF305B057E.root'
         #'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_Pt-20toInf_MuEnrichedPt15_PionKaonDecay_Tune4C_13TeV_pythia8/MINIAODSIM/PU20bx25_PHYS14_25_V1-v3/10000/381E5CF2-8BA7-E411-B4ED-0025B3E05C2C.root'
         #'root://xrootd.unl.edu//store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/00C90EFC-3074-E411-A845-002590DB9262.root'
     )
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 
 process.goodOfflinePrimaryVertices = cms.EDFilter('FirstVertexFilter',
@@ -102,11 +102,75 @@ for idmod in my_id_modules:
 
 
 
-### PUPPI weights ###
+
+
+#PF-Weighted Candidates
+## PF ChargedParticles
+process.pfAllChargedParticles = cms.EDFilter("CandPtrSelector",
+    src = cms.InputTag("packedPFCandidates"),
+    cut = cms.string("charge!=0 && fromPV")
+)
+## PF Pileup ChargedParticles
+process.pfPileUpAllChargedParticles = cms.EDFilter("CandPtrSelector",
+    src = cms.InputTag("packedPFCandidates"),
+    cut = cms.string("charge!=0 && !fromPV")
+)
+
+## PF Photons
+process.pfAllPhotons = cms.EDFilter("CandPtrSelector", 
+    src = cms.InputTag("slimmedPhotons"), 
+    cut = cms.string("pt>0.5 && pdgId==22"),
+    filter = cms.bool(False)
+)
+
+## PF NeutralHadrons
+process.pfAllNeutralHadrons = cms.EDFilter("CandPtrSelector",
+    src = cms.InputTag("packedPFCandidates"),
+    cut = cms.string("pt>0.5 && charge==0 && !pdgId==22")
+)
+
+process.PFSequence = cms.Sequence(process.pfAllChargedParticles+process.pfPileUpAllChargedParticles+process.pfAllPhotons+process.pfAllNeutralHadrons)
+
+## PF weights
+from CommonTools.ParticleFlow.deltaBetaWeights_cfi import *
+process.pfWeightedPhotons = pfWeightedPhotons.clone()
+process.pfWeightedPhotons.src  =  cms.InputTag('pfAllPhotons')
+process.pfWeightedPhotons.chargedFromPV  = cms.InputTag('pfAllChargedParticles')
+process.pfWeightedPhotons.chargedFromPU  = cms.InputTag("pfPileUpAllChargedParticles")
+
+process.pfWeightedNeutralHadrons = pfWeightedNeutralHadrons.clone()
+process.pfWeightedNeutralHadrons.src  = cms.InputTag("pfAllNeutralHadrons")
+process.pfWeightedNeutralHadrons.chargedFromPV  = cms.InputTag("pfAllChargedParticles")
+process.pfWeightedNeutralHadrons.chargedFromPU  = cms.InputTag("pfPileUpAllChargedParticles")
+
+process.pfDeltaBetaWeightingSequence = cms.Sequence(process.pfWeightedPhotons*process.pfWeightedNeutralHadrons)
+
+# PUPPI weights
 from CommonTools.PileupAlgos.Puppi_cff import puppi
 process.puppi = puppi.clone()
 process.puppi.candName=cms.InputTag("packedPFCandidates")
 process.puppi.vertexName=cms.InputTag("offlineSlimmedPrimaryVertices")
+
+process.puppiSequence = cms.Sequence(process.puppi)
+
+
+process.puppiLeptonIso = cms.EDProducer('PUPPILeptonIsoProducer',
+    electrons = cms.InputTag("slimmedElectrons"),
+    muons = cms.InputTag("slimmedMuons"),
+    pfCands = cms.InputTag("packedPFCandidates"),
+    puppi = cms.InputTag("puppi", "PuppiWeights"),
+    dRConeSize = cms.untracked.double(0.4)
+)
+
+
+process.pfWeightedLeptonIso = cms.EDProducer('PFWeightedLeptonIsoProducer',
+    electrons = cms.InputTag("slimmedElectrons"),
+    muons = cms.InputTag("slimmedMuons"),
+    pfCands = cms.InputTag("packedPFCandidates"),
+    pfWeightedHadrons = cms.InputTag("pfWeightedNeutralHadrons"),
+    pfWeightedPhotons =cms.InputTag("pfWeightedPhotons"),
+    dRConeSize = cms.untracked.double(0.4)
+)
 
 
 process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
@@ -126,7 +190,13 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     muons = cms.PSet(
         type=cms.string("MuonConverter"),
         srcs=cms.VInputTag(cms.InputTag("slimmedMuons")),
-        names=cms.vstring("Muon")
+        names=cms.vstring("Muon"),
+        valueMaps = cms.PSet(
+            puppiIso=cms.PSet(
+                type=cms.string("ValueMapAccessorDouble"),
+                src=cms.InputTag("puppiLeptonIso","MuonPuppiIso"),
+            ),
+        ),
     ),
     
     electrons = cms.PSet(
@@ -206,16 +276,28 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
 process.STEA_plain=cms.Path(
     process.lessGenParticles
     *process.egmGsfElectronIDSequence
-    *process.puppi
+    *process.PFSequence
+    *process.pfDeltaBetaWeightingSequence
+    *process.puppiSequence
+    *process.puppiLeptonIso
+    *process.pfWeightedLeptonIso
 )
 
 process.STEA_filtered=cms.Path(
     process.lessGenParticles
     *process.goodOfflinePrimaryVertices
     *process.egmGsfElectronIDSequence
-    *process.puppi
+    *process.PFSequence
+    *process.pfDeltaBetaWeightingSequence
+    *process.puppiSequence
+    *process.puppiLeptonIso
+    *process.pfWeightedLeptonIso
 )
 
-process.endpath= cms.EndPath(process.pat2pxlio)
+#process.endpath= cms.EndPath(process.pat2pxlio)
 
-
+process.OUT = cms.OutputModule("PoolOutputModule",
+    fileName = cms.untracked.string('output.root'),
+    outputCommands = cms.untracked.vstring('keep *','keep patJets_patJetsAK4PF_*_*','keep patJets_patJetsAK4PFCHS_*_*','keep *_*_*_PAT','keep *_*_*_S2')
+)
+process.endpath= cms.EndPath(process.OUT)
