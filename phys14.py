@@ -58,15 +58,12 @@ process.source = cms.Source("PoolSource",
         #'root://xrootd.unl.edu//store/mc/Phys14DR/Tbar_tW-channel-DR_Tune4C_13TeV-CSA14-powheg-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/0AFEB3CA-9D72-E411-8ACC-20CF305B057E.root'
         #'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_Pt-20toInf_MuEnrichedPt15_PionKaonDecay_Tune4C_13TeV_pythia8/MINIAODSIM/PU20bx25_PHYS14_25_V1-v3/10000/381E5CF2-8BA7-E411-B4ED-0025B3E05C2C.root'
         #'root://xrootd.unl.edu//store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/00C90EFC-3074-E411-A845-002590DB9262.root'
-    )
+    ),
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
 
-process.goodOfflinePrimaryVertices = cms.EDFilter('FirstVertexFilter',
-    src = cms.InputTag('offlineSlimmedPrimaryVertices'),
-    cut = cms.string('!isFake & ndof >= 4. & abs(z) < 24. & position.Rho < 2.')
-)
+
 
 
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
@@ -158,7 +155,7 @@ for coneSize in [0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5]:
     puppiIsoMuon = cms.EDProducer('PUPPILeptonIsoProducer',
         leptons = cms.InputTag("slimmedMuons"),
         pfCands = cms.InputTag("packedPFCandidates"),
-        puppi = cms.InputTag("puppi", "PuppiWeights"),
+        puppi = cms.InputTag("puppi"),
         dRConeSize = cms.untracked.double(coneSize)
     )
     producerName = "puppiIsoMuonR%02i" % int(coneSize*100)
@@ -171,7 +168,7 @@ for coneSize in [0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5]:
     puppiIsoElectron = cms.EDProducer('PUPPILeptonIsoProducer',
         leptons = cms.InputTag("slimmedElectrons"),
         pfCands = cms.InputTag("packedPFCandidates"),
-        puppi = cms.InputTag("puppi", "PuppiWeights"),
+        puppi = cms.InputTag("puppi"),
         dRConeSize = cms.untracked.double(coneSize)
     )
     producerName = "puppiIsoElectronR%02i" % int(coneSize*100)
@@ -197,7 +194,6 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         cms.PSet(
             process=cms.string("STEA"),
             paths=cms.vstring(
-                "STEA_filtered",
                 "STEA_plain"
             ),
         )
@@ -271,12 +267,6 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         regex=cms.vstring("[0-9a-zA-z]*")
     ),
     
-    triggersSTEA = cms.PSet(
-        type=cms.string("TriggerResultConverter"),
-        srcs=cms.VInputTag(cms.InputTag("TriggerResults","","STEA")),
-        regex=cms.vstring("STEA_filtered")
-    ),
-    
     puInfo = cms.PSet(
         type=cms.string("PileupSummaryInfoConverter"),
         srcs=cms.VInputTag(cms.InputTag("addPileupInfo","","HLT")),
@@ -303,16 +293,6 @@ for puppiIsoElectron in puppiIsoElectronList:
     
 process.STEA_plain=cms.Path(
     process.lessGenParticles
-    *process.egmGsfElectronIDSequence
-    #*process.PFSequence
-    #*process.pfDeltaBetaWeightingSequence
-    *process.puppiSequence
-    #*process.pfWeightedLeptonIso
-)
-
-process.STEA_filtered=cms.Path(
-    process.lessGenParticles
-    *process.goodOfflinePrimaryVertices
     *process.egmGsfElectronIDSequence
     #*process.PFSequence
     #*process.pfDeltaBetaWeightingSequence
