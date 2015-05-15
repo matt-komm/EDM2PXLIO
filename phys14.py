@@ -153,16 +153,33 @@ process.puppi.vertexName=cms.InputTag("offlineSlimmedPrimaryVertices")
 
 process.puppiSequence = cms.Sequence(process.puppi)
 
-
-process.puppiLeptonIso = cms.EDProducer('PUPPILeptonIsoProducer',
-    electrons = cms.InputTag("slimmedElectrons"),
-    muons = cms.InputTag("slimmedMuons"),
-    pfCands = cms.InputTag("packedPFCandidates"),
-    puppi = cms.InputTag("puppi", "PuppiWeights"),
-    dRConeSize = cms.untracked.double(0.4)
-)
-
-
+puppiIsoMuonList=[]
+for coneSize in [0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5]:
+    puppiIsoMuon = cms.EDProducer('PUPPILeptonIsoProducer',
+        leptons = cms.InputTag("slimmedMuons"),
+        pfCands = cms.InputTag("packedPFCandidates"),
+        puppi = cms.InputTag("puppi", "PuppiWeights"),
+        dRConeSize = cms.untracked.double(coneSize)
+    )
+    producerName = "puppiIsoMuonR%02i" % int(coneSize*100)
+    puppiIsoMuonList.append(producerName)
+    setattr(process,producerName,puppiIsoMuon)
+    process.puppiSequence+=getattr(process,producerName)
+    
+puppiIsoElectronList=[]
+for coneSize in [0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5]:
+    puppiIsoElectron = cms.EDProducer('PUPPILeptonIsoProducer',
+        leptons = cms.InputTag("slimmedElectrons"),
+        pfCands = cms.InputTag("packedPFCandidates"),
+        puppi = cms.InputTag("puppi", "PuppiWeights"),
+        dRConeSize = cms.untracked.double(coneSize)
+    )
+    producerName = "puppiIsoElectronR%02i" % int(coneSize*100)
+    puppiIsoElectronList.append(producerName)
+    setattr(process,producerName,puppiIsoElectron)
+    process.puppiSequence+=getattr(process,producerName)
+    
+'''
 process.pfWeightedLeptonIso = cms.EDProducer('PFWeightedLeptonIsoProducer',
     electrons = cms.InputTag("slimmedElectrons"),
     muons = cms.InputTag("slimmedMuons"),
@@ -171,7 +188,7 @@ process.pfWeightedLeptonIso = cms.EDProducer('PFWeightedLeptonIsoProducer',
     pfWeightedPhotons =cms.InputTag("pfWeightedPhotons"),
     dRConeSize = cms.untracked.double(0.4)
 )
-
+'''
 
 process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     outFileName=cms.string("output.pxlio"),
@@ -191,12 +208,7 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         type=cms.string("MuonConverter"),
         srcs=cms.VInputTag(cms.InputTag("slimmedMuons")),
         names=cms.vstring("Muon"),
-        valueMaps = cms.PSet(
-            puppiIso=cms.PSet(
-                type=cms.string("ValueMapAccessorDouble"),
-                src=cms.InputTag("puppiLeptonIso","MuonPuppiIso"),
-            ),
-        ),
+        valueMaps = cms.PSet()
     ),
     
     electrons = cms.PSet(
@@ -273,31 +285,46 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
 )
 
 
+for puppiIsoMuon in puppiIsoMuonList:
+    pSet = cms.PSet(
+        type=cms.string("ValueMapAccessorDouble"),
+        src=cms.InputTag(puppiIsoMuon)
+    )
+    setattr(process.pat2pxlio.muons.valueMaps,puppiIsoMuon,pSet)
+
+for puppiIsoElectron in puppiIsoElectronList:
+    pSet = cms.PSet(
+        type=cms.string("ValueMapAccessorDouble"),
+        src=cms.InputTag(puppiIsoElectron)
+    )
+    setattr(process.pat2pxlio.electrons.valueMaps,puppiIsoElectron,pSet)
+    
+    
+    
 process.STEA_plain=cms.Path(
     process.lessGenParticles
     *process.egmGsfElectronIDSequence
-    *process.PFSequence
-    *process.pfDeltaBetaWeightingSequence
+    #*process.PFSequence
+    #*process.pfDeltaBetaWeightingSequence
     *process.puppiSequence
-    *process.puppiLeptonIso
-    *process.pfWeightedLeptonIso
+    #*process.pfWeightedLeptonIso
 )
 
 process.STEA_filtered=cms.Path(
     process.lessGenParticles
     *process.goodOfflinePrimaryVertices
     *process.egmGsfElectronIDSequence
-    *process.PFSequence
-    *process.pfDeltaBetaWeightingSequence
+    #*process.PFSequence
+    #*process.pfDeltaBetaWeightingSequence
     *process.puppiSequence
-    *process.puppiLeptonIso
-    *process.pfWeightedLeptonIso
+    #*process.pfWeightedLeptonIso
 )
 
-#process.endpath= cms.EndPath(process.pat2pxlio)
-
+process.endpath= cms.EndPath(process.pat2pxlio)
+'''
 process.OUT = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('output.root'),
     outputCommands = cms.untracked.vstring('keep *','keep patJets_patJetsAK4PF_*_*','keep patJets_patJetsAK4PFCHS_*_*','keep *_*_*_PAT','keep *_*_*_S2')
 )
 process.endpath= cms.EndPath(process.OUT)
+'''
