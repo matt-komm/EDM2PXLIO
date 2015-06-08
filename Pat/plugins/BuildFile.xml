@@ -3,6 +3,7 @@
 <use name="DataFormats/Common"/>
 <use name="DataFormats/PatCandidates"/>
 <use name="DataFormats/TrackReco"/>
+
 <library   file="ElectronConverter.cc" name="ElectronConverterPlugin">
     <flags   EDM_PLUGIN="1"/>
 </library>

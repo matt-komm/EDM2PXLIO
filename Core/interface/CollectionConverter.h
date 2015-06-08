@@ -33,7 +33,6 @@ class CollectionConverter:
         std::vector<edm::EDGetTokenT<CollectionClass> > _tokens;
         std::vector<std::string> _names;
         std::vector<std::string> _eventViewNames;
-        
         std::string _defaultName;
         std::string _defaultEventView;
         

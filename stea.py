@@ -39,6 +39,7 @@ process.options.allowUnscheduled = cms.untracked.bool(False)
 #process.options.numberOfThreads = cms.untracked.uint32(4)
 #process.options.numberOfStreams = cms.untracked.uint32(4)
 
+process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('Configuration.Geometry.GeometryIdeal_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
@@ -49,12 +50,40 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 process.MessageLogger.suppressWarning = cms.untracked.vstring('ecalLaserCorrFilter','manystripclus53X','toomanystripclus53X')
 
+#process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
+from CondCore.DBCommon.CondDBSetup_cfi import *
+process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
+    connect = cms.string("frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS"),
+    toGet =  cms.VPSet(
+        cms.PSet(
+            record = cms.string("JetCorrectionsRecord"),
+            tag = cms.string("JetCorrectorParametersCollection_CSA14_V4_MC_AK4PFchs"),
+            label=cms.untracked.string("AK4PFchs")
+        )
+    )
+)
+
+process.jesUp = cms.EDProducer("JESUncertainty",
+    jecES=cms.string("AK4PFchs"),
+    jetSrc=cms.InputTag("slimmedJets"),
+    metSrc=cms.InputTag("slimmedMETs"),
+    delta=cms.double(1.0)
+)
+process.jesDown = cms.EDProducer("JESUncertainty",
+    jecES=cms.string("AK4PFchs"),
+    jetSrc=cms.InputTag("slimmedJets"),
+    metSrc=cms.InputTag("slimmedMETs"),
+    delta=cms.double(-1.0)
+) 
+
+
+
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
         'root://xrootd.unl.edu//store/mc/RunIISpring15DR74/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/50000/02CF0510-4CFF-E411-A715-0025905A6090.root'
     )
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 
 
@@ -71,27 +100,18 @@ process.lessGenParticles = cms.EDProducer("GenParticlePruner",
     )
 )
 
-'''
+
 ### electron IDs ###
 
 from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
+switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
+for eleID in [
+    'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V2_cff',
+    'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV51_cff'
+]:
+    setupAllVIDIdsInModule(process,eleID,setupVIDElectronSelection)
 
-process.load("RecoEgamma.ElectronIdentification.egmGsfElectronIDs_cfi")
-# overwrite a default parameter: for miniAOD, the collection name is a slimmed one
-process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag('slimmedElectrons')
 
-from PhysicsTools.SelectorUtils.centralIDRegistry import central_id_registry
-process.egmGsfElectronIDSequence = cms.Sequence(process.egmGsfElectronIDs)
-
-# Define which IDs we want to produce
-# Each of these two example IDs contains all four standard 
-# cut-based ID working points (only two WP of the PU20bx25 are actually used here).
-my_id_modules = ['RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V1_miniAOD_cff']
-#Add them to the VID producer
-for idmod in my_id_modules:
-    setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
-
-'''
 
 
 '''
@@ -207,12 +227,40 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         type=cms.string("ElectronConverter"),
         srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
         names=cms.vstring("Electron"),
+        valueMaps=cms.PSet(
+            phys14eleIDVeto = cms.PSet(
+                type=cms.string("ValueMapAccessorBool"),
+                src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-veto")
+            ),
+            phys14eleIDTight = cms.PSet(
+                type=cms.string("ValueMapAccessorBool"),
+                src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-tight")
+            ),
+        )
     ),
                                  
     jets = cms.PSet(
         type=cms.string("JetConverter"),
-        srcs=cms.VInputTag(cms.InputTag("slimmedJets"),cms.InputTag("slimmedJetsPuppi")),
-        names=cms.vstring("Jet","PuppiJets"),
+        srcs=cms.VInputTag(cms.InputTag("slimmedJets")),
+        names=cms.vstring("Jet"),
+        select=cms.string("pt>20.0"),
+        valueMaps=cms.PSet(
+            jesUp = cms.PSet(
+                type=cms.string("ValueMapAccessorLorentzVector"),
+                src=cms.InputTag("jesUp","jets")
+            ),
+            jesDown = cms.PSet(
+                type=cms.string("ValueMapAccessorLorentzVector"),
+                src=cms.InputTag("jesDown","jets")
+            )
+        )
+    ),
+    
+    puppiJets = cms.PSet(
+        type=cms.string("JetConverter"),
+        srcs=cms.VInputTag(cms.InputTag("slimmedJetsPuppi")),
+        names=cms.vstring("PuppiJets"),
+        select=cms.string("pt>20.0"),
     ),
     
     genParticles= cms.PSet(
@@ -232,8 +280,25 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
                              
     mets = cms.PSet(
         type=cms.string("METConverter"),
-        srcs=cms.VInputTag(cms.InputTag("slimmedMETs"),cms.InputTag("slimmedMETsPuppi")),
-        names=cms.vstring("MET","PuppiMET")
+        srcs=cms.VInputTag(cms.InputTag("slimmedMETs")),
+        names=cms.vstring("MET"),
+        valueMaps=cms.PSet(
+            jesUp = cms.PSet(
+                type=cms.string("ValueMapAccessorLorentzVector"),
+                src=cms.InputTag("jesUp","mets")
+            ),
+            jesDown = cms.PSet(
+                type=cms.string("ValueMapAccessorLorentzVector"),
+                src=cms.InputTag("jesDown","mets")
+            )
+        )
+        
+    ),
+    puppiMets = cms.PSet(
+        type=cms.string("METConverter"),
+        srcs=cms.VInputTag(cms.InputTag("slimmedMETsPuppi")),
+        names=cms.vstring("PuppiMET"),
+        
     ),
     
     triggersHLT = cms.PSet(
@@ -274,7 +339,9 @@ for puppiIsoElectron in puppiIsoElectronList:
     
 process.STEA_plain=cms.Path(
     process.lessGenParticles
-    #*process.egmGsfElectronIDSequence
+    *process.egmGsfElectronIDSequence
+    *process.jesUp
+    *process.jesDown
     #*process.PFSequence
     #*process.pfDeltaBetaWeightingSequence
     #*process.puppiSequence
