@@ -52,14 +52,27 @@ process.MessageLogger.suppressWarning = cms.untracked.vstring('ecalLaserCorrFilt
 
 #process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
 from CondCore.DBCommon.CondDBSetup_cfi import *
-process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
-    connect = cms.string("frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS"),
+process.conditionsFromDB = cms.ESSource("PoolDBESSource",CondDBSetup,
+    connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
     toGet =  cms.VPSet(
+        #JEC
         cms.PSet(
             record = cms.string("JetCorrectionsRecord"),
             tag = cms.string("JetCorrectorParametersCollection_CSA14_V4_MC_AK4PFchs"),
             label=cms.untracked.string("AK4PFchs")
-        )
+        ),
+        #BTAG SF
+        cms.PSet(
+            record = cms.string("PerformancePayloadRecord"),
+            tag = cms.string("BTagTTBARMCBTAGCSVtable_v8_offline"),
+            label=cms.untracked.string("BtagScaleFactorsCSV")
+        ),
+        #BTAG WP
+        cms.PSet(
+            record = cms.string("PerformanceWPRecord"),
+            tag = cms.string("BTagTTBARMCBTAGCSVwp_v8_offline"),
+            label=cms.untracked.string("BtagWorkingPointsCSV")
+        ),
     )
 )
 
@@ -76,6 +89,11 @@ process.jesDown = cms.EDProducer("JESUncertainty",
     delta=cms.double(-1.0)
 ) 
 
+process.btaggingSF = cms.EDProducer("BtagUncertainty",
+    workingPointES=cms.string("BtagWorkingPointsCSV"),
+    scaleFactorES=cms.string("BtagScaleFactorsCSV"),
+    jetSrc=cms.InputTag("slimmedJets"),
+)
 
 
 process.source = cms.Source("PoolSource",
@@ -252,6 +270,14 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
             jesDown = cms.PSet(
                 type=cms.string("ValueMapAccessorLorentzVector"),
                 src=cms.InputTag("jesDown","jets")
+            ),
+            btagSFB = cms.PSet(
+                type=cms.string("ValueMapAccessorFloat"),
+                src=cms.InputTag("btaggingSF","SFB")
+            ),
+            btagSFBerr = cms.PSet(
+                type=cms.string("ValueMapAccessorFloat"),
+                src=cms.InputTag("btaggingSF","SFBerr")
             )
         )
     ),
@@ -342,6 +368,7 @@ process.STEA_plain=cms.Path(
     *process.egmGsfElectronIDSequence
     *process.jesUp
     *process.jesDown
+    *process.btaggingSF
     #*process.PFSequence
     #*process.pfDeltaBetaWeightingSequence
     #*process.puppiSequence
