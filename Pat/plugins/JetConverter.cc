@@ -98,6 +98,12 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
     if (patObject.genParton())
     {
         pxlParticle->setUserRecord("partonFlavour",patObject.partonFlavour());
+        
+    }
+    if (patObject.genJet())
+    {
+        const pat::Jet::LorentzVector& vec = patObject.genJet()->p4();
+        pxlParticle->setUserRecord("genJet",pxl::LorentzVector(vec.px(),vec.py(),vec.pz(),vec.energy()));
     }
 
 

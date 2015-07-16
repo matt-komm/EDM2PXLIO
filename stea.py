@@ -47,9 +47,10 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.GlobalTag.globaltag = 'MCRUN2_74_V9A'
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.MessageLogger.suppressWarning = cms.untracked.vstring('ecalLaserCorrFilter','manystripclus53X','toomanystripclus53X')
 
+'''
 #process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
 from CondCore.DBCommon.CondDBSetup_cfi import *
 process.conditionsFromDB = cms.ESSource("PoolDBESSource",CondDBSetup,
@@ -62,17 +63,17 @@ process.conditionsFromDB = cms.ESSource("PoolDBESSource",CondDBSetup,
             label=cms.untracked.string("AK4PFchs")
         ),
         #BTAG SF
-        cms.PSet(
-            record = cms.string("PerformancePayloadRecord"),
-            tag = cms.string("BTagTTBARMCBTAGCSVtable_v8_offline"),
-            label=cms.untracked.string("BtagScaleFactorsCSV")
-        ),
+        #cms.PSet(
+        #    record = cms.string("PerformancePayloadRecord"),
+        #    tag = cms.string("BTagTTBARMCBTAGCSVtable_v8_offline"),
+        #    label=cms.untracked.string("BtagScaleFactorsCSV")
+        #),
         #BTAG WP
-        cms.PSet(
-            record = cms.string("PerformanceWPRecord"),
-            tag = cms.string("BTagTTBARMCBTAGCSVwp_v8_offline"),
-            label=cms.untracked.string("BtagWorkingPointsCSV")
-        ),
+        #cms.PSet(
+        #    record = cms.string("PerformanceWPRecord"),
+        #    tag = cms.string("BTagTTBARMCBTAGCSVwp_v8_offline"),
+        #    label=cms.untracked.string("BtagWorkingPointsCSV")
+        #),
     )
 )
 
@@ -94,14 +95,14 @@ process.btaggingSF = cms.EDProducer("BtagUncertainty",
     scaleFactorES=cms.string("BtagScaleFactorsCSV"),
     jetSrc=cms.InputTag("slimmedJets"),
 )
-
+'''
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
         'root://xrootd.unl.edu//store/mc/RunIISpring15DR74/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/50000/02CF0510-4CFF-E411-A715-0025905A6090.root'
     )
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 
 
@@ -263,22 +264,22 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         names=cms.vstring("Jet"),
         select=cms.string("pt>20.0"),
         valueMaps=cms.PSet(
-            jesUp = cms.PSet(
-                type=cms.string("ValueMapAccessorLorentzVector"),
-                src=cms.InputTag("jesUp","jets")
-            ),
-            jesDown = cms.PSet(
-                type=cms.string("ValueMapAccessorLorentzVector"),
-                src=cms.InputTag("jesDown","jets")
-            ),
-            btagSFB = cms.PSet(
-                type=cms.string("ValueMapAccessorFloat"),
-                src=cms.InputTag("btaggingSF","SFB")
-            ),
-            btagSFBerr = cms.PSet(
-                type=cms.string("ValueMapAccessorFloat"),
-                src=cms.InputTag("btaggingSF","SFBerr")
-            )
+            #jesUp = cms.PSet(
+            #    type=cms.string("ValueMapAccessorLorentzVector"),
+            #    src=cms.InputTag("jesUp","jets")
+            #),
+            #jesDown = cms.PSet(
+            #    type=cms.string("ValueMapAccessorLorentzVector"),
+            #    src=cms.InputTag("jesDown","jets")
+            #),
+            #btagSFB = cms.PSet(
+            #    type=cms.string("ValueMapAccessorFloat"),
+            #    src=cms.InputTag("btaggingSF","SFB")
+            #),
+            #btagSFBerr = cms.PSet(
+            #   type=cms.string("ValueMapAccessorFloat"),
+            #    src=cms.InputTag("btaggingSF","SFBerr")
+            #)
         )
     ),
     
@@ -309,14 +310,14 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         srcs=cms.VInputTag(cms.InputTag("slimmedMETs")),
         names=cms.vstring("MET"),
         valueMaps=cms.PSet(
-            jesUp = cms.PSet(
-                type=cms.string("ValueMapAccessorLorentzVector"),
-                src=cms.InputTag("jesUp","mets")
-            ),
-            jesDown = cms.PSet(
-                type=cms.string("ValueMapAccessorLorentzVector"),
-                src=cms.InputTag("jesDown","mets")
-            )
+            #jesUp = cms.PSet(
+            #    type=cms.string("ValueMapAccessorLorentzVector"),
+            #    src=cms.InputTag("jesUp","mets")
+            #),
+            #jesDown = cms.PSet(
+            #    type=cms.string("ValueMapAccessorLorentzVector"),
+            #    src=cms.InputTag("jesDown","mets")
+            #)
         )
         
     ),
@@ -366,9 +367,9 @@ for puppiIsoElectron in puppiIsoElectronList:
 process.STEA_plain=cms.Path(
     process.lessGenParticles
     *process.egmGsfElectronIDSequence
-    *process.jesUp
-    *process.jesDown
-    *process.btaggingSF
+    #*process.jesUp
+    #*process.jesDown
+    #*process.btaggingSF
     #*process.PFSequence
     #*process.pfDeltaBetaWeightingSequence
     #*process.puppiSequence
@@ -378,10 +379,10 @@ process.STEA_plain=cms.Path(
 process.endpath= cms.EndPath()
 
 process.endpath+=process.pat2pxlio
-
+'''
 process.OUT = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('output.root'),
     outputCommands = cms.untracked.vstring('keep *','keep patJets_patJetsAK4PF_*_*','keep patJets_patJetsAK4PFCHS_*_*','keep *_*_*_PAT','keep *_*_*_S2')
 )
 process.endpath+= process.OUT
-
+'''
