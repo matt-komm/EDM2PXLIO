@@ -50,6 +50,7 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.MessageLogger.suppressWarning = cms.untracked.vstring('ecalLaserCorrFilter','manystripclus53X','toomanystripclus53X')
 
+
 '''
 #process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
 from CondCore.DBCommon.CondDBSetup_cfi import *
@@ -102,11 +103,10 @@ process.source = cms.Source("PoolSource",
         'root://xrootd.unl.edu//store/mc/RunIISpring15DR74/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/50000/02CF0510-4CFF-E411-A715-0025905A6090.root'
     )
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 
 
-
-
+### gen particle pruner ###
 
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.lessGenParticles = cms.EDProducer("GenParticlePruner",
@@ -118,6 +118,46 @@ process.lessGenParticles = cms.EDProducer("GenParticlePruner",
         "drop abs(status)>30", #drop all intermediate from decay
     )
 )
+
+
+### selectors ###
+
+process.selectedMuons = cms.EDFilter("CandViewSelector",
+    src = cms.InputTag("slimmedMuons"),
+    cut = cms.string("pt > 10.0")
+)
+process.numMuonsFilter = cms.EDFilter("CandViewCountFilter",
+    src = cms.InputTag("selectedMuons"),
+    minNumber = cms.uint32(1)
+)
+
+process.selectedJets = cms.EDFilter("CandViewSelector",
+    src = cms.InputTag("slimmedJets"),
+    cut = cms.string("pt > 20.0")
+)
+process.numJetsFilter = cms.EDFilter("CandViewCountFilter",
+    src = cms.InputTag("selectedJets"),
+    minNumber = cms.uint32(2)
+)
+
+process.selectedPUPPIJets = cms.EDFilter("CandViewSelector",
+    src = cms.InputTag("slimmedPUPPIJets"),
+    cut = cms.string("pt > 20.0")
+)
+process.numPUPPIJetsFilter = cms.EDFilter("CandViewCountFilter",
+    src = cms.InputTag("selectedPUPPIJets"),
+    minNumber = cms.uint32(2)
+)
+
+process.skimSequence = cms.Sequence(
+    process.selectedMuons
+    *process.numMuonsFilter
+    *process.selectedJets
+    *process.numJetsFilter
+    #*process.selectedPUPPIJets
+    #*process.numPUPPIJetsFilter
+)
+    
 
 
 ### electron IDs ###
@@ -365,7 +405,8 @@ for puppiIsoElectron in puppiIsoElectronList:
     
     
 process.STEA_plain=cms.Path(
-    process.lessGenParticles
+    process.skimSequence
+    *process.lessGenParticles
     *process.egmGsfElectronIDSequence
     #*process.jesUp
     #*process.jesDown
