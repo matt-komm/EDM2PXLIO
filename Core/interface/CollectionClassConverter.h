@@ -27,6 +27,8 @@
 #include "EDM2PXLIO/Core/interface/ValueMapAccessor.h"
 #include "EDM2PXLIO/Core/interface/ValueMapAccessorFactory.h"
 
+#include "EDM2PXLIO/Core/interface/TriggerResultFilter.h"
+
 namespace edm2pxlio
 {
 
@@ -39,7 +41,7 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
         std::vector<std::pair<std::string,StringObjectFunction<Class>*>> _userRecordsFcts;
         StringCutObjectSelector<Class>* _cutFct;
         std::vector<ValueMapAccessor*> _valueMapAccessors;
-        
+        TriggerResultFilter _triggerResultFilter;
 
     public:
         CollectionClassConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector):
@@ -85,6 +87,11 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
                         }
                     }
                 }
+                
+                if (iConfig.exists("triggerFilter"))
+                {
+                    _triggerResultFilter.parseConfiguration(iConfig.getParameter<std::vector<edm::ParameterSet>>("triggerFilter"));
+                }
             }
         }
         
@@ -99,6 +106,10 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent) const
         {
             Base::convert(edmEvent, iSetup, pxlEvent);
+            if (!_triggerResultFilter.checkPath(*edmEvent))
+            {
+                return;
+            }
             
             for (unsigned int ivm = 0; ivm < _valueMapAccessors.size(); ++ ivm)
             {

@@ -25,6 +25,8 @@
 #include "EDM2PXLIO/Core/interface/Provider.h"
 #include "EDM2PXLIO/Core/interface/ProviderFactory.h"
 
+#include "EDM2PXLIO/Core/interface/TriggerResultFilter.h"
+
 #include <string>
 #include <vector>
 
@@ -32,12 +34,6 @@
 class EDM2PXLIO:
     public edm::EDAnalyzer
 {
-    private: 
-        struct SelectedProcessPaths
-        {
-            std::string processName;
-            std::vector<std::string> paths;
-        };
     public:
         explicit EDM2PXLIO(const edm::ParameterSet&);
         ~EDM2PXLIO();
@@ -46,14 +42,14 @@ class EDM2PXLIO:
 
 
     private:
-        bool checkPath(const edm::Event&, pxl::Event&);
-        std::vector<SelectedProcessPaths> _selectedProcessPaths;
         
         pxl::OutputFile* _pxlFile;
         std::string _processName;
         
         std::vector<edm2pxlio::Converter*> _converters; 
         std::vector<edm2pxlio::Provider*> _providers;
+        
+        edm2pxlio::TriggerResultFilter _triggerResultFilter;
 
         virtual void beginJob() ;
         virtual void analyze(const edm::Event&, const edm::EventSetup&);
@@ -73,13 +69,7 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& globalConfig):
     if (globalConfig.exists("selectEvents"))
     {
         const std::vector<edm::ParameterSet>& selectEventPSets = globalConfig.getParameter<std::vector<edm::ParameterSet>>("selectEvents");
-        for (unsigned int iset=0; iset<selectEventPSets.size(); ++iset)
-        {
-            SelectedProcessPaths selectedProcessPath;
-            selectedProcessPath.processName=selectEventPSets[iset].getParameter<std::string>("process"); 
-            selectedProcessPath.paths=selectEventPSets[iset].getParameter<std::vector<std::string>>("paths");
-            _selectedProcessPaths.push_back(selectedProcessPath);
-        }
+        _triggerResultFilter.parseConfiguration(selectEventPSets);
     }
     else
     {
@@ -141,7 +131,7 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     try
     {
         pxl::Event pxlEvent;
-        if (!checkPath(iEvent,pxlEvent))
+        if (!_triggerResultFilter.checkPath(iEvent))
         {
             return;
         }
@@ -155,7 +145,6 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         }
         for (unsigned int iprovider = 0; iprovider<_providers.size(); ++iprovider)
         {
-            
             _providers[iprovider]->process(&iEvent,&iSetup);
         }
         for (unsigned int iconverter = 0; iconverter<_converters.size(); ++iconverter)
@@ -175,46 +164,6 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     
     
 }
-
-bool
-EDM2PXLIO::checkPath(const edm::Event& iEvent, pxl::Event& pxlEvent)
-{
-    if (_selectedProcessPaths.size()==0)
-    {   
-        return true;
-    }
-    
-    bool accept=false;
-    for (unsigned int iprocess =0; iprocess < _selectedProcessPaths.size(); ++iprocess)
-    {
-        const SelectedProcessPaths& selectedProcessPath = _selectedProcessPaths[iprocess];
-        edm::TriggerResultsByName result = iEvent.triggerResultsByName(selectedProcessPath.processName);
-        if (! result.isValid())
-        {
-            edm::LogWarning("trigger result not valid") << "event will not be processed";
-            return false;
-        }
-        const std::vector<std::string>& paths = selectedProcessPath.paths;
-        if (paths.size()==0)
-        {
-            //accept all events
-            return true;
-        }
-        for (unsigned ipath=0; ipath<paths.size();++ipath)
-        {
-            if (!result.wasrun(paths[ipath]))
-            {
-                edm::LogWarning("TriggerResults has no cms.Path named: ") << paths[ipath] << " in process '"<<selectedProcessPath.processName<<"'. The result of this path will be ignored.";
-            } else {
-                accept = accept || result.accept(paths[ipath]);
-            }
-        }
-    }
-    return accept;
-}
-
-
-
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 

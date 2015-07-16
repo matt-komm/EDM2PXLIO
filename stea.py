@@ -260,7 +260,14 @@ process.pfWeightedLeptonIso = cms.EDProducer('PFWeightedLeptonIsoProducer',
     dRConeSize = cms.untracked.double(0.4)
 )
 '''
-
+filterPSet = cms.VPSet(
+    cms.PSet(
+        process=cms.string("STEA"),
+        paths=cms.vstring(
+            "STEA_filtered"
+        ),
+    )
+)
 
 process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     outFileName=cms.string("output.pxlio"),
@@ -269,7 +276,7 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         cms.PSet(
             process=cms.string("STEA"),
             paths=cms.vstring(
-                "STEA_plain"
+                "STEA_plain","STEA_filtered"
             ),
         )
     ),
@@ -320,7 +327,8 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
             #   type=cms.string("ValueMapAccessorFloat"),
             #    src=cms.InputTag("btaggingSF","SFBerr")
             #)
-        )
+        ),
+        triggerFilter=filterPSet
     ),
     
     puppiJets = cms.PSet(
@@ -328,6 +336,7 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
         srcs=cms.VInputTag(cms.InputTag("slimmedJetsPuppi")),
         names=cms.vstring("PuppiJets"),
         select=cms.string("pt>20.0"),
+        triggerFilter=filterPSet
     ),
     
     genParticles= cms.PSet(
@@ -405,6 +414,18 @@ for puppiIsoElectron in puppiIsoElectronList:
     
     
 process.STEA_plain=cms.Path(
+    process.lessGenParticles
+    *process.egmGsfElectronIDSequence
+    #*process.jesUp
+    #*process.jesDown
+    #*process.btaggingSF
+    #*process.PFSequence
+    #*process.pfDeltaBetaWeightingSequence
+    #*process.puppiSequence
+    #*process.pfWeightedLeptonIso
+)
+
+process.STEA_filtered=cms.Path(
     process.skimSequence
     *process.lessGenParticles
     *process.egmGsfElectronIDSequence
