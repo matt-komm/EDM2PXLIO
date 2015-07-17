@@ -120,6 +120,8 @@ process.lessGenParticles = cms.EDProducer("GenParticlePruner",
 )
 
 
+
+
 ### selectors ###
 
 process.selectedMuons = cms.EDFilter("CandViewSelector",
@@ -130,7 +132,7 @@ process.numMuonsFilter = cms.EDFilter("CandViewCountFilter",
     src = cms.InputTag("selectedMuons"),
     minNumber = cms.uint32(1)
 )
-
+'''
 process.selectedJets = cms.EDFilter("CandViewSelector",
     src = cms.InputTag("slimmedJets"),
     cut = cms.string("pt > 20.0")
@@ -148,12 +150,12 @@ process.numPUPPIJetsFilter = cms.EDFilter("CandViewCountFilter",
     src = cms.InputTag("selectedPUPPIJets"),
     minNumber = cms.uint32(2)
 )
-
+'''
 process.skimSequence = cms.Sequence(
     process.selectedMuons
     *process.numMuonsFilter
-    *process.selectedJets
-    *process.numJetsFilter
+    #*process.selectedJets
+    #*process.numJetsFilter
     #*process.selectedPUPPIJets
     #*process.numPUPPIJetsFilter
 )
