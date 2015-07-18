@@ -101,7 +101,7 @@ process.source = cms.Source("PoolSource",
         #'root://xrootd.unl.edu//store/mc/RunIISpring15DR74/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/50000/02CF0510-4CFF-E411-A715-0025905A6090.root'
         'root://xrootd.unl.edu//store/data/Run2015B/SingleMuon/MINIAOD/PromptReco-v1/000/251/244/00000/68275270-7C27-E511-B1F0-02163E011A46.root' #{golden run: 251244:96-251244:121}
     ),
-    lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
+    #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
 )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
 
@@ -551,10 +551,10 @@ for puppiIsoElectron in puppiIsoElectronList:
 process.endpath= cms.EndPath()
 
 process.endpath+=process.pat2pxlio
-
+'''
 process.OUT = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('output.root'),
     outputCommands = cms.untracked.vstring('keep *')
 )
 process.endpath+= process.OUT
-
+'''
