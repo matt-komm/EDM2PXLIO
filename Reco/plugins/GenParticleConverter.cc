@@ -64,6 +64,10 @@ void GenParticleConverter::convert(const edm::Event* edmEvent, const edm::EventS
             pxlEventView->setUserRecord("alphaQCD",genEventInfoProduct->alphaQCD());
             pxlEventView->setUserRecord("alphaQED",genEventInfoProduct->alphaQED());
             pxlEventView->setUserRecord("qscale",genEventInfoProduct->qScale());
+            
+            pxlEventView->setUserRecord("nMEPartons",genEventInfoProduct->nMEPartons());
+            pxlEventView->setUserRecord("nMEPartonsFiltered",genEventInfoProduct->nMEPartonsFiltered());
+            
 
             const GenEventInfoProduct::PDF* pdf = genEventInfoProduct->pdf();
             pxlEventView->setUserRecord("id1",pdf->id.first);
@@ -77,12 +81,13 @@ void GenParticleConverter::convert(const edm::Event* edmEvent, const edm::EventS
         {
             
             edm::Handle<LHEEventProduct> lheEventProduct;
-            edmEvent->getByToken(_lheEventProductToken,lheEventProduct);
-
-            const std::vector<LHEEventProduct::WGT>& weights = lheEventProduct->weights();
-            for (unsigned int iweight = 0; iweight < weights.size(); ++iweight)
+            if (edmEvent->getByToken(_lheEventProductToken,lheEventProduct))
             {
-                pxlEventView->setUserRecord("lheweight_"+weights[iweight].id,weights[iweight].wgt);
+                const std::vector<LHEEventProduct::WGT>& weights = lheEventProduct->weights();
+                for (unsigned int iweight = 0; iweight < weights.size(); ++iweight)
+                {
+                    pxlEventView->setUserRecord("lheweight_"+weights[iweight].id,weights[iweight].wgt);
+                }
             }
         }
         

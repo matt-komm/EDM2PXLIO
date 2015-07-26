@@ -34,10 +34,27 @@ class METConverter:
         
         static const std::vector<std::pair<std::string,pat::MET::METUncertainty>> SYSVariations;
         
+        std::vector<edm::InputTag> _metSignificanceInputTags;
+        std::vector<edm::EDGetTokenT<double>> _metSignificancesToken;
+        
     public:
         METConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector):
             Base(name, globalConfig, consumesCollector)
         {
+        
+            if (globalConfig.exists(_name))
+	        {
+	            const edm::ParameterSet& iConfig = globalConfig.getParameter<edm::ParameterSet>(_name);   
+	
+                if (iConfig.exists("metSignificances"))
+                {
+                    _metSignificanceInputTags = iConfig.getParameter<std::vector<edm::InputTag>>("metSignificances");
+                    for (unsigned int itag = 0; itag<_metSignificanceInputTags.size();++itag)
+                    {
+                        _metSignificancesToken.push_back(consumesCollector.consumes<double>(_metSignificanceInputTags[itag]));
+                    }
+                }
+            }
         }
         
         void addSystematicVariation(
@@ -55,6 +72,43 @@ class METConverter:
             particle->setUserRecord(name,vec);
         }
         
+        void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent) const
+        {
+            for (unsigned index=0; index<Base::size(); ++index)
+            {
+                
+                pxl::EventView* pxlEventView = Base::findEventView(pxlEvent,Base::getEventViewName(index));
+
+                const edm::Handle<edm::View<pat::MET>> collection = Base::getCollection(edmEvent,index);
+                std::unordered_map<size_t,std::pair<const pat::MET*,pxl::Particle*>> addMap;
+                
+                if (collection.product()) 
+                {
+                    
+                    edm::Handle<double> metSigCollection;
+                    
+                    if (_metSignificanceInputTags.size()==Base::size() && _metSignificanceInputTags[index].label().length()>0)
+                    {
+                        edmEvent->getByToken(_metSignificancesToken[index],metSigCollection);
+                    }
+                    
+                    for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) 
+                    {
+                        const pat::MET& met = (*collection)[iparticle];
+                        pxl::Particle* pxlParticle = pxlEventView->create<pxl::Particle>();
+                        pxlParticle->setName(Base::getCollectionName(index));
+                        convertObject(met,pxlParticle);
+                        
+                        if (_metSignificanceInputTags.size()==Base::size() && _metSignificanceInputTags[index].label().length()>0)
+                        {
+                            pxlParticle->setUserRecord("metSignificance",*metSigCollection);
+                        }
+                    }
+                }
+            }
+        }
+        
+        
         virtual void convertObject(const pat::MET& patObject, pxl::Particle* pxlParticle) const
         {
             Base::convertObject(patObject,pxlParticle);
@@ -62,6 +116,7 @@ class METConverter:
             
             pxlParticle->setUserRecord("uncorrectedPhi",PRECISION(patObject.uncorrectedPhi()));
             pxlParticle->setUserRecord("uncorrectedPt",PRECISION(patObject.uncorrectedPt()));
+            
             
             for (unsigned int isys = 0; isys < SYSVariations.size(); ++isys)
             {

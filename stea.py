@@ -41,8 +41,9 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('Configuration.Geometry.GeometryIdeal_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-process.GlobalTag.globaltag = 'MCRUN2_74_V9A'
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
+process.GlobalTag.globaltag = '74X_dataRun2_Prompt_v0'
+#process.GlobalTag.globaltag = '74X_dataRun2_Prompt_v1'
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
@@ -96,14 +97,19 @@ process.btaggingSF = cms.EDProducer("BtagUncertainty",
 )
 '''
 
+
+
+
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
         #'root://xrootd.unl.edu//store/mc/RunIISpring15DR74/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/50000/02CF0510-4CFF-E411-A715-0025905A6090.root'
-        'root://xrootd.unl.edu//store/data/Run2015B/SingleMuon/MINIAOD/PromptReco-v1/000/251/244/00000/68275270-7C27-E511-B1F0-02163E011A46.root' #{golden run: 251244:96-251244:121}
+        #'root://xrootd.unl.edu//store/data/Run2015B/SingleMuon/MINIAOD/PromptReco-v1/000/251/244/00000/68275270-7C27-E511-B1F0-02163E011A46.root' #{golden run: 251244:96-251244:121}
+        'root://xrootd.unl.edu//store/mc/RunIISpring15DR74/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/60000/046CAA30-1103-E511-94E8-7845C4FC3B0C.root'
+        #'root://xrootd.unl.edu//store/mc/RunIISpring15DR74/QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v2/00000/023FCE0B-300A-E511-BE68-001E673973C8.root'
     ),
     #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 
 process.STEA_plain=cms.Path()
@@ -188,6 +194,115 @@ for eleID in [
 addModule(process.egmGsfElectronIDSequence)
 
 
+
+### JEC ###
+
+process.load("CondCore.DBCommon.CondDBCommon_cfi")
+from CondCore.DBCommon.CondDBSetup_cfi import *
+process.jec = cms.ESSource("PoolDBESSource",
+      DBParameters = cms.PSet(
+        messageLevel = cms.untracked.int32(0)
+        ),
+      timetype = cms.string('runnumber'),
+      toGet = cms.VPSet(
+      cms.PSet(
+            record = cms.string('JetCorrectionsRecord'),
+            tag    = cms.string('JetCorrectorParametersCollection_Summer15_50nsV2_MC_AK4PF'),
+            label  = cms.untracked.string('AK4PF')
+            ),
+      cms.PSet(
+            record = cms.string('JetCorrectionsRecord'),
+            tag    = cms.string('JetCorrectorParametersCollection_Summer15_50nsV2_MC_AK4PFchs'),
+            label  = cms.untracked.string('AK4PFchs')
+            ),
+      ), 
+      connect = cms.string('sqlite:Summer15_50nsV2_MC.db')
+     # uncomment above tag lines and this comment to use MC JEC
+     # connect = cms.string('sqlite:Summer12_V7_MC.db')
+)
+## add an es_prefer statement to resolve a possible conflict from simultaneous connection to a global tag
+process.es_prefer_jec = cms.ESPrefer('PoolDBESSource','jec')
+
+
+from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated
+process.slimmedJetJECCorrFactors = patJetCorrFactorsUpdated.clone(
+    src = cms.InputTag("slimmedJets"),
+    levels = [
+        'L1FastJet', 
+        'L2Relative', 
+        'L3Absolute'
+    ],
+    payload = 'AK4PFchs'
+) 
+from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
+process.slimmedJetsReappliedJEC = patJetsUpdated.clone(
+    jetSource = cms.InputTag("slimmedJets"),
+    jetCorrFactorsSource = cms.VInputTag(cms.InputTag("slimmedJetJECCorrFactors"))
+)
+process.reapplyJEC = cms.Sequence(process.slimmedJetJECCorrFactors*process.slimmedJetsReappliedJEC)
+addModule(process.reapplyJEC)
+
+
+### JEC uncertainty
+
+'''
+process.jesUp = cms.EDProducer("JESUncertainty",
+    jecES=cms.string("AK4PFchs"),
+    jetSrc=cms.InputTag("slimmedJetsReapplyJEC"),
+    metSrc=cms.InputTag("slimmedMETs"),
+    delta=cms.double(1.0)
+)
+process.jesDown = cms.EDProducer("JESUncertainty",
+    jecES=cms.string("AK4PFchs"),
+    jetSrc=cms.InputTag("slimmedJetsReapplyJEC"),
+    metSrc=cms.InputTag("slimmedMETs"),
+    delta=cms.double(-1.0)
+)
+process.jesUncertainty=cms.Sequence(process.jesUp*process.jesDown)
+addModule(process.jesUncertainty)
+'''
+
+### MET Significance ###
+
+
+from RecoMET.METProducers.METSignificanceParams_cfi import METSignificanceParams
+
+process.slimmedMETSignificance = cms.EDProducer(
+    "METSignificanceProducer",
+    srcLeptons = cms.VInputTag(
+        'slimmedElectrons',
+        'slimmedMuons',
+        'slimmedPhotons'
+    ),
+    srcPfJets = cms.InputTag('slimmedJets'),
+    srcMet = cms.InputTag('slimmedMETs'),
+    srcPFCandidates = cms.InputTag('packedPFCandidates'),
+
+    parameters = METSignificanceParams
+)
+addModule(process.slimmedMETSignificance)
+
+
+from CommonTools.PileupAlgos.Puppi_cff import puppi
+process.puppi = puppi.clone()
+process.puppi.candName=cms.InputTag("packedPFCandidates")
+process.puppi.vertexName=cms.InputTag("offlineSlimmedPrimaryVertices")
+addModule(process.puppi)
+
+process.slimmedPuppiMETSignificance = cms.EDProducer(
+    "METSignificanceProducer",
+    srcLeptons = cms.VInputTag(
+        'slimmedElectrons',
+        'slimmedMuons',
+        'slimmedPhotons'
+    ),
+    srcPfJets = cms.InputTag('slimmedJetsPuppi'),
+    srcMet = cms.InputTag('slimmedMETsPuppi'),
+    srcPFCandidates = cms.InputTag('puppi'),
+
+    parameters = METSignificanceParams
+)
+addModule(process.slimmedPuppiMETSignificance)
 
 '''
 #PF-Weighted Candidates
@@ -276,6 +391,9 @@ process.pfWeightedLeptonIso = cms.EDProducer('PFWeightedLeptonIsoProducer',
     dRConeSize = cms.untracked.double(0.4)
 )
 '''
+
+
+
 filterPSet = cms.VPSet(
     cms.PSet(
         process=cms.string("STEA"),
@@ -326,27 +444,9 @@ if options.isData:
                                      
         jets = cms.PSet(
             type=cms.string("JetConverter"),
-            srcs=cms.VInputTag(cms.InputTag("slimmedJets")),
+            srcs=cms.VInputTag(cms.InputTag("slimmedJetsReappliedJEC")),
             names=cms.vstring("Jet"),
             select=cms.string("pt>20.0"),
-            valueMaps=cms.PSet(
-                #jesUp = cms.PSet(
-                #    type=cms.string("ValueMapAccessorLorentzVector"),
-                #    src=cms.InputTag("jesUp","jets")
-                #),
-                #jesDown = cms.PSet(
-                #    type=cms.string("ValueMapAccessorLorentzVector"),
-                #    src=cms.InputTag("jesDown","jets")
-                #),
-                #btagSFB = cms.PSet(
-                #    type=cms.string("ValueMapAccessorFloat"),
-                #    src=cms.InputTag("btaggingSF","SFB")
-                #),
-                #btagSFBerr = cms.PSet(
-                #   type=cms.string("ValueMapAccessorFloat"),
-                #    src=cms.InputTag("btaggingSF","SFBerr")
-                #)
-            ),
             triggerFilter=filterPSet
         ),
         
@@ -362,22 +462,13 @@ if options.isData:
             type=cms.string("METConverter"),
             srcs=cms.VInputTag(cms.InputTag("slimmedMETs")),
             names=cms.vstring("MET"),
-            valueMaps=cms.PSet(
-                #jesUp = cms.PSet(
-                #    type=cms.string("ValueMapAccessorLorentzVector"),
-                #    src=cms.InputTag("jesUp","mets")
-                #),
-                #jesDown = cms.PSet(
-                #    type=cms.string("ValueMapAccessorLorentzVector"),
-                #    src=cms.InputTag("jesDown","mets")
-                #)
-            )
-            
+            metSignificances=cms.VInputTag(cms.InputTag("slimmedMETSignificance","METSignificance")),
         ),
         puppiMets = cms.PSet(
             type=cms.string("METConverter"),
             srcs=cms.VInputTag(cms.InputTag("slimmedMETsPuppi")),
             names=cms.vstring("PuppiMET"),
+            metSignificances=cms.VInputTag(cms.InputTag("slimmedPuppiMETSignificance","METSignificance")),
             
         ),
         
@@ -476,7 +567,7 @@ else:
             type=cms.string("GenParticleConverter"),
             srcs=cms.VInputTag(cms.InputTag("lessGenParticles")),
             targetEventViews=cms.vstring("Generated"),
-            #LHEEvent=cms.InputTag("source","","LHEFile"),
+            LHEEvent=cms.InputTag("externalLHEProducer"),
             GenEventInfo=cms.InputTag("generator","","SIM")
         ),
         
@@ -491,6 +582,7 @@ else:
             type=cms.string("METConverter"),
             srcs=cms.VInputTag(cms.InputTag("slimmedMETs")),
             names=cms.vstring("MET"),
+            metSignificances=cms.VInputTag(cms.InputTag("slimmedMETSignificance","METSignificance")),
             valueMaps=cms.PSet(
                 #jesUp = cms.PSet(
                 #    type=cms.string("ValueMapAccessorLorentzVector"),
@@ -507,7 +599,7 @@ else:
             type=cms.string("METConverter"),
             srcs=cms.VInputTag(cms.InputTag("slimmedMETsPuppi")),
             names=cms.vstring("PuppiMET"),
-            
+            metSignificances=cms.VInputTag(cms.InputTag("slimmedPuppiMETSignificance","METSignificance")),
         ),
         
         triggersHLT = cms.PSet(
@@ -551,10 +643,10 @@ for puppiIsoElectron in puppiIsoElectronList:
 process.endpath= cms.EndPath()
 
 process.endpath+=process.pat2pxlio
-'''
+
 process.OUT = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('output.root'),
     outputCommands = cms.untracked.vstring('keep *')
 )
 process.endpath+= process.OUT
-'''
+
