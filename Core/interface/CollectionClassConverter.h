@@ -139,6 +139,7 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
                         pxl::Particle* pxlParticle = pxlEventView->create<pxl::Particle>();
                         pxlParticles.push_back(pxlParticle);
                         pxlParticle->setName(Base::getCollectionName(index));
+                        pxlParticle->setUserRecord("index",iparticle);
                         
                         this->convertObject(classObject,pxlParticle);
                         fillUserRecords(classObject,pxlParticle);

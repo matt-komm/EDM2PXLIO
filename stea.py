@@ -109,7 +109,7 @@ process.source = cms.Source("PoolSource",
     ),
     #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 
 
 process.STEA_plain=cms.Path()
@@ -150,7 +150,7 @@ process.numMuonsFilter = cms.EDFilter("CandViewCountFilter",
     src = cms.InputTag("selectedMuons"),
     minNumber = cms.uint32(1)
 )
-'''
+
 process.selectedJets = cms.EDFilter("CandViewSelector",
     src = cms.InputTag("slimmedJets"),
     cut = cms.string("pt > 20.0")
@@ -160,22 +160,11 @@ process.numJetsFilter = cms.EDFilter("CandViewCountFilter",
     minNumber = cms.uint32(2)
 )
 
-process.selectedPUPPIJets = cms.EDFilter("CandViewSelector",
-    src = cms.InputTag("slimmedPUPPIJets"),
-    cut = cms.string("pt > 20.0")
-)
-process.numPUPPIJetsFilter = cms.EDFilter("CandViewCountFilter",
-    src = cms.InputTag("selectedPUPPIJets"),
-    minNumber = cms.uint32(2)
-)
-'''
 process.skimSequence = cms.Sequence(
     process.selectedMuons
     *process.numMuonsFilter
-    #*process.selectedJets
-    #*process.numJetsFilter
-    #*process.selectedPUPPIJets
-    #*process.numPUPPIJetsFilter
+    *process.selectedJets
+    *process.numJetsFilter
 )
     
 process.STEA_filtered+=process.skimSequence
@@ -196,7 +185,7 @@ addModule(process.egmGsfElectronIDSequence)
 
 
 ### JEC ###
-
+'''
 process.load("CondCore.DBCommon.CondDBCommon_cfi")
 from CondCore.DBCommon.CondDBSetup_cfi import *
 process.jec = cms.ESSource("PoolDBESSource",
@@ -241,7 +230,7 @@ process.slimmedJetsReappliedJEC = patJetsUpdated.clone(
 )
 process.reapplyJEC = cms.Sequence(process.slimmedJetJECCorrFactors*process.slimmedJetsReappliedJEC)
 addModule(process.reapplyJEC)
-
+'''
 
 ### JEC uncertainty
 
@@ -282,27 +271,6 @@ process.slimmedMETSignificance = cms.EDProducer(
 )
 addModule(process.slimmedMETSignificance)
 
-
-from CommonTools.PileupAlgos.Puppi_cff import puppi
-process.puppi = puppi.clone()
-process.puppi.candName=cms.InputTag("packedPFCandidates")
-process.puppi.vertexName=cms.InputTag("offlineSlimmedPrimaryVertices")
-addModule(process.puppi)
-
-process.slimmedPuppiMETSignificance = cms.EDProducer(
-    "METSignificanceProducer",
-    srcLeptons = cms.VInputTag(
-        'slimmedElectrons',
-        'slimmedMuons',
-        'slimmedPhotons'
-    ),
-    srcPfJets = cms.InputTag('slimmedJetsPuppi'),
-    srcMet = cms.InputTag('slimmedMETsPuppi'),
-    srcPFCandidates = cms.InputTag('puppi'),
-
-    parameters = METSignificanceParams
-)
-addModule(process.slimmedPuppiMETSignificance)
 
 '''
 #PF-Weighted Candidates
@@ -449,27 +417,12 @@ if options.isData:
             select=cms.string("pt>20.0"),
             triggerFilter=filterPSet
         ),
-        
-        puppiJets = cms.PSet(
-            type=cms.string("JetConverter"),
-            srcs=cms.VInputTag(cms.InputTag("slimmedJetsPuppi")),
-            names=cms.vstring("PuppiJets"),
-            select=cms.string("pt>20.0"),
-            triggerFilter=filterPSet
-        ),
                                  
         mets = cms.PSet(
             type=cms.string("METConverter"),
             srcs=cms.VInputTag(cms.InputTag("slimmedMETs")),
             names=cms.vstring("MET"),
             metSignificances=cms.VInputTag(cms.InputTag("slimmedMETSignificance","METSignificance")),
-        ),
-        puppiMets = cms.PSet(
-            type=cms.string("METConverter"),
-            srcs=cms.VInputTag(cms.InputTag("slimmedMETsPuppi")),
-            names=cms.vstring("PuppiMET"),
-            metSignificances=cms.VInputTag(cms.InputTag("slimmedPuppiMETSignificance","METSignificance")),
-            
         ),
         
         triggersHLT = cms.PSet(
@@ -489,6 +442,12 @@ if options.isData:
             srcs=cms.VInputTag(cms.InputTag("addPileupInfo","","HLT")),
             names=cms.vstring("PU")
         ),
+        
+        packedCand = cms.PSet(
+            type=cms.string("PackedCandidateConverter"),
+            srcs=cms.VInputTag(cms.InputTag("packedPFCandidates")),
+            names=cms.vstring("PKCand")
+        )
     )
 
 
@@ -555,13 +514,6 @@ else:
             triggerFilter=filterPSet
         ),
         
-        puppiJets = cms.PSet(
-            type=cms.string("JetConverter"),
-            srcs=cms.VInputTag(cms.InputTag("slimmedJetsPuppi")),
-            names=cms.vstring("PuppiJets"),
-            select=cms.string("pt>20.0"),
-            triggerFilter=filterPSet
-        ),
         
         genParticles= cms.PSet(
             type=cms.string("GenParticleConverter"),
@@ -595,12 +547,7 @@ else:
             )
             
         ),
-        puppiMets = cms.PSet(
-            type=cms.string("METConverter"),
-            srcs=cms.VInputTag(cms.InputTag("slimmedMETsPuppi")),
-            names=cms.vstring("PuppiMET"),
-            metSignificances=cms.VInputTag(cms.InputTag("slimmedPuppiMETSignificance","METSignificance")),
-        ),
+
         
         triggersHLT = cms.PSet(
             type=cms.string("TriggerResultConverter"),
@@ -619,6 +566,15 @@ else:
             srcs=cms.VInputTag(cms.InputTag("addPileupInfo","","HLT")),
             names=cms.vstring("PU")
         ),
+        
+        packedCand = cms.PSet(
+            type=cms.string("PackedCandidateConverter"),
+            srcs=cms.VInputTag(cms.InputTag("packedPFCandidates")),
+            names=cms.vstring("PKCand"),
+            #matchToVertex=cms.VInputTag(cms.InputTag("offlineSlimmedPrimaryVertices")),
+            triggerFilter=filterPSet,
+            targetEventViews=cms.vstring("Candidates"),
+        )
     )
 
 '''
@@ -638,15 +594,15 @@ for puppiIsoElectron in puppiIsoElectronList:
 '''
     
     
-
+#process.TFileService = cms.Service("TFileService", fileName = cms.string("tests.root") )
 
 process.endpath= cms.EndPath()
 
 process.endpath+=process.pat2pxlio
-
+'''
 process.OUT = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('output.root'),
     outputCommands = cms.untracked.vstring('keep *')
 )
 process.endpath+= process.OUT
-
+'''

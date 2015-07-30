@@ -16,3 +16,4 @@
 <library   file="GenParticleConverter.cc" name="GenParticleConverterPlugin">
     <flags   EDM_PLUGIN="1"/>
 </library>
+

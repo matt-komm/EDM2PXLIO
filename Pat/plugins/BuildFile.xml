@@ -3,6 +3,8 @@
 <use name="DataFormats/Common"/>
 <use name="DataFormats/PatCandidates"/>
 <use name="DataFormats/TrackReco"/>
+<use name="PhysicsTools/UtilAlgos"/>
+<use name="FWCore/ServiceRegistry"/>
 
 <library   file="ElectronConverter.cc" name="ElectronConverterPlugin">
     <flags   EDM_PLUGIN="1"/>
@@ -16,4 +18,6 @@
 <library   file="METConverter.cc" name="METConverterPlugin">
     <flags   EDM_PLUGIN="1"/>
 </library>
-
+<library   file="PackedCandidateConverter.cc" name="PackedCandidateConverterPlugin">
+    <flags   EDM_PLUGIN="1"/>
+</library>

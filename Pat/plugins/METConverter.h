@@ -74,6 +74,10 @@ class METConverter:
         
         void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent) const
         {
+            if (!_triggerResultFilter.checkPath(*edmEvent))
+            {
+                return;
+            }
             for (unsigned index=0; index<Base::size(); ++index)
             {
                 
