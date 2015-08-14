@@ -109,7 +109,7 @@ process.source = cms.Source("PoolSource",
     ),
     #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 
 process.STEA_plain=cms.Path()
@@ -129,9 +129,17 @@ if not options.isData:
         src=cms.InputTag("prunedGenParticles"),
         select=cms.vstring(
             "drop  *",
+            #"keep++ abs(pdgId)=5", #keep all b decay chains
+            #"keep++ abs(pdgId)=4", #keep all c decay chains
+            #"drop abs(pdgId)>30",
+            #"drop abs(pdgId)=310", #drop K short
             "++keep abs(status)>20 & abs(status) < 30", #keeps all particles from the hard matrix element and their mothers
             "keep++ abs(pdgId)=24", #keep W-boson decay
             "drop abs(status)>30", #drop all intermediate from decay
+            #"drop abs(status)>30", #drop all intermediate from decay
+            #"keep abs(pdgId)>510 & abs(pdgId)<558", #keep B/bb-mesons
+            #"keep abs(pdgId)>410 & abs(pdgId)<446", #keep C/cc-mesons
+            
         )
     )
     addModule(process.lessGenParticles)
@@ -144,38 +152,27 @@ if not options.isData:
 
 process.selectedMuons = cms.EDFilter("CandViewSelector",
     src = cms.InputTag("slimmedMuons"),
-    cut = cms.string("pt > 10.0")
+    cut = cms.string("pt > 15.0")
 )
 process.numMuonsFilter = cms.EDFilter("CandViewCountFilter",
     src = cms.InputTag("selectedMuons"),
     minNumber = cms.uint32(1)
 )
-'''
+
 process.selectedJets = cms.EDFilter("CandViewSelector",
     src = cms.InputTag("slimmedJets"),
-    cut = cms.string("pt > 20.0")
+    cut = cms.string("pt > 10.0")
 )
 process.numJetsFilter = cms.EDFilter("CandViewCountFilter",
     src = cms.InputTag("selectedJets"),
     minNumber = cms.uint32(2)
 )
 
-process.selectedPUPPIJets = cms.EDFilter("CandViewSelector",
-    src = cms.InputTag("slimmedPUPPIJets"),
-    cut = cms.string("pt > 20.0")
-)
-process.numPUPPIJetsFilter = cms.EDFilter("CandViewCountFilter",
-    src = cms.InputTag("selectedPUPPIJets"),
-    minNumber = cms.uint32(2)
-)
-'''
 process.skimSequence = cms.Sequence(
     process.selectedMuons
     *process.numMuonsFilter
-    #*process.selectedJets
-    #*process.numJetsFilter
-    #*process.selectedPUPPIJets
-    #*process.numPUPPIJetsFilter
+    *process.selectedJets
+    *process.numJetsFilter
 )
     
 process.STEA_filtered+=process.skimSequence
@@ -194,7 +191,7 @@ for eleID in [
 addModule(process.egmGsfElectronIDSequence)
 
 
-
+'''
 ### JEC ###
 
 process.load("CondCore.DBCommon.CondDBCommon_cfi")
@@ -241,7 +238,7 @@ process.slimmedJetsReappliedJEC = patJetsUpdated.clone(
 )
 process.reapplyJEC = cms.Sequence(process.slimmedJetJECCorrFactors*process.slimmedJetsReappliedJEC)
 addModule(process.reapplyJEC)
-
+'''
 
 ### JEC uncertainty
 
@@ -444,32 +441,17 @@ if options.isData:
                                      
         jets = cms.PSet(
             type=cms.string("JetConverter"),
-            srcs=cms.VInputTag(cms.InputTag("slimmedJetsReappliedJEC")),
+            srcs=cms.VInputTag(cms.InputTag("slimmedJets")),
             names=cms.vstring("Jet"),
             select=cms.string("pt>20.0"),
             triggerFilter=filterPSet
         ),
-        
-        puppiJets = cms.PSet(
-            type=cms.string("JetConverter"),
-            srcs=cms.VInputTag(cms.InputTag("slimmedJetsPuppi")),
-            names=cms.vstring("PuppiJets"),
-            select=cms.string("pt>20.0"),
-            triggerFilter=filterPSet
-        ),
-                                 
+                               
         mets = cms.PSet(
             type=cms.string("METConverter"),
             srcs=cms.VInputTag(cms.InputTag("slimmedMETs")),
             names=cms.vstring("MET"),
             metSignificances=cms.VInputTag(cms.InputTag("slimmedMETSignificance","METSignificance")),
-        ),
-        puppiMets = cms.PSet(
-            type=cms.string("METConverter"),
-            srcs=cms.VInputTag(cms.InputTag("slimmedMETsPuppi")),
-            names=cms.vstring("PuppiMET"),
-            metSignificances=cms.VInputTag(cms.InputTag("slimmedPuppiMETSignificance","METSignificance")),
-            
         ),
         
         triggersHLT = cms.PSet(
@@ -477,12 +459,12 @@ if options.isData:
             srcs=cms.VInputTag(cms.InputTag("TriggerResults","","HLT")),
             regex=cms.vstring("HLT_Iso[0-9a-zA-z]*","HLT_Ele[0-9a-zA-z]*")
         ),
+        
         triggersRECO = cms.PSet(
             type=cms.string("TriggerResultConverter"),
             srcs=cms.VInputTag(cms.InputTag("TriggerResults","","RECO")),
             regex=cms.vstring("[0-9a-zA-z]*")
         ),
-        
         
         puInfo = cms.PSet(
             type=cms.string("PileupSummaryInfoConverter"),
@@ -555,14 +537,6 @@ else:
             triggerFilter=filterPSet
         ),
         
-        puppiJets = cms.PSet(
-            type=cms.string("JetConverter"),
-            srcs=cms.VInputTag(cms.InputTag("slimmedJetsPuppi")),
-            names=cms.vstring("PuppiJets"),
-            select=cms.string("pt>20.0"),
-            triggerFilter=filterPSet
-        ),
-        
         genParticles= cms.PSet(
             type=cms.string("GenParticleConverter"),
             srcs=cms.VInputTag(cms.InputTag("lessGenParticles")),
@@ -594,12 +568,6 @@ else:
                 #)
             )
             
-        ),
-        puppiMets = cms.PSet(
-            type=cms.string("METConverter"),
-            srcs=cms.VInputTag(cms.InputTag("slimmedMETsPuppi")),
-            names=cms.vstring("PuppiMET"),
-            metSignificances=cms.VInputTag(cms.InputTag("slimmedPuppiMETSignificance","METSignificance")),
         ),
         
         triggersHLT = cms.PSet(

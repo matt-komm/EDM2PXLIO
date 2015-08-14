@@ -23,6 +23,22 @@
 namespace edm2pxlio
 {
 
+class JetChargeCalculator
+{
+    public:
+        enum MEASURE
+        {
+            DR,PT,E,ONE,MASSDROP
+        };
+        
+        static const std::function<bool(const reco::Candidate*)> SELECT_CHARGED;
+        static const std::function<bool(const reco::Candidate*)> SELECT_VERTEX;
+        static const std::function<bool(const reco::Candidate*)> SELECT_NOTVERTEX;
+        static const std::function<bool(const reco::Candidate*)> SELECT_ALL;
+        
+        static double calculate(const pat::Jet& jet, MEASURE measure, double exp=1.0, std::function<bool(const reco::Candidate*)> selector=[](const reco::Candidate*){return true;});
+};
+
 class JetConverter:
     public CollectionClassConverter<pat::Jet>
 {
@@ -32,6 +48,7 @@ class JetConverter:
 
     public:
         JetConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);
+        void calculateJetShapes(const pat::Jet& patObject, pxl::Particle* pxlParticle) const;
         virtual void convertObject(const pat::Jet& patObject, pxl::Particle* pxlParticle) const;
         ~JetConverter();
 };
