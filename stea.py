@@ -14,6 +14,14 @@ options.register(
     "is data"
 )
 
+options.register(
+    'onlyFiltered',
+    False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "keep only filtered events"
+)
+
 #TODO: forward option to plugins
 options.register(
     'isFSim',
@@ -110,11 +118,8 @@ process.btaggingSF = cms.EDProducer("BtagUncertainty",
 if options.isData:
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-            #'root://xrootd.unl.edu//store/mc/RunIISpring15DR74/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/50000/02CF0510-4CFF-E411-A715-0025905A6090.root'
-            'root://xrootd.unl.edu//store/data/Run2015B/SingleMuon/MINIAOD/PromptReco-v1/000/251/244/00000/68275270-7C27-E511-B1F0-02163E011A46.root' #{golden run: 251244:96-251244:121}
-            #'root://xrootd.unl.edu//store/mc/RunIISpring15DR74/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/60000/046CAA30-1103-E511-94E8-7845C4FC3B0C.root'
-            #'root://xrootd.unl.edu//store/mc/RunIISpring15DR74/QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v2/00000/023FCE0B-300A-E511-BE68-001E673973C8.root'
-        ),
+            #'root://xrootd.unl.edu//store/data/Run2015B/SingleMuon/MINIAOD/PromptReco-v1/000/251/244/00000/68275270-7C27-E511-B1F0-02163E011A46.root' #{golden run: 251244:96-251244:121}        ),
+            'root://xrootd.unl.edu//store/data/Run2015B/SingleMuon/MINIAOD/17Jul2015-v1/30000/16B50792-172E-E511-B0C8-0025905C43EC.root')
         #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
     )
 else:
@@ -398,13 +403,15 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
             cms.PSet(
                 process=cms.string("STEA"),
                 paths=cms.vstring(
-                    "STEA_plain",
                     "STEA_filtered"
                 ),
             )
         ),
         primaryVertex = cms.InputTag("offlineSlimmedPrimaryVertices")
 )
+
+if not options.onlyFiltered:
+    process.pat2pxlio.selectEvents[0].paths.append("STEA_plain")
 
 
 setattr(process.pat2pxlio,"muons",cms.PSet(
