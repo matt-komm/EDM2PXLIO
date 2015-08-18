@@ -37,9 +37,12 @@ class METConverter:
         std::vector<edm::InputTag> _metSignificanceInputTags;
         std::vector<edm::EDGetTokenT<double>> _metSignificancesToken;
         
+        bool _addSysVariations;
+        
     public:
         METConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector):
-            Base(name, globalConfig, consumesCollector)
+            Base(name, globalConfig, consumesCollector),
+            _addSysVariations(false)
         {
         
             if (globalConfig.exists(_name))
@@ -53,6 +56,11 @@ class METConverter:
                     {
                         _metSignificancesToken.push_back(consumesCollector.consumes<double>(_metSignificanceInputTags[itag]));
                     }
+                }
+                
+                if (iConfig.exists("addSysVariations"))
+                {
+                    _addSysVariations = iConfig.getParameter<bool>("addSysVariations");
                 }
             }
         }
@@ -103,6 +111,22 @@ class METConverter:
                         {
                             pxlParticle->setUserRecord("metSignificance",*metSigCollection);
                         }
+                        
+                        if (_addSysVariations)
+                        {
+                            pxlParticle->setUserRecord("uncorrectedPhi",PRECISION(met.uncorrectedPhi()));
+                            pxlParticle->setUserRecord("uncorrectedPt",PRECISION(met.uncorrectedPt()));
+                            for (unsigned int isys = 0; isys < SYSVariations.size(); ++isys)
+                            {
+                                try
+                                {
+                                    addSystematicVariation(met,pxlParticle,SYSVariations[isys].first,SYSVariations[isys].second,pat::MET::Type1);
+                                }
+                                catch (...)
+                                {
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -113,26 +137,9 @@ class METConverter:
         {
             Base::convertObject(patObject,pxlParticle);
             pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
-            
-            pxlParticle->setUserRecord("uncorrectedPhi",PRECISION(patObject.uncorrectedPhi()));
-            pxlParticle->setUserRecord("uncorrectedPt",PRECISION(patObject.uncorrectedPt()));
-            
-            
-            for (unsigned int isys = 0; isys < SYSVariations.size(); ++isys)
-            {
-                try
-                {
-                    addSystematicVariation(patObject,pxlParticle,SYSVariations[isys].first,SYSVariations[isys].second,pat::MET::Type1p2);
-                }
-                catch (...)
-                {
-                }
-            }
-            
-            //pxlParticle->setUserRecord("metSignificance",patObject.metSignificance());
         }
         
-        ~METConverter()
+        virtual ~METConverter()
         {
         }
 };

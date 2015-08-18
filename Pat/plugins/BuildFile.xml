@@ -4,7 +4,7 @@
 <use name="DataFormats/PatCandidates"/>
 <use name="DataFormats/TrackReco"/>
 <use name="PhysicsTools/CandUtils"/>
-
+<use name="DataFormats/HepMCCandidate"/>
 <library   file="ElectronConverter.cc" name="ElectronConverterPlugin">
     <flags   EDM_PLUGIN="1"/>
 </library>

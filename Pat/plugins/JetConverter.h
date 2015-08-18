@@ -19,6 +19,7 @@
 #include "EDM2PXLIO/Core/interface/CollectionClassConverter.h"
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
 namespace edm2pxlio
 {
@@ -28,7 +29,7 @@ class JetChargeCalculator
     public:
         enum MEASURE
         {
-            DR,PT,E,ONE,MASSDROP
+            DR,PT,E,ONE,MASSDROP,COS
         };
         
         static const std::function<bool(const reco::Candidate*)> SELECT_CHARGED;
@@ -36,7 +37,7 @@ class JetChargeCalculator
         static const std::function<bool(const reco::Candidate*)> SELECT_NOTVERTEX;
         static const std::function<bool(const reco::Candidate*)> SELECT_ALL;
         
-        static double calculate(const pat::Jet& jet, MEASURE measure, double exp=1.0, std::function<bool(const reco::Candidate*)> selector=[](const reco::Candidate*){return true;});
+        static double calculate(const pat::Jet& jet, MEASURE measure, double exp=1.0, double bias=0.0, std::function<bool(const reco::Candidate*)> selector=[](const reco::Candidate*){return true;});
 };
 
 class JetConverter:
@@ -45,7 +46,7 @@ class JetConverter:
     private:
         typedef CollectionClassConverter<pat::Jet> Base;
     protected:
-
+        bool _basicsOnly;
     public:
         JetConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);
         void calculateJetShapes(const pat::Jet& patObject, pxl::Particle* pxlParticle) const;

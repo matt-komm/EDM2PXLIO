@@ -31,7 +31,7 @@ const std::function<bool(const reco::Candidate*)> JetChargeCalculator::SELECT_AL
     return true;
 };
 
-double JetChargeCalculator::calculate(const pat::Jet& jet, MEASURE measure, double exp, std::function<bool(const reco::Candidate*)> selector)
+double JetChargeCalculator::calculate(const pat::Jet& jet, MEASURE measure, double exp, double bias, std::function<bool(const reco::Candidate*)> selector)
 {
     double nominator = 0.0;
     double denominator = 0.0;
@@ -53,43 +53,62 @@ double JetChargeCalculator::calculate(const pat::Jet& jet, MEASURE measure, doub
                 const double dY = daughter->rapidity()-jet.rapidity();
                 const double dPhi = reco::deltaPhi(daughter->phi(),jet.phi());
                 const double dR = std::sqrt(dY*dY+dPhi*dPhi);   
-                weight = std::pow(dR,exp);
+                weight = std::pow(bias+dR,exp);
                 break;
             }
             case PT:
             {
                 const double pt = daughter->pt();
-                weight = std::pow(pt,exp);
+                weight = std::pow(bias+pt,exp);
                 break;
             }
             case E:
             {
                 const double energy = daughter->energy();
-                weight = std::pow(energy,exp);
+                weight = std::pow(bias+energy,exp);
                 break;
             }
             case ONE:
             {
-                weight =1.0;
+                weight =bias;
                 break;
             }
             case MASSDROP:
             {
                 math::XYZTLorentzVector jetDrop = jet.p4()-daughter->p4();
                 const double massDrop = std::max(0.0,jet.mass()-jetDrop.mass());
-                weight = std::pow(massDrop,exp);
+                weight = std::pow(bias+massDrop,exp);
+                break;
+            }
+            case COS:
+            {
+                weight = std::pow(bias+jet.px()*daughter->px()+jet.py()*daughter->py()+jet.pz()*daughter->pz(),exp);
                 break;
             }
         }
         nominator+=daughter->charge()*weight;
         denominator+=weight;
     }
+    if (denominator<0.00001)
+    {
+        return -1;
+    }
     return nominator/denominator;
 }
 
 JetConverter::JetConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector):
-    Base(name, globalConfig, consumesCollector)
+    Base(name, globalConfig, consumesCollector),
+    _basicsOnly(false)
 {
+    if (globalConfig.exists(_name))
+    {
+        const edm::ParameterSet& iConfig = globalConfig.getParameter<edm::ParameterSet>(_name);   
+
+        if (iConfig.exists("basicVariablesOnly"))
+        {
+            _basicsOnly = iConfig.getParameter<bool>("basicVariablesOnly");
+        }
+    }
 }
 
 void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* pxlParticle) const
@@ -134,28 +153,32 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
     pxlParticle->setUserRecord("circularityYPhi",PRECISION(eventShapeYPhi.circularity()));
     
 
-    std::vector<unsigned int> exps{{25,50,75,100}};
-    for (unsigned int exp: exps)
+    std::vector<int> exps{{25,50,75,100,125,150,200}};
+    for (int exp: exps)
     {
-        pxlParticle->setUserRecord("charge_dr_all_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::DR,exp*0.01,JetChargeCalculator::SELECT_ALL)));
-        pxlParticle->setUserRecord("charge_pt_all_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::PT,exp*0.01,JetChargeCalculator::SELECT_ALL)));
-        pxlParticle->setUserRecord("charge_e_all_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::E,exp*0.01,JetChargeCalculator::SELECT_ALL)));
-        pxlParticle->setUserRecord("charge_md_all_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::MASSDROP,exp*0.01,JetChargeCalculator::SELECT_ALL)));
+        pxlParticle->setUserRecord("charge_dr_all_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::DR,-exp*0.01,1.0,JetChargeCalculator::SELECT_ALL)));
+        pxlParticle->setUserRecord("charge_pt_all_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::PT,exp*0.01,0.0,JetChargeCalculator::SELECT_ALL)));
+        pxlParticle->setUserRecord("charge_e_all_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::E,exp*0.01,0.0,JetChargeCalculator::SELECT_ALL)));
+        pxlParticle->setUserRecord("charge_md_all_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::MASSDROP,exp*0.01,0.0,JetChargeCalculator::SELECT_ALL)));
+        pxlParticle->setUserRecord("charge_cos_all_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::COS,exp*0.01,0.0,JetChargeCalculator::SELECT_ALL)));
     
-        pxlParticle->setUserRecord("charge_dr_charged_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::DR,exp*0.01,JetChargeCalculator::SELECT_CHARGED)));
-        pxlParticle->setUserRecord("charge_pt_charged_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::PT,exp*0.01,JetChargeCalculator::SELECT_CHARGED)));
-        pxlParticle->setUserRecord("charge_e_charged_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::E,exp*0.01,JetChargeCalculator::SELECT_CHARGED)));
-        pxlParticle->setUserRecord("charge_md_charged_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::MASSDROP,exp*0.01,JetChargeCalculator::SELECT_CHARGED)));
-
-        pxlParticle->setUserRecord("charge_dr_vertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::DR,exp*0.01,JetChargeCalculator::SELECT_VERTEX)));
-        pxlParticle->setUserRecord("charge_pt_vertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::PT,exp*0.01,JetChargeCalculator::SELECT_VERTEX)));
-        pxlParticle->setUserRecord("charge_e_vertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::E,exp*0.01,JetChargeCalculator::SELECT_VERTEX)));
-        pxlParticle->setUserRecord("charge_md_vertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::MASSDROP,exp*0.01,JetChargeCalculator::SELECT_VERTEX)));
-
-        pxlParticle->setUserRecord("charge_dr_nonvertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::DR,exp*0.01,JetChargeCalculator::SELECT_NOTVERTEX)));
-        pxlParticle->setUserRecord("charge_pt_nonvertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::PT,exp*0.01,JetChargeCalculator::SELECT_NOTVERTEX)));
-        pxlParticle->setUserRecord("charge_e_nonvertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::E,exp*0.01,JetChargeCalculator::SELECT_NOTVERTEX)));
-        pxlParticle->setUserRecord("charge_md_nonvertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::MASSDROP,exp*0.01,JetChargeCalculator::SELECT_NOTVERTEX)));
+        pxlParticle->setUserRecord("charge_dr_charged_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::DR,-exp*0.01,1.0,JetChargeCalculator::SELECT_CHARGED)));
+        pxlParticle->setUserRecord("charge_pt_charged_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::PT,exp*0.01,0.0,JetChargeCalculator::SELECT_CHARGED)));
+        pxlParticle->setUserRecord("charge_e_charged_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::E,exp*0.01,0.0,JetChargeCalculator::SELECT_CHARGED)));
+        pxlParticle->setUserRecord("charge_md_charged_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::MASSDROP,exp*0.01,0.0,JetChargeCalculator::SELECT_CHARGED)));
+        pxlParticle->setUserRecord("charge_cos_charged_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::COS,exp*0.01,0.0,JetChargeCalculator::SELECT_CHARGED)));
+        
+        pxlParticle->setUserRecord("charge_dr_vertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::DR,-exp*0.01,1.0,JetChargeCalculator::SELECT_VERTEX)));
+        pxlParticle->setUserRecord("charge_pt_vertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::PT,exp*0.01,0.0,JetChargeCalculator::SELECT_VERTEX)));
+        pxlParticle->setUserRecord("charge_e_vertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::E,exp*0.01,0.0,JetChargeCalculator::SELECT_VERTEX)));
+        pxlParticle->setUserRecord("charge_md_vertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::MASSDROP,exp*0.01,0.0,JetChargeCalculator::SELECT_VERTEX)));
+        pxlParticle->setUserRecord("charge_cos_vertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::COS,exp*0.01,0.0,JetChargeCalculator::SELECT_VERTEX)));
+        
+        pxlParticle->setUserRecord("charge_dr_nonvertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::DR,-exp*0.01,1.0,JetChargeCalculator::SELECT_NOTVERTEX)));
+        pxlParticle->setUserRecord("charge_pt_nonvertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::PT,exp*0.01,0.0,JetChargeCalculator::SELECT_NOTVERTEX)));
+        pxlParticle->setUserRecord("charge_e_nonvertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::E,exp*0.01,0.0,JetChargeCalculator::SELECT_NOTVERTEX)));
+        pxlParticle->setUserRecord("charge_md_nonvertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::MASSDROP,exp*0.01,0.0,JetChargeCalculator::SELECT_NOTVERTEX)));
+        pxlParticle->setUserRecord("charge_cos_nonvertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::COS,exp*0.01,0.0,JetChargeCalculator::SELECT_NOTVERTEX)));
     }
 }
 
@@ -165,13 +188,39 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
     Base::convertObject(patObject, pxlParticle);
     pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
     
+    pxlParticle->setUserRecord("jetArea",PRECISION(patObject.jetArea()));
+    pxlParticle->setUserRecord("jetCharge",PRECISION(patObject.jetCharge()));
+    
+    const reco::Candidate::LorentzVector& rawP4 = patObject.correctedP4("Uncorrected");
+    pxlParticle->setUserRecord("rawP4",pxl::LorentzVector(rawP4.px(),rawP4.py(),rawP4.pz(),rawP4.energy()));
+    
+    
+    if (patObject.genParton())
+    {
+        pxlParticle->setUserRecord("partonFlavour",patObject.partonFlavour());
+        
+    }
+    if (patObject.genJet())
+    {
+        const pat::Jet::LorentzVector& vec = patObject.genJet()->p4();
+        pxlParticle->setUserRecord("genJet",pxl::LorentzVector(vec.px(),vec.py(),vec.pz(),vec.energy()));
+    }
+    
+    pxlParticle->setUserRecord("nConstituents",patObject.nConstituents());
+    
+    
+    if (_basicsOnly)
+    {
+        return;
+    }
+    
     const std::vector<std::pair<std::string, float>>& bDiscriminators = patObject.getPairDiscri();
     for (unsigned int i = 0; i<bDiscriminators.size(); ++i)
     {
         pxlParticle->setUserRecord(bDiscriminators[i].first,PRECISION(bDiscriminators[i].second));
     }
 
-    pxlParticle->setUserRecord("nConstituents",patObject.nConstituents());
+
     pxlParticle->setUserRecord("n60",patObject.n60());
     pxlParticle->setUserRecord("n90",patObject.n90());
     
@@ -235,16 +284,6 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
         pxlParticle->setUserRecord("HFEMEnergyFraction",PRECISION(patObject.HFEMEnergyFraction()));
     }
     
-    const reco::JetFlavourInfo& flavorInfo = patObject.jetFlavourInfo();
-    pxlParticle->setUserRecord("partonFlavour",flavorInfo.getPartonFlavour());
-    
-    pxlParticle->setUserRecord("hadronFlavour",flavorInfo.getHadronFlavour());
-    
-    pxlParticle->setUserRecord("jetArea",PRECISION(patObject.jetArea()));
-    pxlParticle->setUserRecord("jetCharge",PRECISION(patObject.jetCharge()));
-    
-    const reco::Candidate::LorentzVector& rawP4 = patObject.correctedP4("Uncorrected");
-    pxlParticle->setUserRecord("rawP4",pxl::LorentzVector(rawP4.px(),rawP4.py(),rawP4.pz(),rawP4.energy()));
     
     for (unsigned int iname = 0; iname < patObject.userFloatNames ().size(); ++ iname)
     {
@@ -253,17 +292,6 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
         {
             pxlParticle->setUserRecord("user_"+patObject.userFloatNames()[iname],PRECISION(value));
         }
-    }
-    
-    if (patObject.genParton())
-    {
-        pxlParticle->setUserRecord("partonFlavour",patObject.partonFlavour());
-        
-    }
-    if (patObject.genJet())
-    {
-        const pat::Jet::LorentzVector& vec = patObject.genJet()->p4();
-        pxlParticle->setUserRecord("genJet",pxl::LorentzVector(vec.px(),vec.py(),vec.pz(),vec.energy()));
     }
     
     calculateJetShapes(patObject,pxlParticle);
