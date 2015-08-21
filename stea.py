@@ -212,7 +212,9 @@ from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
 switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
 for eleID in [
     'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V2_cff',
-    'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV51_cff'
+    'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_50ns_V1_cff',
+    'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_25ns_V1_cff',
+    #'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV51_cff'
 ]:
     setupAllVIDIdsInModule(process,eleID,setupVIDElectronSelection)
 
@@ -229,9 +231,9 @@ if options.isData:
 else:
     era="Summer15_50nsV4_MC"
     
-dBFile = os.path.expandvars("$CMSSW_BASE/src/PhysicsTools/PatAlgos/test/"+era+".db")
+dBFile = era+".db"
 process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
-    connect = cms.string( "sqlite_file://"+dBFile ),
+    connect = cms.string( "sqlite_file:"+dBFile ),
     toGet =  cms.VPSet(
         cms.PSet(
             record = cms.string("JetCorrectionsRecord"),
@@ -282,7 +284,7 @@ from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMet
 
 runMetCorAndUncFromMiniAOD(process,
     isData=options.isData,
-    jecUncFile="PhysicsTools/PatUtils/data/Summer15_50nsV4_DATA_UncertaintySources_AK4PFchs.txt",
+    jecUncFile="EDM2PXLIO/Core/data/Summer15_50nsV4_UncertaintySources_AK4PFchs.txt",
     #pfCandColl=cms.InputTag("slimmedJets"),
     postfix=""
 )
@@ -292,7 +294,7 @@ if not options.isData:
 '''
 runMetCorAndUncFromMiniAOD(process,
     isData=options.isData,
-    jecUncFile="PhysicsTools/PatUtils/data/Summer15_50nsV4_DATA_UncertaintySources_AK4PFchs.txt",
+    jecUncFile="EDM2PXLIO/Core/data/Summer15_50nsV4_UncertaintySources_AK4PFchs.txt",
     #pfCandColl=cms.InputTag("slimmedJets"),
     postfix="Smeared"
 )
@@ -311,14 +313,14 @@ if not options.isData:
 
 ### MET excluding HF ###
 
-process.noHFCandidates = cms.EDFilter("CandPtrSelector",
+process.candidatesNoHF = cms.EDFilter("CandPtrSelector",
     src=cms.InputTag("packedPFCandidates"),
     cut=cms.string("abs(pdgId)!=1 && abs(pdgId)!=2 && abs(eta)<3.0")
 )
 runMetCorAndUncFromMiniAOD(process,
     isData=options.isData,
-    pfCandColl=cms.InputTag("noHFCandidates"),
-    jecUncFile="PhysicsTools/PatUtils/data/Summer15_50nsV4_DATA_UncertaintySources_AK4PFchs.txt",
+    pfCandColl=cms.InputTag("candidatesNoHF"),
+    jecUncFile="EDM2PXLIO/Core/data/Summer15_50nsV4_UncertaintySources_AK4PFchs.txt",
     postfix="NoHF"
 )
 if not options.isData:
@@ -328,7 +330,7 @@ if not options.isData:
 runMetCorAndUncFromMiniAOD(process,
     isData=options.isData,
     pfCandColl=cms.InputTag("noHFCandidates"),
-    jecUncFile="PhysicsTools/PatUtils/data/Summer15_50nsV4_DATA_UncertaintySources_AK4PFchs.txt",
+    jecUncFile="EDM2PXLIO/Core/data/Summer15_50nsV4_UncertaintySources_AK4PFchs.txt",
     postfix="NoHFSmeared"
 )
 if not options.isData:
@@ -346,9 +348,24 @@ process.slimmedMETSignificance = cms.EDProducer(
         'slimmedMuons',
         'slimmedPhotons'
     ),
-    srcPfJets = cms.InputTag('slimmedJets'),
-    srcMet = cms.InputTag('slimmedMETs'),
+    srcPfJets = cms.InputTag('slimmedJetsJEC'),
+    srcMet = cms.InputTag('slimmedMETs','','STEA'),
     srcPFCandidates = cms.InputTag('packedPFCandidates'),
+
+    parameters = METSignificanceParams
+)
+addModule(process.slimmedMETSignificance)
+
+process.slimmedMETSignificanceNoHF = cms.EDProducer(
+    "METSignificanceProducer",
+    srcLeptons = cms.VInputTag(
+        'slimmedElectrons',
+        'slimmedMuons',
+        'slimmedPhotons'
+    ),
+    srcPfJets = cms.InputTag('patJetsNoHF'),
+    srcMet = cms.InputTag('slimmedMETsNoHF'),
+    srcPFCandidates = cms.InputTag('candidatesNoHF'),
 
     parameters = METSignificanceParams
 )
@@ -434,6 +451,23 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
             type=cms.string("ValueMapAccessorBool"),
             src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-tight")
         ),
+        sprint15eleIDVeto50ns = cms.PSet(
+            type=cms.string("ValueMapAccessorBool"),
+            src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-Spring15-50ns-V1-standalone-veto")
+        ),
+        sprint15eleIDTight50ns = cms.PSet(
+            type=cms.string("ValueMapAccessorBool"),
+            src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-Spring15-50ns-V1-standalone-tight")
+        ),
+        sprint15eleIDVeto25ns = cms.PSet(
+            type=cms.string("ValueMapAccessorBool"),
+            src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-Spring15-25ns-V1-standalone-veto")
+        ),
+        sprint15eleIDTight25ns = cms.PSet(
+            type=cms.string("ValueMapAccessorBool"),
+            src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-Spring15-25ns-V1-standalone-tight")
+        ),
+        
     )
 ))
 '''                                     
@@ -467,7 +501,13 @@ setattr(process.pat2pxlio,"remets",cms.PSet(
         "MET",
         "METnoHF"
     ),
+    metSignificances=cms.VInputTag(
+        cms.InputTag("slimmedMETSignificance","METSignificance"),
+        cms.InputTag("slimmedMETSignificanceNoHF","METSignificance"), 
+    ),
+    
     addSysVariations=cms.bool(True)
+    
 ))
 
 
@@ -590,7 +630,7 @@ else:
 process.endpath= cms.EndPath()
 
 process.endpath+=process.pat2pxlio
-'''
+
 process.OUT = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('output.root'),
     outputCommands = cms.untracked.vstring( "keep *_slimmedMETs_*_*",
@@ -599,10 +639,11 @@ process.OUT = cms.OutputModule("PoolOutputModule",
                                             #"keep *_patPFMetT1TxyNoHF_*_*",
                                             #"keep *_patJetCorrFactors_*_*",
                                             #"keep *_patPFMetT1JetResDown_*_*"
+                                            "keep *_slimmedMETSignificance_*_*"
                                             ),
     dropMetaData = cms.untracked.string('ALL'),
 )
 process.endpath+= process.OUT
-'''
+
 
 
