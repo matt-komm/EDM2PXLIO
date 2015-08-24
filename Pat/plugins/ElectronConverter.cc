@@ -102,7 +102,8 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     pxlParticle->setUserRecord("pfsumChargedHadronPt",pfIso.sumChargedHadronPt);
     pxlParticle->setUserRecord("pfsumNeutralHadronEt",pfIso.sumNeutralHadronEt);
     pxlParticle->setUserRecord("pfsumPhotonEt",pfIso.sumPhotonEt);
-    pxlParticle->setUserRecord("pfsumPUPt",pfIso.sumPUPt); 
+    pxlParticle->setUserRecord("pfsumPUPt",pfIso.sumPUPt);
+    pxlParticle->setUserRecord("pfsumChargedParticlePt",pfIso.sumChargedParticlePt); 
 
 }
 

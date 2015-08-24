@@ -142,6 +142,16 @@ void GenParticleConverter::convertObject(const reco::GenParticle& genObject, pxl
     pxlParticle->setP4(genObject.px(),genObject.py(),genObject.pz(),genObject.energy());
     pxlParticle->setPdgNumber(genObject.pdgId());
     pxlParticle->setUserRecord("status",genObject.status());
+    
+    unsigned int statusBits = 0;
+    const std::bitset<15>& flags = genObject.statusFlags ().flags_;
+    int power = 1;
+    for (unsigned int ibit = 0; ibit<flags.size();++ibit)
+    {
+        statusBits+=power*flags[ibit];
+        power<<=1;
+    }
+    pxlParticle->setUserRecord("statusBits",statusBits);
 }
 
 GenParticleConverter::~GenParticleConverter()
