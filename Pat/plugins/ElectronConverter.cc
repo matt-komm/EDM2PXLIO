@@ -76,17 +76,17 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     pxlParticle->setUserRecord("ecalIso",PRECISION(patObject.ecalIso()));
     pxlParticle->setUserRecord("hcalIso",PRECISION(patObject.hcalIso()));
     pxlParticle->setUserRecord("trackIso",PRECISION(patObject.trackIso()));
-
+    /*
     pxlParticle->setUserRecord("R03TkSumPt",PRECISION(patObject.dr03TkSumPt()));
     pxlParticle->setUserRecord("R03EcalRecHitSumEt",PRECISION(patObject.dr03EcalRecHitSumEt()));
     pxlParticle->setUserRecord("R03HcalTowerSumEt",PRECISION(patObject.dr03HcalTowerSumEt()));
-    pxlParticle->setUserRecord("R03HcalTowerSumEt",PRECISION(patObject.dr03HcalTowerSumEtBc()));
+    pxlParticle->setUserRecord("R03HcalTowerSumEtBc",PRECISION(patObject.dr03HcalTowerSumEtBc()));
     
     pxlParticle->setUserRecord("R04TkSumPt",PRECISION(patObject.dr04TkSumPt()));
     pxlParticle->setUserRecord("R04EcalRecHitSumEt",PRECISION(patObject.dr04EcalRecHitSumEt()));
     pxlParticle->setUserRecord("R04HcalTowerSumEt",PRECISION(patObject.dr04HcalTowerSumEt()));
-    pxlParticle->setUserRecord("R04HcalTowerSumEt",PRECISION(patObject.dr04HcalTowerSumEtBc()));
-    
+    pxlParticle->setUserRecord("R04HcalTowerSumEtBc",PRECISION(patObject.dr04HcalTowerSumEtBc()));
+    */
     pxlParticle->setUserRecord("chargedHadronIso",PRECISION(patObject.chargedHadronIso()));
     pxlParticle->setUserRecord("neutralHadronIso",PRECISION(patObject.neutralHadronIso()));
     pxlParticle->setUserRecord("photonIso",PRECISION(patObject.photonIso()));
@@ -97,6 +97,12 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     pxlParticle->setUserRecord("superClusterEta",PRECISION(patObject.superCluster()->eta()));
     
     pxlParticle->setUserRecord("fbrem",PRECISION(patObject.fbrem()));
+    
+    const reco::GsfElectron::PflowIsolationVariables& pfIso = patObject.pfIsolationVariables();
+    pxlParticle->setUserRecord("pfsumChargedHadronPt",pfIso.sumChargedHadronPt);
+    pxlParticle->setUserRecord("pfsumNeutralHadronEt",pfIso.sumNeutralHadronEt);
+    pxlParticle->setUserRecord("pfsumPhotonEt",pfIso.sumPhotonEt);
+    pxlParticle->setUserRecord("pfsumPUPt",pfIso.sumPUPt); 
 
 }
 

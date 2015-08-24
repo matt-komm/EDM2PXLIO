@@ -383,7 +383,7 @@ process.applyBaselineHBHENoiseFilter = cms.EDFilter('BooleanFlagFilter',
    reverseDecision = cms.bool(False)
 )
 
-process.HBHENoiseFilter = cms.Path(
+process.STEA_HBHENoiseFilter = cms.Path(
     process.HBHENoiseFilterResultProducer
     *process.applyBaselineHBHENoiseFilter
 )
@@ -397,7 +397,7 @@ process.goodVertexFilter = cms.EDFilter("GoodVertexFilter",
     maxAbsZ = cms.double(24),
     maxd0 = cms.double(2)
 )
-process.primaryVertexFilter = cms.Path(process.goodVertexFilter)
+process.STEA_primaryVertexFilter = cms.Path(process.goodVertexFilter)
 
 
 
