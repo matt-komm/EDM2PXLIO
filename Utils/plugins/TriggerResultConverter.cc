@@ -20,6 +20,11 @@ TriggerResultConverter::TriggerResultConverter(const std::string& name, const ed
             }
         }
         
+        if (triggerConfig.exists("prefix")) 
+        {
+            _prefixes = triggerConfig.getParameter<std::vector<std::string>>("prefix");
+        }
+        
     }
     else
     {
@@ -52,7 +57,15 @@ void TriggerResultConverter::convert(const edm::Event* edmEvent, const edm::Even
                 if (accept)
                 {
                     bool passTrig=trigResults->accept(trigNames.triggerIndex(pathName));
-                    pxlEventView->setUserRecord(pathName,passTrig);
+                    
+                    if (_prefixes.size()==Base::size())
+                    {
+                        pxlEventView->setUserRecord(_prefixes[index]+pathName,passTrig);
+                    }
+                    else
+                    {
+                        pxlEventView->setUserRecord(pathName,passTrig);
+                    }
                 }
             }
         }

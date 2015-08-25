@@ -33,6 +33,7 @@ class TriggerResultConverter:
 
     protected:
         std::vector<boost::regex> _regexList;
+        std::vector<std::string> _prefixes;
 
     public:
         TriggerResultConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);

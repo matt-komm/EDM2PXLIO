@@ -15,6 +15,14 @@ options.register(
 )
 
 options.register(
+    'isReRecoData',
+    False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "is rereco data"
+)
+
+options.register(
     'onlyFiltered',
     False,
     VarParsing.multiplicity.singleton,
@@ -115,7 +123,14 @@ process.btaggingSF = cms.EDProducer("BtagUncertainty",
 '''
 
 
-if options.isData:
+if options.isData and not options.isReRecoData:
+    process.source = cms.Source("PoolSource",
+        fileNames = cms.untracked.vstring(
+            'root://xrootd.unl.edu//store/data/Run2015B/SingleMuon/MINIAOD/PromptReco-v1/000/251/244/00000/68275270-7C27-E511-B1F0-02163E011A46.root') #{golden run: 251244:96-251244:121}        ),
+            #'root://xrootd.unl.edu//store/data/Run2015B/SingleMuon/MINIAOD/17Jul2015-v1/30000/16B50792-172E-E511-B0C8-0025905C43EC.root')
+        #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
+    )
+elif options.isData and options.isReRecoData:
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
             #'root://xrootd.unl.edu//store/data/Run2015B/SingleMuon/MINIAOD/PromptReco-v1/000/251/244/00000/68275270-7C27-E511-B1F0-02163E011A46.root' #{golden run: 251244:96-251244:121}        ),
@@ -584,7 +599,8 @@ if options.isData:
     setattr(process.pat2pxlio,"triggersRECO",cms.PSet(
         type=cms.string("TriggerResultConverter"),
         srcs=cms.VInputTag(cms.InputTag("TriggerResults","","RECO")),
-        regex=cms.vstring("[0-9a-zA-z_]*")
+        regex=cms.vstring("[0-9a-zA-z_]*"),
+        prefix=cms.vstring(["RECO_"])
     ))
     '''
     setattr(process.pat2pxlio,"mets",cms.PSet(
@@ -594,12 +610,20 @@ if options.isData:
         metSignificances=cms.VInputTag(cms.InputTag("slimmedMETSignificance","METSignificance"))
     ))
     '''
+    if options.isReRecoData:
+        setattr(process.pat2pxlio,"triggersPAT",cms.PSet(
+            type=cms.string("TriggerResultConverter"),
+            srcs=cms.VInputTag(cms.InputTag("TriggerResults","","PAT")),
+            regex=cms.vstring("[0-9a-zA-z_]*"),
+            prefix=cms.vstring(["PAT_"])
+        ))
     
 else:
     setattr(process.pat2pxlio,"triggersPAT",cms.PSet(
         type=cms.string("TriggerResultConverter"),
         srcs=cms.VInputTag(cms.InputTag("TriggerResults","","PAT")),
-        regex=cms.vstring("[0-9a-zA-z_]*")
+        regex=cms.vstring("[0-9a-zA-z_]*"),
+        prefix=cms.vstring(["PAT_"])
     ))
     '''
     setattr(process.pat2pxlio,"mets",cms.PSet(
@@ -630,20 +654,20 @@ else:
 process.endpath= cms.EndPath()
 
 process.endpath+=process.pat2pxlio
-
+'''
 process.OUT = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('output.root'),
-    outputCommands = cms.untracked.vstring( "keep *_slimmedMETs_*_*",
-                                            "keep *_slimmedMETsNoHF_*_*",
+    outputCommands = cms.untracked.vstring( "keep *_TriggerResults_*_*",
+                                            #"keep *_slimmedMETsNoHF_*_*",
                                             #"keep *_patPFMetT1Txy_*_*",
                                             #"keep *_patPFMetT1TxyNoHF_*_*",
                                             #"keep *_patJetCorrFactors_*_*",
                                             #"keep *_patPFMetT1JetResDown_*_*"
-                                            "keep *_slimmedMETSignificance_*_*"
+                                            #"keep *_slimmedMETSignificance_*_*"
                                             ),
     dropMetaData = cms.untracked.string('ALL'),
 )
 process.endpath+= process.OUT
-
+'''
 
 
