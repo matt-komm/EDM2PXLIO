@@ -70,7 +70,7 @@ class METConverter:
             pxl::Particle* particle, 
             const std::string& name,
             pat::MET::METUncertainty shift, 
-            pat::MET::METUncertaintyLevel level
+            pat::MET::METCorrectionLevel level
         ) const
         {
             pat::MET::Vector2 shiftedVec = met.shiftedP2(shift,level);
@@ -114,8 +114,8 @@ class METConverter:
                         
                         if (_addSysVariations)
                         {
-                            pxlParticle->setUserRecord("uncorrectedPhi",PRECISION(met.uncorrectedPhi()));
-                            pxlParticle->setUserRecord("uncorrectedPt",PRECISION(met.uncorrectedPt()));
+                            pxlParticle->setUserRecord("uncorrectedPhi",PRECISION(met.uncorPhi()));
+                            pxlParticle->setUserRecord("uncorrectedPt",PRECISION(met.uncorPt()));
                             for (unsigned int isys = 0; isys < SYSVariations.size(); ++isys)
                             {
                                 try
