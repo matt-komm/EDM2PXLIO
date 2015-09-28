@@ -28,13 +28,24 @@ void PileupSummaryInfoConverter::convert(const edm::Event* edmEvent, const edm::
             
             if (collection.product())
             {
-                pxl::BasicNVector nInteractionVector(collection->size());
+            
+                pxl::BasicNVector nInteractionVector(3);
+                pxl::BasicNVector nTrueInteractionVector(3);
+                pxl::BasicNVector nBunchCrossingVector(3);
+                
                 for (unsigned int i = 0; i < collection->size(); ++i)
                 {
-                    nInteractionVector.setElement(i,(*collection)[i].getPU_NumInteractions());
-                    //puObject->setUserRecord(std::string("nInteractions_")+std::to_string(i),(*collection)[i].getPU_NumInteractions());
+                    if (fabs((*collection)[i].getBunchCrossing())<2)
+                    {
+                        unsigned int ibx = (*collection)[i].getBunchCrossing()+1;
+                        nInteractionVector.setElement(ibx,(*collection)[i].getPU_NumInteractions());
+                        nTrueInteractionVector.setElement(ibx,(*collection)[i].getTrueNumInteractions());
+                        nBunchCrossingVector.setElement(ibx,(*collection)[i].getBunchCrossing());
+                    }
                 }
                 puObject->setUserRecord("nInteractions"+std::to_string(index),nInteractionVector);
+                puObject->setUserRecord("nTrueInteractions"+std::to_string(index),nTrueInteractionVector);
+                puObject->setUserRecord("nBunchCrossings"+std::to_string(index),nBunchCrossingVector);
             }
         }
         
