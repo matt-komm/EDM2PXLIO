@@ -47,6 +47,7 @@ class JetConverter:
         typedef CollectionClassConverter<pat::Jet> Base;
     protected:
         bool _basicsOnly;
+        
     public:
         JetConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);
         void calculateJetShapes(const pat::Jet& patObject, pxl::Particle* pxlParticle) const;

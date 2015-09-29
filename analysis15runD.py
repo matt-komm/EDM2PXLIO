@@ -65,7 +65,6 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 
 if options.isData:
     process.GlobalTag.globaltag = '74X_dataRun2_Prompt_v1'
-    #process.GlobalTag.globaltag = '74X_dataRun2_Prompt_v1'
 else:
     process.GlobalTag.globaltag = '74X_mcRun2_asymptotic_v2'
 
@@ -73,55 +72,6 @@ else:
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.MessageLogger.suppressWarning = cms.untracked.vstring('ecalLaserCorrFilter','manystripclus53X','toomanystripclus53X')
-
-
-'''
-#process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
-from CondCore.DBCommon.CondDBSetup_cfi import *
-process.conditionsFromDB = cms.ESSource("PoolDBESSource",CondDBSetup,
-    connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
-    toGet =  cms.VPSet(
-        #JEC
-        cms.PSet(
-            record = cms.string("JetCorrectionsRecord"),
-            tag = cms.string("JetCorrectorParametersCollection_CSA14_V4_MC_AK4PFchs"),
-            label=cms.untracked.string("AK4PFchs")
-        ),
-        #BTAG SF
-        #cms.PSet(
-        #    record = cms.string("PerformancePayloadRecord"),
-        #    tag = cms.string("BTagTTBARMCBTAGCSVtable_v8_offline"),
-        #    label=cms.untracked.string("BtagScaleFactorsCSV")
-        #),
-        #BTAG WP
-        #cms.PSet(
-        #    record = cms.string("PerformanceWPRecord"),
-        #    tag = cms.string("BTagTTBARMCBTAGCSVwp_v8_offline"),
-        #    label=cms.untracked.string("BtagWorkingPointsCSV")
-        #),
-    )
-)
-'''
-'''
-process.jesUp = cms.EDProducer("JESUncertainty",
-    jecES=cms.string("AK4PFchs"),
-    jetSrc=cms.InputTag("slimmedJets"),
-    metSrc=cms.InputTag("slimmedMETs"),
-    delta=cms.double(1.0)
-)
-process.jesDown = cms.EDProducer("JESUncertainty",
-    jecES=cms.string("AK4PFchs"),
-    jetSrc=cms.InputTag("slimmedJets"),
-    metSrc=cms.InputTag("slimmedMETs"),
-    delta=cms.double(-1.0)
-) 
-
-process.btaggingSF = cms.EDProducer("BtagUncertainty",
-    workingPointES=cms.string("BtagWorkingPointsCSV"),
-    scaleFactorES=cms.string("BtagScaleFactorsCSV"),
-    jetSrc=cms.InputTag("slimmedJets"),
-)
-'''
 
 
 if options.isData and not options.isReRecoData:
@@ -151,9 +101,9 @@ else:
     
     
 if options.isData:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
-else:
     process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+else:
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(20) )
 
 process.DX_plain=cms.Path()
 process.DX_filtered=cms.Path()
@@ -207,17 +157,9 @@ if not options.isData:
         src=cms.InputTag("prunedGenParticles"),
         select=cms.vstring(
             "drop  *",
-            #"keep++ abs(pdgId)=5", #keep all b decay chains
-            #"keep++ abs(pdgId)=4", #keep all c decay chains
-            #"drop abs(pdgId)>30",
-            #"drop abs(pdgId)=310", #drop K short
             "++keep abs(status)>20 & abs(status) < 30", #keeps all particles from the hard matrix element and their mothers
             "keep++ abs(pdgId)=24", #keep W-boson decay
-            "drop abs(status)>30", #drop all intermediate from decay
-            #"drop abs(status)>30", #drop all intermediate from decay
-            #"keep abs(pdgId)>510 & abs(pdgId)<558", #keep B/bb-mesons
-            #"keep abs(pdgId)>410 & abs(pdgId)<446", #keep C/cc-mesons
-            
+            "drop abs(status)>30", #drop all intermediate from decay 
         )
     )
     addModule(process.lessGenParticles)
@@ -228,8 +170,8 @@ if not options.isData:
 from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
 switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
 for eleID in [
-    'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V2_cff',
-    'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_50ns_V1_cff',
+    #'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V2_cff',
+    #'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_50ns_V1_cff',
     'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_25ns_V1_cff',
     #'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV51_cff'
 ]:
@@ -240,53 +182,40 @@ addModule(process.egmGsfElectronIDSequence)
 
 
 ### JEC ###
-'''
-from CondCore.DBCommon.CondDBSetup_cfi import *
 
-if options.isData:
-    era="Summer15_50nsV4_DATA"
-else:
-    era="Summer15_50nsV4_MC"
+if not options.isData:
+    process.jec25nsMCSummer15V2 = cms.EDProducer("JetCorrectionFactorProducer",
+        jetSrc=cms.InputTag("slimmedJets"),
+        primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
+        rho = cms.InputTag("fixedGridRhoFastjetAll"),
+        
+        jec=cms.VPSet(
+            cms.PSet(
+                level=cms.string("L1FastJet"),
+                file=cms.string("EDM2PXLIO/Core/data/Summer15_25nsV2_MC_L1FastJet_AK4PFchs.txt"),
+            ),
+            cms.PSet(
+                level=cms.string("L2Relative"),
+                file=cms.string("EDM2PXLIO/Core/data/Summer15_25nsV2_MC_L2Relative_AK4PFchs.txt"),
+            ),
+            cms.PSet(
+                level=cms.string("L3Absolute"),
+                file=cms.string("EDM2PXLIO/Core/data/Summer15_25nsV2_MC_L3Absolute_AK4PFchs.txt"),
+            )
+        )
+    )
+
+    from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
+    process.slimmedJetsJEC = patJetsUpdated.clone(
+        jetSource = cms.InputTag("slimmedJets"),
+        jetCorrFactorsSource = cms.VInputTag(
+            cms.InputTag("jec25nsMCSummer15V2")
+        )
+    )
+
+    process.reapplyJEC = cms.Sequence(process.jec25nsMCSummer15V2*process.slimmedJetsJEC)
+    addModule(process.reapplyJEC)
     
-dBFile = era+".db"
-process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
-    connect = cms.string( "sqlite_file:"+dBFile ),
-    toGet =  cms.VPSet(
-        cms.PSet(
-            record = cms.string("JetCorrectionsRecord"),
-            tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK4PF"),
-            label= cms.untracked.string("AK4PF")
-            ),
-        cms.PSet(
-            record = cms.string("JetCorrectionsRecord"),
-            tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK4PFchs"),
-            label= cms.untracked.string("AK4PFchs")
-            ),
-    )    
-)
-
-process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'jec')
-'''
-'''
-from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated
-process.slimmedJetJECCorrFactors = patJetCorrFactorsUpdated.clone(
-    src = cms.InputTag("slimmedJets"),
-    levels = [
-        'L1FastJet', 
-        'L2Relative', 
-        'L3Absolute'
-    ],
-    payload = 'AK4PFchs'
-)
-
-from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
-process.slimmedJetsJEC = patJetsUpdated.clone(
-    jetSource = cms.InputTag("slimmedJets"),
-    jetCorrFactorsSource = cms.VInputTag(cms.InputTag("slimmedJetJECCorrFactors"))
-)
-process.reapplyJEC = cms.Sequence(process.slimmedJetJECCorrFactors*process.slimmedJetsJEC)
-addModule(process.reapplyJEC)
-'''
 
 ### MET uncertainty ###
 '''
@@ -300,7 +229,6 @@ def removeL2L3Residual(process,postfix):
 
 from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
 
-
 runMetCorAndUncFromMiniAOD(process,
     isData=options.isData,
     jecUncFile="EDM2PXLIO/Core/data/Summer15_25nsV2_MC_Uncertainty_AK4PFchs.txt",
@@ -309,6 +237,7 @@ runMetCorAndUncFromMiniAOD(process,
 )
 if not options.isData:
     removeL2L3Residual(process,"")
+
 '''
 
 '''
@@ -320,18 +249,41 @@ runMetCorAndUncFromMiniAOD(process,
 )
 if not options.isData:
     removeL2L3Residual(process,"Smeared")
+#putting 'Smeared' into the collection name will run JER variations hopefully: need nominal smearing and JES uncertainty for 13TeV
 '''
 
-#putting 'Smeared' into the collection name will run JER variations hopefully: need nominal smearing and JES uncertainty for 13TeV
+### recluster jets ###
+'''
+process.pfCHS = cms.EDFilter("CandPtrSelector", src = cms.InputTag("packedPFCandidates"), cut = cms.string("fromPV"))
+from RecoJets.JetProducers.ak4PFJets_cfi import ak4PFJets
+process.ak4PFJetsCHS = ak4PFJets.clone(
+    src = cms.InputTag('pfCHS'), 
+    doAreaFastjet = cms.bool(True)
+)
 
+from PhysicsTools.PatAlgos.tools.jetTools import *
 
-#skip smearing - not sure this is correct and up-to-date
-#process.shiftedPatJetResDown.src=process.patJets
+addJetCollection(
+    process,
+    labelName = 'AK4PFCHS',
+    jetSource = cms.InputTag('ak4PFJetsCHS'),
+    pvSource = cms.InputTag('offlineSlimmedPrimaryVertices'),
+    pfCandidates = cms.InputTag('packedPFCandidates'),
+    svSource = cms.InputTag('slimmedSecondaryVertices'),
+    btagDiscriminators = ['pfCombinedInclusiveSecondaryVertexV2BJetTags'],
+    jetCorrections = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None'),
+    genJetCollection = cms.InputTag('slimmedGenJets'),
+    genParticles = cms.InputTag('prunedGenParticles'),
+    algo = 'AK',
+    rParam = 0.4
+)
 
-
-
+getattr(process,'selectedPatJetsAK4PFCHS').cut = cms.string('pt > 10')
+addModule(process.selectedPatJetsAK4PFCHS)
+'''
 
 ### MET excluding HF ###
+
 '''
 process.candidatesNoHF = cms.EDFilter("CandPtrSelector",
     src=cms.InputTag("packedPFCandidates"),
@@ -340,42 +292,48 @@ process.candidatesNoHF = cms.EDFilter("CandPtrSelector",
 runMetCorAndUncFromMiniAOD(process,
     isData=options.isData,
     pfCandColl=cms.InputTag("candidatesNoHF"),
-    jecUncFile="EDM2PXLIO/Core/data/Summer15_50nsV4_UncertaintySources_AK4PFchs.txt",
+    jecUncFile="EDM2PXLIO/Core/data/Summer15_25nsV2_MC_Uncertainty_AK4PFchs.txt",
     postfix="NoHF"
 )
 if not options.isData:
     removeL2L3Residual(process,"NoHF")
 '''
-'''
-runMetCorAndUncFromMiniAOD(process,
-    isData=options.isData,
-    pfCandColl=cms.InputTag("noHFCandidates"),
-    jecUncFile="EDM2PXLIO/Core/data/Summer15_50nsV4_UncertaintySources_AK4PFchs.txt",
-    postfix="NoHFSmeared"
-)
-if not options.isData:
-    removeL2L3Residual(process,"NoHFSmeared")
-'''
 
 ### MET Significance ###
-'''
+
 from RecoMET.METProducers.METSignificanceParams_cfi import METSignificanceParams
 
-process.slimmedMETSignificance = cms.EDProducer(
-    "METSignificanceProducer",
-    srcLeptons = cms.VInputTag(
-        'slimmedElectrons',
-        'slimmedMuons',
-        'slimmedPhotons'
-    ),
-    srcPfJets = cms.InputTag('patJets'),
-    srcMet = cms.InputTag('slimmedMETs','','STEA'),
-    srcPFCandidates = cms.InputTag('packedPFCandidates'),
+if options.isData:
+    process.slimmedMETSignificance = cms.EDProducer(
+        "METSignificanceProducer",
+        srcLeptons = cms.VInputTag(
+            'slimmedElectrons',
+            'slimmedMuons',
+            'slimmedPhotons'
+        ),
+        srcPfJets = cms.InputTag('slimmedJets'),
+        srcMet = cms.InputTag('slimmedMETs'),
+        srcPFCandidates = cms.InputTag('packedPFCandidates'),
 
-    parameters = METSignificanceParams
-)
+        parameters = METSignificanceParams
+    )
+else:
+    process.slimmedMETSignificance = cms.EDProducer(
+        "METSignificanceProducer",
+        srcLeptons = cms.VInputTag(
+            'slimmedElectrons',
+            'slimmedMuons',
+            'slimmedPhotons'
+        ),
+        srcPfJets = cms.InputTag('slimmedJetsJEC'),
+        srcMet = cms.InputTag('slimmedMETs'),
+        srcPFCandidates = cms.InputTag('packedPFCandidates'),
+
+        parameters = METSignificanceParams
+    )
 addModule(process.slimmedMETSignificance)
 
+'''
 process.slimmedMETSignificanceNoHF = cms.EDProducer(
     "METSignificanceProducer",
     srcLeptons = cms.VInputTag(
@@ -476,17 +434,7 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
 ))
 
 
-setattr(process.pat2pxlio,"slimmedJetsJEC",cms.PSet(
-    type=cms.string("JetConverter"),
-    srcs=cms.VInputTag(cms.InputTag("slimmedJets")),
-    names=cms.vstring("Jet"),
-    select=cms.string("pt>10.0"),
-    valueMaps=cms.PSet(),
-    triggerFilter=filterPSet
-))
-
-
-setattr(process.pat2pxlio,"remets",cms.PSet(
+setattr(process.pat2pxlio,"mets",cms.PSet(
     type=cms.string("METConverter"),
     srcs=cms.VInputTag(
         cms.InputTag("slimmedMETs"),
@@ -494,65 +442,15 @@ setattr(process.pat2pxlio,"remets",cms.PSet(
     names=cms.vstring(
         "MET",
     ),
-    #metSignificances=cms.VInputTag(
-    #    cms.InputTag("slimmedMETSignificance","METSignificance"),
-    #    cms.InputTag("slimmedMETSignificanceNoHF","METSignificance"), 
-    #),
+    metSignificances=cms.VInputTag(
+        cms.InputTag("slimmedMETSignificance","METSignificance"),
+        #cms.InputTag("slimmedMETSignificanceNoHF","METSignificance"), 
+    ),
     
     addSysVariations=cms.bool(True)
     
 ))
 
-'''
-setattr(process.pat2pxlio,"jetendown",cms.PSet(
-    type=cms.string("JetConverter"),
-    srcs=cms.VInputTag(cms.InputTag("shiftedPatJetEnDown")),
-    names=cms.vstring("Jet"),
-    select=cms.string("pt>10.0"),
-    valueMaps=cms.PSet(),
-    triggerFilter=filterPSet,
-    basicVariablesOnly=cms.bool(True),
-    targetEventViews=cms.vstring("JetEnDown"),
-))
-
-setattr(process.pat2pxlio,"jetenup",cms.PSet(
-    type=cms.string("JetConverter"),
-    srcs=cms.VInputTag(cms.InputTag("shiftedPatJetEnUp")),
-    names=cms.vstring("Jet"),
-    select=cms.string("pt>10.0"),
-    valueMaps=cms.PSet(),
-    triggerFilter=filterPSet,
-    basicVariablesOnly=cms.bool(True),
-    targetEventViews=cms.vstring("JetEnUp"),
-))
-'''
-
-'''
-setattr(process.pat2pxlio,"jetssmeared",cms.PSet(
-    type=cms.string("JetConverter"),
-    srcs=cms.VInputTag(cms.InputTag("patJetsSmeared")),
-    names=cms.vstring("Jet"),
-    select=cms.string("pt>10.0"),
-    valueMaps=cms.PSet(),
-    triggerFilter=filterPSet,
-    basicVariablesOnly=cms.bool(True),
-    targetEventViews=cms.vstring("Smeared"),
-))
-
-setattr(process.pat2pxlio,"remetssmeared",cms.PSet(
-    type=cms.string("METConverter"),
-    srcs=cms.VInputTag(
-        cms.InputTag("slimmedMETsSmeared","","STEA"),
-        cms.InputTag("slimmedMETsNoHFSmeared","","STEA")
-    ),
-    names=cms.vstring(
-        "MET",
-        "METnoHF"
-    ),
-    addSysVariations=cms.bool(True),
-    targetEventViews=cms.vstring("Smeared"),
-))
-'''
 
 setattr(process.pat2pxlio,"triggersHLT",cms.PSet(
     type=cms.string("TriggerResultConverter"),
@@ -574,6 +472,15 @@ setattr(process.pat2pxlio,"puInfo",cms.PSet(
 
 
 if options.isData:
+    setattr(process.pat2pxlio,"slimmedJetsJEC",cms.PSet(
+        type=cms.string("JetConverter"),
+        srcs=cms.VInputTag(cms.InputTag("slimmedJets")),
+        names=cms.vstring("Jet"),
+        select=cms.string("pt>10.0"),
+        valueMaps=cms.PSet(),
+        triggerFilter=filterPSet
+    ))
+    
     setattr(process.pat2pxlio,"triggersRECO",cms.PSet(
         type=cms.string("TriggerResultConverter"),
         srcs=cms.VInputTag(cms.InputTag("TriggerResults","","RECO")),
@@ -597,6 +504,15 @@ if options.isData:
         ))
     
 else:
+    setattr(process.pat2pxlio,"slimmedJetsJEC",cms.PSet(
+        type=cms.string("JetConverter"),
+        srcs=cms.VInputTag(cms.InputTag("slimmedJetsJEC")),
+        names=cms.vstring("Jet"),
+        select=cms.string("pt>10.0"),
+        valueMaps=cms.PSet(),
+        triggerFilter=filterPSet
+    ))
+
     setattr(process.pat2pxlio,"triggersPAT",cms.PSet(
         type=cms.string("TriggerResultConverter"),
         srcs=cms.VInputTag(cms.InputTag("TriggerResults","","PAT")),
@@ -616,7 +532,8 @@ else:
         srcs=cms.VInputTag(cms.InputTag("lessGenParticles")),
         targetEventViews=cms.vstring("Generated"),
         LHEEvent=cms.InputTag("externalLHEProducer"),
-        GenEventInfo=cms.InputTag("generator","","SIM")
+        GenEventInfo=cms.InputTag("generator","","SIM"),
+        triggerFilter=filterPSet,
     ))
             
     setattr(process.pat2pxlio,"genjets",cms.PSet(

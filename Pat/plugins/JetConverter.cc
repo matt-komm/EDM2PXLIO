@@ -152,7 +152,7 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
     EventShapeVariables eventShapeYPhi(eventShapeVectorYPhi);
     pxlParticle->setUserRecord("circularityYPhi",PRECISION(eventShapeYPhi.circularity()));
     
-
+    /*
     std::vector<int> exps{{25,50,75,100,125,150,200}};
     for (int exp: exps)
     {
@@ -180,6 +180,7 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
         pxlParticle->setUserRecord("charge_md_nonvertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::MASSDROP,exp*0.01,0.0,JetChargeCalculator::SELECT_NOTVERTEX)));
         pxlParticle->setUserRecord("charge_cos_nonvertex_"+std::to_string(exp),PRECISION(JetChargeCalculator::calculate(patObject,JetChargeCalculator::COS,exp*0.01,0.0,JetChargeCalculator::SELECT_NOTVERTEX)));
     }
+    */
 }
 
 
@@ -295,6 +296,8 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
     }
     
     calculateJetShapes(patObject,pxlParticle);
+    
+    
 }
 
 JetConverter::~JetConverter()
