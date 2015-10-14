@@ -93,7 +93,7 @@ else:
         fileNames = cms.untracked.vstring(
             #'root://xrootd.unl.edu//store/mc/RunIISpring15DR74/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/50000/02CF0510-4CFF-E411-A715-0025905A6090.root'
             #'root://xrootd.unl.edu//store/data/Run2015B/SingleMuon/MINIAOD/PromptReco-v1/000/251/244/00000/68275270-7C27-E511-B1F0-02163E011A46.root' #{golden run: 251244:96-251244:121}
-            '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/022B08C4-C702-E511-9995-D4856459AC30.root'
+            'root://xrootd.unl.edu//store/mc/RunIISpring15MiniAODv2/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/10000/000EB5C7-6D70-E511-8EF1-BCAEC51FDEED.root'
             #'root://xrootd.unl.edu//store/mc/RunIISpring15DR74/QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v2/00000/023FCE0B-300A-E511-BE68-001E673973C8.root'
         ),
         #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
@@ -458,7 +458,7 @@ setattr(process.pat2pxlio,"triggersHLT",cms.PSet(
     regex=cms.vstring("HLT_Iso[0-9a-zA-z_]*","HLT_Ele[0-9a-zA-z_]*")
 ))
 
-setattr(process.pat2pxlio,"triggersSTEA",cms.PSet(
+setattr(process.pat2pxlio,"triggersDX",cms.PSet(
     type=cms.string("TriggerResultConverter"),
     srcs=cms.VInputTag(cms.InputTag("TriggerResults","","DX")),
     regex=cms.vstring("[0-9a-zA-z_]*")
@@ -466,7 +466,7 @@ setattr(process.pat2pxlio,"triggersSTEA",cms.PSet(
 
 setattr(process.pat2pxlio,"puInfo",cms.PSet(
     type=cms.string("PileupSummaryInfoConverter"),
-    srcs=cms.VInputTag(cms.InputTag("addPileupInfo","","HLT")),
+    srcs=cms.VInputTag(cms.InputTag("slimmedAddPileupInfo")),
     names=cms.vstring("PU")
 ))
 
@@ -504,11 +504,27 @@ if options.isData:
         ))
     
 else:
+    setattr(process.pat2pxlio,"slimmedJets",cms.PSet(
+        type=cms.string("JetConverter"),
+        srcs=cms.VInputTag(cms.InputTag("slimmedJets")),
+        names=cms.vstring("Jet"),
+        select=cms.string("pt>10.0"),
+        valueMaps=cms.PSet(),
+        triggerFilter=filterPSet
+    ))
+    setattr(process.pat2pxlio,"slimmedJetsAK8",cms.PSet(
+        type=cms.string("JetConverter"),
+        srcs=cms.VInputTag(cms.InputTag("slimmedJetsAK8")),
+        names=cms.vstring("JetAK8"),
+        select=cms.string("pt>10.0"),
+        valueMaps=cms.PSet(),
+        triggerFilter=filterPSet
+    ))
     setattr(process.pat2pxlio,"slimmedJetsJEC",cms.PSet(
         type=cms.string("JetConverter"),
         srcs=cms.VInputTag(cms.InputTag("slimmedJetsJEC")),
-        names=cms.vstring("Jet"),
-        select=cms.string("pt>10.0"),
+        names=cms.vstring("JetReJEC"),
+        select=cms.string("pt>0.0"),
         valueMaps=cms.PSet(),
         triggerFilter=filterPSet
     ))
@@ -533,7 +549,6 @@ else:
         targetEventViews=cms.vstring("Generated"),
         LHEEvent=cms.InputTag("externalLHEProducer"),
         GenEventInfo=cms.InputTag("generator","","SIM"),
-        triggerFilter=filterPSet,
     ))
             
     setattr(process.pat2pxlio,"genjets",cms.PSet(
@@ -543,18 +558,15 @@ else:
         targetEventViews=cms.vstring("GenJets"),
         triggerFilter=filterPSet,
     ))
-
     
-
 process.endpath= cms.EndPath()
 
 process.endpath+=process.pat2pxlio
-'''
+
 process.OUT = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('output.root'),
     outputCommands = cms.untracked.vstring( "keep *"),
     dropMetaData = cms.untracked.string('ALL'),
 )
 process.endpath+= process.OUT
-'''
 
