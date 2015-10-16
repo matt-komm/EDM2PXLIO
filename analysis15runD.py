@@ -144,7 +144,7 @@ def addFilter(inputTag,cutString,minN=None):
     
     
 addFilter(cms.InputTag("slimmedMuons"),"pt>15.0",minN=1)
-addFilter(cms.InputTag("slimmedJets"),"pt>10.0",minN=2)
+addFilter(cms.InputTag("slimmedJets"),"pt>15.0",minN=2)
 addFilter(cms.InputTag("slimmedJets"),"pt>30.0",minN=1)
 
 
@@ -182,7 +182,7 @@ addModule(process.egmGsfElectronIDSequence)
 
 
 ### JEC ###
-
+'''
 if not options.isData:
     process.jec25nsMCSummer15V2 = cms.EDProducer("JetCorrectionFactorProducer",
         jetSrc=cms.InputTag("slimmedJets"),
@@ -215,7 +215,7 @@ if not options.isData:
 
     process.reapplyJEC = cms.Sequence(process.jec25nsMCSummer15V2*process.slimmedJetsJEC)
     addModule(process.reapplyJEC)
-    
+'''
 
 ### MET uncertainty ###
 '''
@@ -303,53 +303,43 @@ if not options.isData:
 
 from RecoMET.METProducers.METSignificanceParams_cfi import METSignificanceParams
 
-if options.isData:
-    process.slimmedMETSignificance = cms.EDProducer(
-        "METSignificanceProducer",
-        srcLeptons = cms.VInputTag(
-            'slimmedElectrons',
-            'slimmedMuons',
-            'slimmedPhotons'
-        ),
-        srcPfJets = cms.InputTag('slimmedJets'),
-        srcMet = cms.InputTag('slimmedMETs'),
-        srcPFCandidates = cms.InputTag('packedPFCandidates'),
 
-        parameters = METSignificanceParams
-    )
-else:
-    process.slimmedMETSignificance = cms.EDProducer(
-        "METSignificanceProducer",
-        srcLeptons = cms.VInputTag(
-            'slimmedElectrons',
-            'slimmedMuons',
-            'slimmedPhotons'
-        ),
-        srcPfJets = cms.InputTag('slimmedJetsJEC'),
-        srcMet = cms.InputTag('slimmedMETs'),
-        srcPFCandidates = cms.InputTag('packedPFCandidates'),
-
-        parameters = METSignificanceParams
-    )
-addModule(process.slimmedMETSignificance)
-
-'''
-process.slimmedMETSignificanceNoHF = cms.EDProducer(
+process.slimmedMETSignificance = cms.EDProducer(
     "METSignificanceProducer",
     srcLeptons = cms.VInputTag(
         'slimmedElectrons',
         'slimmedMuons',
         'slimmedPhotons'
     ),
-    srcPfJets = cms.InputTag('patJetsNoHF'),
-    srcMet = cms.InputTag('slimmedMETsNoHF'),
-    srcPFCandidates = cms.InputTag('candidatesNoHF'),
+    srcPfJets = cms.InputTag('slimmedJets'),
+    srcMet = cms.InputTag('slimmedMETs'),
+    srcPFCandidates = cms.InputTag('packedPFCandidates'),
 
     parameters = METSignificanceParams
 )
 addModule(process.slimmedMETSignificance)
-'''
 
+'''
+process.jetsNoHF = cms.EDFilter("CandPtrSelector",
+    src=cms.InputTag("slimmedJets"),
+    cut=cms.string("abs(eta)<3.0")
+)
+addModule(process.jetsNoHF)
+process.slimmedMETnoHFSignificance = cms.EDProducer(
+    "METSignificanceProducer",
+    srcLeptons = cms.VInputTag(
+        'slimmedElectrons',
+        'slimmedMuons',
+        'slimmedPhotons'
+    ),
+    srcPfJets = cms.InputTag('jetsNoHF'),
+    srcMet = cms.InputTag('slimmedMETsNoHF'),
+    srcPFCandidates = cms.InputTag('packedPFCandidates'),
+
+    parameters = METSignificanceParams
+)
+addModule(process.slimmedMETnoHFSignificance)
+'''
 
 ### HEHB Noise filter rerunning
 '''
@@ -433,6 +423,14 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
     )
 ))
 
+setattr(process.pat2pxlio,"slimmedJets",cms.PSet(
+    type=cms.string("JetConverter"),
+    srcs=cms.VInputTag(cms.InputTag("slimmedJets")),
+    names=cms.vstring("Jet"),
+    select=cms.string("pt>10.0"),
+    valueMaps=cms.PSet(),
+    triggerFilter=filterPSet
+))
 
 setattr(process.pat2pxlio,"mets",cms.PSet(
     type=cms.string("METConverter"),
@@ -444,13 +442,20 @@ setattr(process.pat2pxlio,"mets",cms.PSet(
     ),
     metSignificances=cms.VInputTag(
         cms.InputTag("slimmedMETSignificance","METSignificance"),
-        #cms.InputTag("slimmedMETSignificanceNoHF","METSignificance"), 
     ),
-    
     addSysVariations=cms.bool(True)
-    
 ))
 
+setattr(process.pat2pxlio,"metsNoHF",cms.PSet(
+    type=cms.string("METConverter"),
+    srcs=cms.VInputTag(
+        cms.InputTag("slimmedMETsNoHF"),
+    ),
+    names=cms.vstring(
+        "METnoHF",
+    ),
+    addSysVariations=cms.bool(True)
+))
 
 setattr(process.pat2pxlio,"triggersHLT",cms.PSet(
     type=cms.string("TriggerResultConverter"),
@@ -472,14 +477,6 @@ setattr(process.pat2pxlio,"puInfo",cms.PSet(
 
 
 if options.isData:
-    setattr(process.pat2pxlio,"slimmedJetsJEC",cms.PSet(
-        type=cms.string("JetConverter"),
-        srcs=cms.VInputTag(cms.InputTag("slimmedJets")),
-        names=cms.vstring("Jet"),
-        select=cms.string("pt>10.0"),
-        valueMaps=cms.PSet(),
-        triggerFilter=filterPSet
-    ))
     
     setattr(process.pat2pxlio,"triggersRECO",cms.PSet(
         type=cms.string("TriggerResultConverter"),
@@ -504,31 +501,6 @@ if options.isData:
         ))
     
 else:
-    setattr(process.pat2pxlio,"slimmedJets",cms.PSet(
-        type=cms.string("JetConverter"),
-        srcs=cms.VInputTag(cms.InputTag("slimmedJets")),
-        names=cms.vstring("Jet"),
-        select=cms.string("pt>10.0"),
-        valueMaps=cms.PSet(),
-        triggerFilter=filterPSet
-    ))
-    setattr(process.pat2pxlio,"slimmedJetsAK8",cms.PSet(
-        type=cms.string("JetConverter"),
-        srcs=cms.VInputTag(cms.InputTag("slimmedJetsAK8")),
-        names=cms.vstring("JetAK8"),
-        select=cms.string("pt>10.0"),
-        valueMaps=cms.PSet(),
-        triggerFilter=filterPSet
-    ))
-    setattr(process.pat2pxlio,"slimmedJetsJEC",cms.PSet(
-        type=cms.string("JetConverter"),
-        srcs=cms.VInputTag(cms.InputTag("slimmedJetsJEC")),
-        names=cms.vstring("JetReJEC"),
-        select=cms.string("pt>0.0"),
-        valueMaps=cms.PSet(),
-        triggerFilter=filterPSet
-    ))
-
     setattr(process.pat2pxlio,"triggersPAT",cms.PSet(
         type=cms.string("TriggerResultConverter"),
         srcs=cms.VInputTag(cms.InputTag("TriggerResults","","PAT")),
@@ -562,11 +534,14 @@ else:
 process.endpath= cms.EndPath()
 
 process.endpath+=process.pat2pxlio
-
+'''
+print "-------------------------------------"
+print "WARNING: root output module in cfg!!!"
+print "-------------------------------------"
 process.OUT = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('output.root'),
     outputCommands = cms.untracked.vstring( "keep *"),
     dropMetaData = cms.untracked.string('ALL'),
 )
 process.endpath+= process.OUT
-
+'''

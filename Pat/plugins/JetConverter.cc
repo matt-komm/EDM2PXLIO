@@ -127,9 +127,15 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
     //use here dY/dPhi space
     std::vector< math::XYZVector > eventShapeVectorYPhi(patObject.numberOfDaughters());
     
+    //vector for pt-ordered daughters
+    std::vector<const reco::Candidate*> ptOrderedChargedCandidates;
+    //vector for dY-ordered daughters
+    std::vector<const reco::Candidate*> dYOrderedChargedCandidates;
+    
     for (unsigned int idaughter = 0; idaughter < patObject.numberOfDaughters(); ++idaughter)
     {
         const reco::Candidate* daughter = patObject.daughter(idaughter);
+        
         const double dY = daughter->rapidity()-patObject.rapidity();
         const double dPhi = reco::deltaPhi(daughter->phi(),patObject.phi());
         const double dR = std::sqrt(dY*dY+dPhi*dPhi);
@@ -140,8 +146,38 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
         weightedSum2+=daughter->pt()*daughter->pt();
         
         eventShapeVectorYPhi[idaughter].SetXYZ(dY,dPhi,0);
+        if (daughter->charge()!=0)
+        {
+            ptOrderedChargedCandidates.push_back(daughter);
+            dYOrderedChargedCandidates.push_back(daughter);
+        }
     }
+    //sort descending by pt
+    std::sort(ptOrderedChargedCandidates.begin(),ptOrderedChargedCandidates.end(), [](const reco::Candidate* p1, const reco::Candidate* p2){ return p1->pt() > p2->pt(); });
     
+    //sort ascending by dY
+    std::sort(dYOrderedChargedCandidates.begin(),dYOrderedChargedCandidates.end(), [&patObject](const reco::Candidate* p1, const reco::Candidate* p2){ return fabs(p1->rapidity()-patObject.rapidity()) < fabs(p2->rapidity()-patObject.rapidity()); });
+
+    float pt3ptRatio = 1;
+    float pt3dYRatio = 1;
+    if (ptOrderedChargedCandidates.size()>=3)
+    {
+        pt3ptRatio = ptOrderedChargedCandidates[2]->pt()/ptOrderedChargedCandidates[0]->pt();
+        pt3dYRatio = fabs(ptOrderedChargedCandidates[0]->rapidity()-patObject.rapidity())/fabs(ptOrderedChargedCandidates[2]->rapidity()-patObject.rapidity());
+    }
+    pxlParticle->setUserRecord("pt3ptRatio",PRECISION(pt3ptRatio));
+    pxlParticle->setUserRecord("pt3dYRatio",PRECISION(pt3dYRatio));
+    
+    float dY3ptRatio = 1;
+    float dY3dYRatio = 1;
+    if (dYOrderedChargedCandidates.size()>=3)
+    {
+        dY3ptRatio = dYOrderedChargedCandidates[2]->pt()/dYOrderedChargedCandidates[0]->pt();
+        dY3dYRatio = fabs(dYOrderedChargedCandidates[0]->rapidity()-patObject.rapidity())/fabs(dYOrderedChargedCandidates[2]->rapidity()-patObject.rapidity());
+    }
+    pxlParticle->setUserRecord("dY3ptRatio",PRECISION(dY3ptRatio));
+    pxlParticle->setUserRecord("dY3dYRatio",PRECISION(dY3dYRatio));
+
     pullY/=patObject.pt();
     pullPhi/=patObject.pt();
     
