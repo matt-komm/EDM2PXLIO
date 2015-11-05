@@ -371,6 +371,19 @@ process.DX_primaryVertexFilter = cms.Path(process.goodVertexFilter)
 
 ### OUTPUT ###
 
+#file service for EventWeight and PU info
+if not options.isData:
+    process.TFileService = cms.Service("TFileService", 
+        fileName = cms.string("info.root")
+    )
+
+    process.eventAndPuInfo = cms.EDAnalyzer("EventInfoCollector",
+        GenEventInfo=cms.InputTag("generator","","SIM"),
+        PileupSummaryInfo=cms.InputTag("slimmedAddPileupInfo")
+    )
+    process.DX_plain+=process.eventAndPuInfo
+
+
 
 filterPSet = cms.VPSet(
     cms.PSet(
