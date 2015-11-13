@@ -128,9 +128,9 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
     std::vector< math::XYZVector > eventShapeVectorYPhi(patObject.numberOfDaughters());
     
     //vector for pt-ordered daughters
-    std::vector<const reco::Candidate*> ptOrderedChargedCandidates;
+    std::vector<const reco::Candidate*> ptOrderedChargedCandidates(patObject.numberOfDaughters());
     //vector for dY-ordered daughters
-    std::vector<const reco::Candidate*> dROrderedChargedCandidates;
+    std::vector<const reco::Candidate*> dROrderedChargedCandidates(patObject.numberOfDaughters());
     
     for (unsigned int idaughter = 0; idaughter < patObject.numberOfDaughters(); ++idaughter)
     {
@@ -146,11 +146,9 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
         weightedSum2+=daughter->pt()*daughter->pt();
         
         eventShapeVectorYPhi[idaughter].SetXYZ(dY,dPhi,0);
-        if (daughter->charge()!=0)
-        {
-            ptOrderedChargedCandidates.push_back(daughter);
-            dROrderedChargedCandidates.push_back(daughter);
-        }
+
+        ptOrderedChargedCandidates[idaughter]=daughter;
+        dROrderedChargedCandidates[idaughter]=daughter;
     }
     
     pullY/=patObject.pt();

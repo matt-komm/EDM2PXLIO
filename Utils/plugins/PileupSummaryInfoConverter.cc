@@ -7,9 +7,11 @@ namespace edm2pxlio
 
 PileupSummaryInfoConverter::PileupSummaryInfoConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector):
     Base(name, globalConfig, consumesCollector),
-    _primaryVertexProvider(nullptr)
+    _primaryVertexProvider(nullptr),
+    _rhoProvider(nullptr)
 {
     _primaryVertexProvider=ProviderFactory::get<PrimaryVertexProvider>(globalConfig,consumesCollector);
+    _rhoProvider=ProviderFactory::get<RhoProvider>(globalConfig,consumesCollector);
 }
 
 void PileupSummaryInfoConverter::convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent) const
@@ -48,20 +50,26 @@ void PileupSummaryInfoConverter::convert(const edm::Event* edmEvent, const edm::
                 puObject->setUserRecord("nBunchCrossings"+std::to_string(index),nBunchCrossingVector);
             }
         }
-        
-        if (_primaryVertexProvider->getPrimaryVertex())
+        if (_primaryVertexProvider)
         {
-            puObject->setUserRecord("nVertices",_primaryVertexProvider->getNVertices());
-            puObject->setUserRecord("PVx",PRECISION(_primaryVertexProvider->getPrimaryVertex()->x()));
-            puObject->setUserRecord("PVy",PRECISION(_primaryVertexProvider->getPrimaryVertex()->y()));
-            puObject->setUserRecord("PVz",PRECISION(_primaryVertexProvider->getPrimaryVertex()->z()));
-            puObject->setUserRecord("PVxError",PRECISION(_primaryVertexProvider->getPrimaryVertex()->xError()));
-            puObject->setUserRecord("PVyError",PRECISION(_primaryVertexProvider->getPrimaryVertex()->yError()));
-            puObject->setUserRecord("PVzError",PRECISION(_primaryVertexProvider->getPrimaryVertex()->zError()));
-            
-            puObject->setUserRecord("PVchi",PRECISION(_primaryVertexProvider->getPrimaryVertex()->chi2()));
-            puObject->setUserRecord("PVndof",_primaryVertexProvider->getPrimaryVertex()->ndof());
-            puObject->setUserRecord("PVvalid",_primaryVertexProvider->getPrimaryVertex()->isValid());
+            if (_primaryVertexProvider->getPrimaryVertex())
+            {
+                puObject->setUserRecord("nVertices",_primaryVertexProvider->getNVertices());
+                puObject->setUserRecord("PVx",PRECISION(_primaryVertexProvider->getPrimaryVertex()->x()));
+                puObject->setUserRecord("PVy",PRECISION(_primaryVertexProvider->getPrimaryVertex()->y()));
+                puObject->setUserRecord("PVz",PRECISION(_primaryVertexProvider->getPrimaryVertex()->z()));
+                puObject->setUserRecord("PVxError",PRECISION(_primaryVertexProvider->getPrimaryVertex()->xError()));
+                puObject->setUserRecord("PVyError",PRECISION(_primaryVertexProvider->getPrimaryVertex()->yError()));
+                puObject->setUserRecord("PVzError",PRECISION(_primaryVertexProvider->getPrimaryVertex()->zError()));
+                
+                puObject->setUserRecord("PVchi",PRECISION(_primaryVertexProvider->getPrimaryVertex()->chi2()));
+                puObject->setUserRecord("PVndof",_primaryVertexProvider->getPrimaryVertex()->ndof());
+                puObject->setUserRecord("PVvalid",_primaryVertexProvider->getPrimaryVertex()->isValid());
+            }
+        }
+        if (_rhoProvider)
+        {
+            puObject->setUserRecord("rho",PRECISION(_rhoProvider->getRho()));
         }
     }
 }

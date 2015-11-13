@@ -148,6 +148,16 @@ addFilter(cms.InputTag("slimmedJets"),"pt>15.0",minN=2)
 addFilter(cms.InputTag("slimmedJets"),"pt>30.0",minN=1)
 
 
+### frontier database ###
+
+from CondCore.DBCommon.CondDBSetup_cfi import *
+process.frontierDB = cms.ESSource("PoolDBESSource",
+      CondDBSetup,
+      toGet = cms.VPSet(),
+      connect = cms.string('frontier://FrontierProd/CMS_COND_PAT_000'),
+)
+
+
 ### gen particle pruner ###
 
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
@@ -182,9 +192,9 @@ addModule(process.egmGsfElectronIDSequence)
 
 
 ### JEC ###
-'''
-if not options.isData:
-    process.jec25nsMCSummer15V2 = cms.EDProducer("JetCorrectionFactorProducer",
+
+if options.isData:
+    process.jec25nsSummer15V6 = cms.EDProducer("JetCorrectionFactorProducer",
         jetSrc=cms.InputTag("slimmedJets"),
         primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
         rho = cms.InputTag("fixedGridRhoFastjetAll"),
@@ -192,30 +202,61 @@ if not options.isData:
         jec=cms.VPSet(
             cms.PSet(
                 level=cms.string("L1FastJet"),
-                file=cms.string("EDM2PXLIO/Core/data/Summer15_25nsV2_MC_L1FastJet_AK4PFchs.txt"),
+                file=cms.string("EDM2PXLIO/Core/data/Summer15_25nsV6_DATA_L1FastJet_AK4PFchs.txt"),
             ),
             cms.PSet(
                 level=cms.string("L2Relative"),
-                file=cms.string("EDM2PXLIO/Core/data/Summer15_25nsV2_MC_L2Relative_AK4PFchs.txt"),
+                file=cms.string("EDM2PXLIO/Core/data/Summer15_25nsV6_DATA_L2Relative_AK4PFchs.txt"),
             ),
             cms.PSet(
                 level=cms.string("L3Absolute"),
-                file=cms.string("EDM2PXLIO/Core/data/Summer15_25nsV2_MC_L3Absolute_AK4PFchs.txt"),
+                file=cms.string("EDM2PXLIO/Core/data/Summer15_25nsV6_DATA_L3Absolute_AK4PFchs.txt"),
+            ),
+            cms.PSet(
+                level=cms.string("L2L3Residual"),
+                file=cms.string("EDM2PXLIO/Core/data/Summer15_25nsV6_DATA_L2L3Residual_AK4PFchs.txt"),
             )
         )
     )
-
-    from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
-    process.slimmedJetsJEC = patJetsUpdated.clone(
-        jetSource = cms.InputTag("slimmedJets"),
-        jetCorrFactorsSource = cms.VInputTag(
-            cms.InputTag("jec25nsMCSummer15V2")
+    
+else:
+    process.jec25nsSummer15V6 = cms.EDProducer("JetCorrectionFactorProducer",
+        jetSrc=cms.InputTag("slimmedJets"),
+        primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
+        rho = cms.InputTag("fixedGridRhoFastjetAll"),
+        
+        jec=cms.VPSet(
+            cms.PSet(
+                level=cms.string("L1FastJet"),
+                file=cms.string("EDM2PXLIO/Core/data/Summer15_25nsV6_MC_L1FastJet_AK4PFchs.txt"),
+            ),
+            cms.PSet(
+                level=cms.string("L2Relative"),
+                file=cms.string("EDM2PXLIO/Core/data/Summer15_25nsV6_MC_L2Relative_AK4PFchs.txt"),
+            ),
+            cms.PSet(
+                level=cms.string("L3Absolute"),
+                file=cms.string("EDM2PXLIO/Core/data/Summer15_25nsV6_MC_L3Absolute_AK4PFchs.txt"),
+            )
         )
     )
+    
+    
+from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
+process.slimmedJetsJEC = patJetsUpdated.clone(
+    jetSource = cms.InputTag("slimmedJets"),
+    jetCorrFactorsSource = cms.VInputTag(
+        cms.InputTag("jec25nsSummer15V6")
+    )
+)
+process.reapplyJEC = cms.Sequence(process.jec25nsSummer15V6*process.slimmedJetsJEC)
+addModule(process.reapplyJEC)
 
-    process.reapplyJEC = cms.Sequence(process.jec25nsMCSummer15V2*process.slimmedJetsJEC)
-    addModule(process.reapplyJEC)
-'''
+
+
+### Q/G likelihood
+
+
 
 ### MET uncertainty ###
 '''
@@ -405,7 +446,8 @@ process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
                 ),
             )
         ),
-        primaryVertex = cms.InputTag("offlineSlimmedPrimaryVertices")
+        primaryVertex = cms.InputTag("offlineSlimmedPrimaryVertices"),
+        rho = cms.InputTag("fixedGridRhoFastjetAll"),
 )
 
 if not options.onlyFiltered:
@@ -438,7 +480,7 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
 
 setattr(process.pat2pxlio,"slimmedJets",cms.PSet(
     type=cms.string("JetConverter"),
-    srcs=cms.VInputTag(cms.InputTag("slimmedJets")),
+    srcs=cms.VInputTag(cms.InputTag("slimmedJetsJEC")),
     names=cms.vstring("Jet"),
     select=cms.string("pt>10.0"),
     valueMaps=cms.PSet(),
