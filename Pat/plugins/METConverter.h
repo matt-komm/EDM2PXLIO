@@ -82,6 +82,16 @@ class METConverter:
         
         void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent) const
         {
+            if (!_triggerResultFilter.checkPath(*edmEvent))
+            {
+                return;
+            }
+            
+            for (unsigned int ivm = 0; ivm < _valueMapAccessors.size(); ++ ivm)
+            {
+                _valueMapAccessors[ivm]->convert(edmEvent,iSetup,pxlEvent);
+            }
+        
             for (unsigned index=0; index<Base::size(); ++index)
             {
                 
@@ -110,6 +120,11 @@ class METConverter:
                         if (_metSignificanceInputTags.size()==Base::size() && _metSignificanceInputTags[index].label().length()>0)
                         {
                             pxlParticle->setUserRecord("metSignificance",*metSigCollection);
+                        }
+                        
+                        for (unsigned int ivm = 0; ivm < _valueMapAccessors.size(); ++ ivm)
+                        {
+                            _valueMapAccessors[ivm]->accessValues(collection->id(),collection->refAt(iparticle).key(), pxlParticle);
                         }
                         
                         if (_addSysVariations)
