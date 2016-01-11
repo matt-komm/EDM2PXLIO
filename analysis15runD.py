@@ -64,7 +64,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 
 
 if options.isData:
-    process.GlobalTag.globaltag = '74X_dataRun2_v5' #=Summer15_25nsV6_DATA
+    process.GlobalTag.globaltag = '76X_dataRun2_v15' #=76miniaodv1 default
     
     ### frontier database ###
     from CondCore.DBCommon.CondDBSetup_cfi import *
@@ -80,7 +80,7 @@ if options.isData:
         connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
     )
 else:
-    process.GlobalTag.globaltag = '74X_mcRun2_asymptotic_v4' #=Summer15_25nsV6_MC
+    process.GlobalTag.globaltag = '76X_mcRun2_asymptotic_v12' #=76miniaodv1 default
     
     ### frontier database ###
     from CondCore.DBCommon.CondDBSetup_cfi import *
@@ -123,7 +123,7 @@ else:
             #'root://xrootd.unl.edu//store/mc/RunIISpring15DR74/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/50000/02CF0510-4CFF-E411-A715-0025905A6090.root'
             #'root://xrootd.unl.edu//store/data/Run2015B/SingleMuon/MINIAOD/PromptReco-v1/000/251/244/00000/68275270-7C27-E511-B1F0-02163E011A46.root' #{golden run: 251244:96-251244:121}
             #'root://xrootd.unl.edu//store/mc/RunIISpring15MiniAODv2/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/10000/000EB5C7-6D70-E511-8EF1-BCAEC51FDEED.root'
-            '/store/mc/RunIISpring15MiniAODv2/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/10000/2243C14F-C271-E511-8855-00266CFFBC64.root',
+            'root://xrootd.unl.edu//store/mc/RunIIFall15MiniAODv1/ST_t-channel_5f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/3A84F237-C3A8-E511-A846-002590D9D8B4.root',
             
             #'root://xrootd.unl.edu//store/mc/RunIISpring15DR74/QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v2/00000/023FCE0B-300A-E511-BE68-001E673973C8.root'
         ),
