@@ -106,9 +106,9 @@ process.MessageLogger.suppressWarning = cms.untracked.vstring('ecalLaserCorrFilt
 if options.isData and not options.isReRecoData:
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-        '/store/data/Run2015D/SingleMuon/MINIAOD/PromptReco-v3/000/256/630/00000/BCD78EF7-2B5F-E511-A3A3-02163E0170B5.root'
+        '/store/data/Run2015C_25ns/SingleMuon/MINIAOD/16Dec2015-v1/00000/307CA4CC-E1AF-E511-9A6E-20CF3027A5AE.root'
         ),
-        lumisToProcess = cms.untracked.VLuminosityBlockRange('256630:6-256630:7'),
+        lumisToProcess = cms.untracked.VLuminosityBlockRange('254852:47-254852:94'),
     )
 elif options.isData and options.isReRecoData:
     process.source = cms.Source("PoolSource",
@@ -547,7 +547,6 @@ if options.isData:
         select=cms.string("pt>15.0"),
         valueMaps=cms.PSet(),
         triggerFilter=filterPSet,
-        basicVariablesOnly=cms.bool(True)
     ))
     setattr(process.pat2pxlio,"patMET",cms.PSet(
         type=cms.string("METConverter"),
