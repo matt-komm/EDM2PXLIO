@@ -124,7 +124,7 @@ class METConverter:
                         
                         for (unsigned int ivm = 0; ivm < _valueMapAccessors.size(); ++ ivm)
                         {
-                            _valueMapAccessors[ivm]->accessValues(collection->id(),collection->refAt(iparticle).key(), pxlParticle);
+                            _valueMapAccessors[ivm]->accessValues(collection.id(),collection->refAt(iparticle).key(), pxlParticle);
                         }
                         
                         if (_addSysVariations)
