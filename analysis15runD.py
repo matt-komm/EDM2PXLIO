@@ -135,9 +135,9 @@ else:
     
     
 if options.isData:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 else:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
 
 process.DX_plain=cms.Path()
 process.DX_filtered=cms.Path()
@@ -550,11 +550,11 @@ else:
     setattr(process.pat2pxlio,"patJets",cms.PSet(
         type=cms.string("JetConverter"),
         srcs=cms.VInputTag(
-            cms.InputTag("slimmedJets"),
+            #cms.InputTag("slimmedJets"),
             cms.InputTag("slimmedJetsJEC"),
         ),
         names=cms.vstring(
-            "Jet",
+            #"Jet",
             "JetJEC",
         ),
         select=cms.string("pt>15.0"),
@@ -663,11 +663,7 @@ else:
             ),
             triggerFilter=filterPSet
         ))
-        
-        
-        
-        
-        
+
         setattr(process.pat2pxlio,"sysMETs",cms.PSet(
             type=cms.string("METConverter"),
             srcs=cms.VInputTag(
@@ -697,7 +693,8 @@ else:
                 
                 #"METMuonEnDown",
                 #"METMuonEnUp",
-            )
+            ),
+            triggerFilter=filterPSet,
         ))
 
 setattr(process.pat2pxlio,"triggersHLT",cms.PSet(
