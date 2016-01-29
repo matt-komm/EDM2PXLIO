@@ -424,6 +424,19 @@ process.slimmedMETnoHFSignificance = cms.EDProducer(
 addModule(process.slimmedMETnoHFSignificance)
 '''
 
+### unclustered energy
+
+if not options.isData:
+    process.metUnclusteredEnUp = cms.EDProducer("UnclusteredEnergyShifter",
+        jetSrc = cms.InputTag("slimmedJetsJEC"),
+        metSrc = cms.InputTag("patPFMetT1"),
+        shift = cms.int32(1)
+    )
+    process.metUnclusteredEnDown = cms.EDProducer("UnclusteredEnergyShifter",
+        jetSrc = cms.InputTag("slimmedJetsJEC"),
+        metSrc = cms.InputTag("patPFMetT1"),
+        shift = cms.int32(-1)
+    )
 
 ### Primary vertex filter
 
@@ -664,6 +677,10 @@ else:
                 cms.InputTag("patPFMetT1JetEnUp"),
                 cms.InputTag("patPFMetT1JetResDown"),
                 cms.InputTag("patPFMetT1JetResUp"),
+                
+                cms.InputTag("metUnclusteredEnUp"),
+                cms.InputTag("metUnclusteredEnDown"),
+                
                 #cms.InputTag("patPFMetT1MuonEnDownnew"),
                 #cms.InputTag("patPFMetT1MuonEnUpnew")
             ),
@@ -674,6 +691,10 @@ else:
                 "METJetEnUp",
                 "METJetResDown",
                 "METJetResUp",
+                
+                "METUnclEnUp",
+                "METUnclEnDown"
+                
                 #"METMuonEnDown",
                 #"METMuonEnUp",
             )
