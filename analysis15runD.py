@@ -72,7 +72,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 
 
 if options.isData:
-    process.GlobalTag.globaltag = '76X_dataRun2_v15' #=76miniaodv1 default
+    process.GlobalTag.globaltag = '76X_dataRun2_16Dec2015_v0'
     
     ### frontier database ###
     from CondCore.DBCommon.CondDBSetup_cfi import *
@@ -81,14 +81,14 @@ if options.isData:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Summer15_V3_DATA_AK4PFchs'), #should correspond to V6 (V3 is here an internal name inside the GT)
-                label  = cms.untracked.string('AK4PF')
+                tag    = cms.string('JetCorrectorParametersCollection_Fall15_V2_DATA_AK4PFchs'), #should correspond to V6 (V3 is here an internal name inside the GT)
+                label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
     )
 else:
-    process.GlobalTag.globaltag = '76X_mcRun2_asymptotic_v12' #=76miniaodv1 default
+    process.GlobalTag.globaltag = '76X_mcRun2_asymptotic_RunIIFall15DR76_v1'
     
     ### frontier database ###
     from CondCore.DBCommon.CondDBSetup_cfi import *
@@ -97,8 +97,8 @@ else:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Summer15_25nsV6_MC_AK4PFchs'),
-                label  = cms.untracked.string('AK4PF')
+                tag    = cms.string('JetCorrectorParametersCollection_Fall15_25nsV2_MC_AK4PFchs'),
+                label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
@@ -128,16 +128,21 @@ elif options.isData and options.isReRecoData:
 else:
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-            'root://xrootd.unl.edu//store/mc/RunIIFall15MiniAODv2/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/040AEA01-FEBB-E511-96D8-3417EBE52651.root',
+            #'/store/mc/RunIIFall15MiniAODv2/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/040AEA01-FEBB-E511-96D8-3417EBE52651.root',
+            #'/store/mc/RunIIFall15MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext1-v1/60000/2EDDB8C1-99C1-E511-82FD-0019B9CB0064.root'
+            #'/store/mc/RunIIFall15MiniAODv2/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/0C164F98-95BF-E511-BA77-0025905C446A.root'
+            #'/store/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/020D0AF1-4BC2-E511-BDFC-0026B95ADB18.root'
+            
+            '/store/mc/RunIIFall15MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/0C4FAF25-DAC7-E511-A535-BCAEC54E98B3.root'
         ),
         #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
     )
     
     
 if options.isData:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(400) )
 else:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(400) )
 
 process.DX_plain=cms.Path()
 process.DX_filtered=cms.Path()
@@ -191,9 +196,20 @@ if not options.isData:
         src=cms.InputTag("prunedGenParticles"),
         select=cms.vstring(
             "drop  *",
-            "++keep abs(status)>20 & abs(status) < 30", #keeps all particles from the hard matrix element and their mothers
+            #"++keep abs(status)>20 & abs(status) < 30", #keeps all particles from the hard matrix element and their mothers
+            "++keep isHardProcess",
             "keep++ abs(pdgId)=24", #keep W-boson decay
+            "keep++ abs(pdgId)=23", #keep Z-boson decay
             "drop abs(status)>30", #drop all intermediate from decay 
+            
+            #keep a few other statuses
+            "keep isLastCopy & abs(pdgId)<7",
+            "keep isLastCopyBeforeFSR & abs(pdgId)<7",
+            "keep fromHardProcessBeforeFSR & abs(pdgId)<7",
+            #"keep isFirstCopy"
+            
+            #keep prompt leptons
+            "keep (isPromptFinalState) & abs(pdgId)>10 & abs(pdgId)<19"
         )
     )
     addModule(process.lessGenParticles)
@@ -246,8 +262,8 @@ if not options.isData:
         src=cms.InputTag("slimmedJetsJEC"),
         enabled=cms.bool(True),
         rho=cms.InputTag("fixedGridRhoAll"),
-        resolutionFile=cms.FileInPath("EDM2PXLIO/Core/data/Summer15_V0_MC_JER_AK4PFchs.txt"),
-        scaleFactorFile=cms.FileInPath("EDM2PXLIO/Core/data/Summer12_V1_MC_JER_SF_AK5PFchs.txt"),
+        resolutionFile=cms.FileInPath("EDM2PXLIO/Core/data/Summer15_25nsV6_MC_PtResolution_AK4PFchs.txt"),
+        scaleFactorFile=cms.FileInPath("EDM2PXLIO/Core/data/Summer15_25nsV6_MC_SF_AK4PFchs.txt"),
         variation=cms.untracked.int32(0),
         genJets=cms.InputTag("slimmedGenJets"),
         dRMax=cms.double(0.3),
@@ -274,7 +290,7 @@ runMetCorAndUncFromMiniAOD(process,
     #jetConfig=False,
     #jetCorLabelL3=cms.InputTag('ak4PFCHSL1FastL2L3Corrector'),
     #jetCorLabelRes=cms.InputTag('ak4PFCHSL1FastL2L3ResidualCorrector'),
-    jecUncFile="EDM2PXLIO/Core/data/Summer15_25nsV6_MC_Uncertainty_AK4PFchs.txt",
+    jecUncFile="EDM2PXLIO/Core/data/Fall15_25nsV2_MC_Uncertainty_AK4PFchs.txt",
     #postfix="new"
 )
 
@@ -287,14 +303,24 @@ process.patJets = cms.EDFilter("PATJetSelector",
 process.shiftedPatJetEnDown.jetCorrUncertaintyTag="" #bug
 process.shiftedPatJetEnUp.jetCorrUncertaintyTag="" #bug
 
+#use non-smeared jets for MET recalculations
+process.selectedPatJets.src=cms.InputTag("slimmedJetsJEC")
+process.patPFMetT1T2Corr.src=cms.InputTag("slimmedJetsJEC")
+process.shiftedPatMETCorrJetEnUp.srcOriginal=cms.InputTag("slimmedJetsJEC")
+process.shiftedPatMETCorrJetEnDown.srcOriginal=cms.InputTag("slimmedJetsJEC")
+process.shiftedPatJetResEnUp = process.shiftedPatJetEnUp.clone()
+process.shiftedPatJetResEnDown = process.shiftedPatJetEnDown.clone()
+process.shiftedPatJetEnUp.src=cms.InputTag("slimmedJetsJEC")
+process.shiftedPatJetEnDown.src=cms.InputTag("slimmedJetsJEC")
+
 if not options.isData:
     ### down jer
     process.patJetsResDown = cms.EDProducer("NewSmearedPATJetProducer",
         src=cms.InputTag("slimmedJetsJEC"),
         enabled=cms.bool(True),
         rho=cms.InputTag("fixedGridRhoAll"),
-        resolutionFile=cms.FileInPath("EDM2PXLIO/Core/data/Summer15_V0_MC_JER_AK4PFchs.txt"),
-        scaleFactorFile=cms.FileInPath("EDM2PXLIO/Core/data/Summer12_V1_MC_JER_SF_AK5PFchs.txt"),
+        resolutionFile=cms.FileInPath("EDM2PXLIO/Core/data/Summer15_25nsV6_MC_PtResolution_AK4PFchs.txt"),
+        scaleFactorFile=cms.FileInPath("EDM2PXLIO/Core/data/Summer15_25nsV6_MC_SF_AK4PFchs.txt"),
         variation=cms.untracked.int32(-1),
         genJets=cms.InputTag("slimmedGenJets"),
         dRMax=cms.double(0.3),
@@ -305,8 +331,8 @@ if not options.isData:
         src=cms.InputTag("slimmedJetsJEC"),
         enabled=cms.bool(True),
         rho=cms.InputTag("fixedGridRhoAll"),
-        resolutionFile=cms.FileInPath("EDM2PXLIO/Core/data/Summer15_V0_MC_JER_AK4PFchs.txt"),
-        scaleFactorFile=cms.FileInPath("EDM2PXLIO/Core/data/Summer12_V1_MC_JER_SF_AK5PFchs.txt"),
+        resolutionFile=cms.FileInPath("EDM2PXLIO/Core/data/Summer15_25nsV6_MC_PtResolution_AK4PFchs.txt"),
+        scaleFactorFile=cms.FileInPath("EDM2PXLIO/Core/data/Summer15_25nsV6_MC_SF_AK4PFchs.txt"),
         variation=cms.untracked.int32(1),
         genJets=cms.InputTag("slimmedGenJets"),
         dRMax=cms.double(0.3),
@@ -322,6 +348,7 @@ if (not options.isData) and (options.addSys):
         "smearJets",
         "shiftedPatJetEnDown","shiftedPatJetEnUp",
         "shiftedPatJetResDown","shiftedPatJetResUp",
+        "shiftedPatJetResEnDown","shiftedPatJetResEnUp"
     ]
 
 for jetName in jetList:
@@ -428,12 +455,12 @@ addModule(process.slimmedMETnoHFSignificance)
 
 if not options.isData:
     process.metUnclusteredEnUp = cms.EDProducer("UnclusteredEnergyShifter",
-        jetSrc = cms.InputTag("slimmedJetsJEC"),
+        jetSrc = cms.InputTag("smearJets"),
         metSrc = cms.InputTag("patPFMetT1"),
         shift = cms.int32(1)
     )
     process.metUnclusteredEnDown = cms.EDProducer("UnclusteredEnergyShifter",
-        jetSrc = cms.InputTag("slimmedJetsJEC"),
+        jetSrc = cms.InputTag("smearJets"),
         metSrc = cms.InputTag("patPFMetT1"),
         shift = cms.int32(-1)
     )
@@ -595,7 +622,7 @@ else:
         setattr(process.pat2pxlio,"sysJetsEnDown",cms.PSet(
             type=cms.string("JetConverter"),
             srcs=cms.VInputTag(
-                cms.InputTag("shiftedPatJetEnDown"),
+                cms.InputTag("shiftedPatJetResEnDown"),
             ),
             names=cms.vstring(
                 "JetEnDown",
@@ -604,7 +631,7 @@ else:
             valueMaps=cms.PSet(
                 qgLikelihood=cms.PSet(
                     type=cms.string("ValueMapAccessorFloat"),
-                    src=cms.InputTag("QGL"+"shiftedPatJetEnDown","qgLikelihood")  
+                    src=cms.InputTag("QGL"+"shiftedPatJetResEnDown","qgLikelihood")  
                 )
             ),
             triggerFilter=filterPSet
@@ -612,7 +639,7 @@ else:
         setattr(process.pat2pxlio,"sysJetsEnUp",cms.PSet(
             type=cms.string("JetConverter"),
             srcs=cms.VInputTag(
-                cms.InputTag("shiftedPatJetEnUp"),
+                cms.InputTag("shiftedPatJetResEnUp"),
             ),
             names=cms.vstring(
                 "JetEnUp",
@@ -621,7 +648,7 @@ else:
             valueMaps=cms.PSet(
                 qgLikelihood=cms.PSet(
                     type=cms.string("ValueMapAccessorFloat"),
-                    src=cms.InputTag("QGL"+"shiftedPatJetEnUp","qgLikelihood")  
+                    src=cms.InputTag("QGL"+"shiftedPatJetResEnUp","qgLikelihood")  
                 )
             ),
             triggerFilter=filterPSet
@@ -671,11 +698,11 @@ else:
                 #cms.InputTag("patPFMetT1ElectronEnUpnew"),
                 cms.InputTag("patPFMetT1JetEnDown"),
                 cms.InputTag("patPFMetT1JetEnUp"),
-                cms.InputTag("patPFMetT1JetResDown"),
-                cms.InputTag("patPFMetT1JetResUp"),
+                #cms.InputTag("patPFMetT1JetResDown"),
+                #cms.InputTag("patPFMetT1JetResUp"),
                 
-                cms.InputTag("metUnclusteredEnUp"),
-                cms.InputTag("metUnclusteredEnDown"),
+                #cms.InputTag("metUnclusteredEnUp"),
+                #cms.InputTag("metUnclusteredEnDown"),
                 
                 #cms.InputTag("patPFMetT1MuonEnDownnew"),
                 #cms.InputTag("patPFMetT1MuonEnUpnew")
@@ -685,16 +712,17 @@ else:
                 #"METElectronEnUp",
                 "METJetEnDown",
                 "METJetEnUp",
-                "METJetResDown",
-                "METJetResUp",
+                #"METJetResDown",
+                #"METJetResUp",
                 
-                "METUnclEnUp",
-                "METUnclEnDown"
+                #"METUnclEnUp",
+                #"METUnclEnDown"
                 
                 #"METMuonEnDown",
                 #"METMuonEnUp",
             ),
-            triggerFilter=filterPSet,
+            # DONOT FILTER MET
+            #triggerFilter=filterPSet,
         ))
 
 setattr(process.pat2pxlio,"triggersHLT",cms.PSet(
