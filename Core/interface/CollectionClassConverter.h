@@ -90,7 +90,7 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
                 
                 if (iConfig.exists("triggerFilter"))
                 {
-                    _triggerResultFilter.parseConfiguration(iConfig.getParameter<std::vector<edm::ParameterSet>>("triggerFilter"));
+                    _triggerResultFilter.parseConfiguration(iConfig.getParameter<std::vector<edm::ParameterSet>>("triggerFilter"),consumesCollector);
                 }
             }
         }

@@ -5,6 +5,13 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 
+#include "FWCore/Utilities/interface/InputTag.h"
+
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "DataFormats/Common/interface/Handle.h"
+
+
+
 namespace edm2pxlio
 {
 
@@ -12,6 +19,7 @@ struct SelectedProcessPaths
 {
     std::string processName;
     std::vector<std::string> paths;
+    edm::EDGetTokenT<edm::TriggerResults> token;
 };
 
 class TriggerResultFilter
@@ -26,12 +34,13 @@ class TriggerResultFilter
         {
             _selectedProcessPaths.push_back(selectedProcessPaths);
         }
-        void parseConfiguration(const std::vector<edm::ParameterSet>& selectEventPSets)
+        void parseConfiguration(const std::vector<edm::ParameterSet>& selectEventPSets, edm::ConsumesCollector& consumesCollector)
         {
             for (unsigned int iset=0; iset<selectEventPSets.size(); ++iset)
             {
                 SelectedProcessPaths selectedProcessPaths;
                 selectedProcessPaths.processName=selectEventPSets[iset].getParameter<std::string>("process"); 
+		selectedProcessPaths.token = consumesCollector.consumes<edm::TriggerResults>(edm::InputTag("TriggerResults","",selectedProcessPaths.processName));
                 selectedProcessPaths.paths=selectEventPSets[iset].getParameter<std::vector<std::string>>("paths");
                 this->addSelectedProcessPaths(selectedProcessPaths);
             }
@@ -53,11 +62,12 @@ TriggerResultFilter::checkPath(const edm::Event& iEvent) const
     for (unsigned int iprocess =0; iprocess < _selectedProcessPaths.size(); ++iprocess)
     {
         const SelectedProcessPaths& selectedProcessPath = _selectedProcessPaths[iprocess];
-        edm::TriggerResultsByName result = iEvent.triggerResultsByName(selectedProcessPath.processName);
+        edm::Handle<edm::TriggerResults> result;
+        iEvent.getByToken(selectedProcessPath.token,result);
         if (! result.isValid())
         {
-            edm::LogWarning("trigger result not valid") << "event will not be processed";
-            return false;
+            edm::LogWarning("trigger result for process "+selectedProcessPath.processName+" not valid") << " will be skip";
+            continue;
         }
         const std::vector<std::string>& paths = selectedProcessPath.paths;
         if (paths.size()==0)
@@ -67,11 +77,12 @@ TriggerResultFilter::checkPath(const edm::Event& iEvent) const
         }
         for (unsigned ipath=0; ipath<paths.size();++ipath)
         {
-            if (!result.wasrun(paths[ipath]))
+            unsigned int index = result->find(paths[ipath]);
+            if (index==result->size())
             {
                 edm::LogWarning("TriggerResults has no cms.Path named: ") << paths[ipath] << " in process '"<<selectedProcessPath.processName<<"'. The result of this path will be ignored.";
             } else {
-                accept = accept || result.accept(paths[ipath]);
+                accept = accept || result->accept(index);
             }
         }
     }

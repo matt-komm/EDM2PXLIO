@@ -66,10 +66,11 @@ class EDM2PXLIO:
 EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& globalConfig):
     _pxlFile(nullptr)
 {
+    edm::ConsumesCollector consumeCollect = consumesCollector();
     if (globalConfig.exists("selectEvents"))
     {
         const std::vector<edm::ParameterSet>& selectEventPSets = globalConfig.getParameter<std::vector<edm::ParameterSet>>("selectEvents");
-        _triggerResultFilter.parseConfiguration(selectEventPSets);
+        _triggerResultFilter.parseConfiguration(selectEventPSets,consumeCollect);
     }
     else
     {
@@ -90,7 +91,7 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& globalConfig):
         _processName = "";
     }
 
-    edm::ConsumesCollector consumeCollect = consumesCollector();
+
     
     const std::vector<std::string> psetNames = globalConfig.getParameterNamesForType<edm::ParameterSet>();
     for (unsigned int iname=0; iname< psetNames.size(); ++iname)
