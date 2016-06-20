@@ -132,6 +132,7 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     try
     {
         pxl::Event pxlEvent;
+        
         if (!_triggerResultFilter.checkPath(iEvent))
         {
             return;

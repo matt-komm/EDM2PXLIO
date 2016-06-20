@@ -7,6 +7,9 @@
 
 #include "FWCore/Utilities/interface/InputTag.h"
 
+#include "FWCore/Common/interface/TriggerResultsByName.h"
+#include "FWCore/Common/interface/TriggerNames.h"
+
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/Common/interface/Handle.h"
 
@@ -40,7 +43,7 @@ class TriggerResultFilter
             {
                 SelectedProcessPaths selectedProcessPaths;
                 selectedProcessPaths.processName=selectEventPSets[iset].getParameter<std::string>("process"); 
-		selectedProcessPaths.token = consumesCollector.consumes<edm::TriggerResults>(edm::InputTag("TriggerResults","",selectedProcessPaths.processName));
+		        selectedProcessPaths.token = consumesCollector.consumes<edm::TriggerResults>(edm::InputTag("TriggerResults","",selectedProcessPaths.processName));
                 selectedProcessPaths.paths=selectEventPSets[iset].getParameter<std::vector<std::string>>("paths");
                 this->addSelectedProcessPaths(selectedProcessPaths);
             }
@@ -70,20 +73,14 @@ TriggerResultFilter::checkPath(const edm::Event& iEvent) const
             continue;
         }
         const std::vector<std::string>& paths = selectedProcessPath.paths;
-        if (paths.size()==0)
-        {
-            //accept all events
-            return true;
-        }
+        
+        const edm::TriggerNames& trigNames = iEvent.triggerNames(*result);
+        edm::TriggerResultsByName trigByName(result.product(),&trigNames);
+
         for (unsigned ipath=0; ipath<paths.size();++ipath)
         {
-            unsigned int index = result->find(paths[ipath]);
-            if (index==result->size())
-            {
-                edm::LogWarning("TriggerResults has no cms.Path named: ") << paths[ipath] << " in process '"<<selectedProcessPath.processName<<"'. The result of this path will be ignored.";
-            } else {
-                accept = accept || result->accept(index);
-            }
+            //this will throw if path does not exists
+            accept = accept || trigByName.accept(paths[ipath]);
         }
     }
     return accept;
