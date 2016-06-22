@@ -4,6 +4,7 @@
 <use name="CommonTools/Utils"/>
 <use name="Pxl/Pxl"/>
 <use name="EDM2PXLIO/Core"/>
+<use name="EDM2PXLIO/Provider"/>
 <library file="EDM2PXLIO.cc" name="EDM2PXLIOPlugin">
     <flags EDM_PLUGIN="1"/>
 </library>

@@ -27,7 +27,9 @@
 #include "EDM2PXLIO/Core/interface/ValueMapAccessor.h"
 #include "EDM2PXLIO/Core/interface/ValueMapAccessorFactory.h"
 
-#include "EDM2PXLIO/Core/interface/TriggerResultFilter.h"
+#include "EDM2PXLIO/Core/interface/ProviderFactory.h"
+#include "EDM2PXLIO/Provider/interface/FilterPathProvider.h"
+
 
 namespace edm2pxlio
 {
@@ -41,13 +43,18 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
         std::vector<std::pair<std::string,StringObjectFunction<Class>*>> _userRecordsFcts;
         StringCutObjectSelector<Class>* _cutFct;
         std::vector<ValueMapAccessor*> _valueMapAccessors;
-        TriggerResultFilter _triggerResultFilter;
+        edm2pxlio::FilterPathProvider* _filterPathProvider;
+        std::vector<std::string> _filterPaths;
 
     public:
         CollectionClassConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector):
             Base(name, globalConfig, consumesCollector),
-            _cutFct(nullptr)
+            _cutFct(nullptr),
+            _filterPathProvider(nullptr)
         {
+            _filterPathProvider = edm2pxlio::ProviderFactory::get<edm2pxlio::FilterPathProvider>(globalConfig,consumesCollector);
+            
+            
             if (globalConfig.exists(Base::getName()))
             {
                 const edm::ParameterSet& iConfig = globalConfig.getParameter<edm::ParameterSet>(Base::getName());
@@ -87,10 +94,9 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
                         }
                     }
                 }
-                
-                if (iConfig.exists("triggerFilter"))
+                if (iConfig.exists("filterPaths"))
                 {
-                    _triggerResultFilter.parseConfiguration(iConfig.getParameter<std::vector<edm::ParameterSet>>("triggerFilter"),consumesCollector);
+                    _filterPaths = iConfig.getParameter<std::vector<std::string>>("filterPaths");
                 }
             }
         }
@@ -106,7 +112,8 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent) const
         {
             Base::convert(edmEvent, iSetup, pxlEvent);
-            if (!_triggerResultFilter.checkPath(*edmEvent))
+            
+            if (not _filterPathProvider->accept(_filterPaths))
             {
                 return;
             }

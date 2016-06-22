@@ -48,10 +48,6 @@ GenParticleConverter::GenParticleConverter(const std::string& name, const edm::P
 void GenParticleConverter::convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent) const
 {
     //Base::convert(edmEvent, iSetup, pxlEvent);
-    if (!_triggerResultFilter.checkPath(*edmEvent))
-    {
-        return;
-    }
 
     edm::ESHandle<ParticleDataTable> pdt;
     iSetup->getData(pdt);

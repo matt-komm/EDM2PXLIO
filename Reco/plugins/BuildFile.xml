@@ -1,4 +1,5 @@
 <use name="EDM2PXLIO/Core"/>
+<use name="EDM2PXLIO/Provider"/>
 <use name="FWCore/Framework"/>
 <use name="DataFormats/Common"/>
 <use name="DataFormats/Candidate"/>

@@ -67,7 +67,7 @@ options.parseArguments()
 
 process = cms.Process("DX")
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-#process.options.allowUnscheduled = cms.untracked.bool(True)
+process.options.allowUnscheduled = cms.untracked.bool(True)
 #process.options.numberOfThreads = cms.untracked.uint32(4)
 #process.options.numberOfStreams = cms.untracked.uint32(4)
 
@@ -85,15 +85,16 @@ if options.isData:
     ### frontier database ###
     from CondCore.DBCommon.CondDBSetup_cfi import *
     process.frontierDB = cms.ESSource("PoolDBESSource",
-        CondDBSetup,
+        #CondDBSetup,
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Fall15_V2_DATA_AK4PFchs'), #should correspond to V6 (V3 is here an internal name inside the GT)
+                tag    = cms.string('JetCorrectorParametersCollection_Spring16_25nsV3_DATA_AK4PFchs'), #should correspond to V6 (V3 is here an internal name inside the GT)
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
-        connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+        #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+        connect = cms.string('sqlite:Spring16_25nsV3_DATA.db')
     )
 else:
     process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2'
@@ -101,15 +102,16 @@ else:
     ### frontier database ###
     from CondCore.DBCommon.CondDBSetup_cfi import *
     process.frontierDB = cms.ESSource("PoolDBESSource",
-        CondDBSetup,
+        #CondDBSetup,
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Fall15_25nsV2_MC_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Spring16_25nsV3_MC_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
-        connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+        #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+        connect = cms.string('sqlite:Spring16_25nsV3_MC.db')
     )
 
 process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'frontierDB')
@@ -122,9 +124,9 @@ process.MessageLogger.suppressWarning = cms.untracked.vstring('ecalLaserCorrFilt
 if options.isData and not options.isReRecoData:
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-            ' /store/data/Run2015D/SingleMuon/MINIAOD/16Dec2015-v1/10001/E0B88398-4BA9-E511-8FE9-0CC47A78A4A6.root'
+            ' root://cms-xrd-global.cern.ch//store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v2/000/273/158/00000/18383F36-2E1A-E611-8C57-02163E014186.root'
         ),
-        lumisToProcess = cms.untracked.VLuminosityBlockRange('259811:70-259811:80'), #"259811": [[1, 47], [50, 91]]
+        lumisToProcess = cms.untracked.VLuminosityBlockRange('273158:3-273158:13'),
     )
 elif options.isData and options.isReRecoData:
     process.source = cms.Source("PoolSource",
@@ -184,7 +186,7 @@ def addFilter(inputTag,cutString,minN=None):
         process.skimSequence+=selectorMinFilter
     
     
-addFilter(cms.InputTag("slimmedMuons"),"pt>15.0",minN=1)
+addFilter(cms.InputTag("slimmedMuons"),"pt>55.0",minN=1)
 addFilter(cms.InputTag("slimmedJets"),"pt>15.0",minN=2)
 addFilter(cms.InputTag("slimmedJets"),"pt>30.0",minN=1)
 
@@ -206,9 +208,9 @@ if not options.isData:
             "drop abs(status)>30", #drop all intermediate from decay 
             
             #keep a few other statuses
-            "keep isLastCopy & abs(pdgId)<7",
-            "keep isLastCopyBeforeFSR & abs(pdgId)<7",
-            "keep fromHardProcessBeforeFSR & abs(pdgId)<7",
+            "keep isLastCopy & (abs(pdgId)=6 | abs(pdgId)=5)",
+            "keep isLastCopyBeforeFSR & (abs(pdgId)=6 | abs(pdgId)=5)",
+            "keep fromHardProcessBeforeFSR & (abs(pdgId)=6 | abs(pdgId)=5)",
             #"keep isFirstCopy"
             
             #keep prompt leptons
@@ -232,9 +234,9 @@ addModule(process.egmGsfElectronIDSequence)
 
 
 ### JEC ###
-''''
-from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated
-process.jec25nsSummer15V6 = patJetCorrFactorsUpdated.clone(
+'''
+from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import updatedPatJetCorrFactors
+process.jec25nsSpring16V3 = updatedPatJetCorrFactors.clone(
     src = cms.InputTag("slimmedJets"),
     levels = [
         'L1FastJet', 
@@ -244,18 +246,27 @@ process.jec25nsSummer15V6 = patJetCorrFactorsUpdated.clone(
     payload = 'AK4PFchs' 
 )
 if options.isData:
-    process.jec25nsSummer15V6.levels.append('L2L3Residual')
+    process.jec25nsSpring16V3.levels.append('L2L3Residual')
     
-from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
-process.slimmedJetsJEC = patJetsUpdated.clone(
+from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import updatedPatJets
+process.slimmedJetsJEC = updatedPatJets.clone(
     jetSource = cms.InputTag("slimmedJets"),
     jetCorrFactorsSource = cms.VInputTag(
-        cms.InputTag("jec25nsSummer15V6")
+        cms.InputTag("jec25nsSpring16V3")
     )
 )
-process.reapplyJEC = cms.Sequence(process.jec25nsSummer15V6*process.slimmedJetsJEC)
+process.reapplyJEC = cms.Sequence(process.jec25nsSpring16V3*process.slimmedJetsJEC)
 addModule(process.reapplyJEC)
 '''
+
+### recalculate MET & Uncertainties ###
+
+from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
+
+runMetCorAndUncFromMiniAOD(
+    process,
+    isData=options.isData
+)
 
 ### Q/G Likelihood ###
 
@@ -289,25 +300,18 @@ if not options.isData:
 
 
 
-filterPSet = cms.VPSet(
-    cms.PSet(
-        process=cms.string("DX"),
-        paths=cms.vstring(
-            "DX_filtered"
-        ),
-    )
-)
+filteredPath = "DX_filtered"
 
 process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     outFileName=cms.string("output.pxlio"),
     processName=cms.string(options.processName),
-    selectEvents=cms.VPSet(filterPSet),
+    filterPaths=cms.vstring(filteredPath),
     primaryVertex = cms.InputTag("offlineSlimmedPrimaryVertices"),
     rho = cms.InputTag("fixedGridRhoFastjetAll"),
 )
 
 if not options.onlyFiltered:
-    process.pat2pxlio.selectEvents[0].paths.append("DX_plain")
+    process.pat2pxlio.filterPaths.append("DX_plain")
     
     
 
@@ -342,19 +346,21 @@ if options.isData:
         type=cms.string("JetConverter"),
         srcs=cms.VInputTag(
             cms.InputTag("slimmedJets"),
+            cms.InputTag("jetSelectorForMet"),
         ),
         names=cms.vstring(
             "Jet",
+            "JetJEC"
         ),
         select=cms.string("pt>15.0"),
         valueMaps=cms.PSet(
         ),
-        triggerFilter=filterPSet,
+        filterPaths=cms.vstring(filteredPath),
     ))
     setattr(process.pat2pxlio,"patMET",cms.PSet(
         type=cms.string("METConverter"),
         srcs=cms.VInputTag(
-            cms.InputTag("slimmedMet"),
+            cms.InputTag("slimmedMETs"),
         ),
         names=cms.vstring(
             "MET",
@@ -364,23 +370,31 @@ else:
     setattr(process.pat2pxlio,"patJets",cms.PSet(
         type=cms.string("JetConverter"),
         srcs=cms.VInputTag(
-            cms.InputTag("slimmedJets"),
+            cms.InputTag("jetSelectorForMet"),
+            cms.InputTag("shiftedPatJetEnDown"),
+            cms.InputTag("shiftedPatJetEnUp"),
         ),
         names=cms.vstring(
             "Jet",
+            "JetEnDown",
+            "JetEnUp"
         ),
         select=cms.string("pt>15.0"),
         valueMaps=cms.PSet(
         ),
-        triggerFilter=filterPSet,
+        filterPaths=cms.vstring(filteredPath),
     ))
     setattr(process.pat2pxlio,"patMET",cms.PSet(
         type=cms.string("METConverter"),
         srcs=cms.VInputTag(
-            cms.InputTag("slimmedMETs"),
+            cms.InputTag("patPFMetT1"),
+            cms.InputTag("patPFMetT1JetEnDown"),
+            cms.InputTag("patPFMetT1JetEnUp"),
         ),
         names=cms.vstring(
             "MET",
+            "METEnDown",
+            "METEnUp"
         )
     ))
 
@@ -450,7 +464,7 @@ if not options.isData:
         srcs=cms.VInputTag(cms.InputTag("slimmedGenJets")),
         names=cms.vstring("GenJet"),
         targetEventViews=cms.vstring("GenJets"),
-        triggerFilter=filterPSet,
+        filterPaths=cms.vstring(filteredPath),
     ))
 
 process.endpath= cms.EndPath()

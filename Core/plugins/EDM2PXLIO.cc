@@ -25,7 +25,8 @@
 #include "EDM2PXLIO/Core/interface/Provider.h"
 #include "EDM2PXLIO/Core/interface/ProviderFactory.h"
 
-#include "EDM2PXLIO/Core/interface/TriggerResultFilter.h"
+#include "EDM2PXLIO/Provider/interface/FilterPathProvider.h"
+
 
 #include <string>
 #include <vector>
@@ -49,7 +50,9 @@ class EDM2PXLIO:
         std::vector<edm2pxlio::Converter*> _converters; 
         std::vector<edm2pxlio::Provider*> _providers;
         
-        edm2pxlio::TriggerResultFilter _triggerResultFilter;
+        edm2pxlio::FilterPathProvider* _filterPathProvider;
+        std::vector<std::string> _filterPaths;
+        
 
         virtual void beginJob() ;
         virtual void analyze(const edm::Event&, const edm::EventSetup&);
@@ -64,18 +67,18 @@ class EDM2PXLIO:
 
 
 EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& globalConfig):
-    _pxlFile(nullptr)
+    _pxlFile(nullptr),
+    _filterPathProvider(nullptr)
 {
     edm::ConsumesCollector consumeCollect = consumesCollector();
-    if (globalConfig.exists("selectEvents"))
+    
+    _filterPathProvider = edm2pxlio::ProviderFactory::get<edm2pxlio::FilterPathProvider>(globalConfig,consumeCollect);
+    if (globalConfig.exists("filterPaths"))
     {
-        const std::vector<edm::ParameterSet>& selectEventPSets = globalConfig.getParameter<std::vector<edm::ParameterSet>>("selectEvents");
-        _triggerResultFilter.parseConfiguration(selectEventPSets,consumeCollect);
+        _filterPaths = globalConfig.getParameter<std::vector<std::string>>("filterPaths");
     }
-    else
-    {
-        edm::LogWarning("no selectEvents configured") << "will store events from all processes and paths";
-    }
+    
+
     if (globalConfig.exists("outFileName")) {
         _pxlFile = new pxl::OutputFile(globalConfig.getParameter<std::string>("outFileName"));
     } else {
@@ -90,7 +93,6 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& globalConfig):
     } else {
         _processName = "";
     }
-
 
     
     const std::vector<std::string> psetNames = globalConfig.getParameterNamesForType<edm::ParameterSet>();
@@ -132,11 +134,7 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     try
     {
         pxl::Event pxlEvent;
-        
-        if (!_triggerResultFilter.checkPath(iEvent))
-        {
-            return;
-        }
+
         pxlEvent.setUserRecord("Run", iEvent.run());
         pxlEvent.setUserRecord("Event number", (uint64_t)iEvent.id().event());
         pxlEvent.setUserRecord("LuminosityBlock",iEvent.luminosityBlock());
@@ -149,11 +147,15 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         {
             _providers[iprovider]->process(&iEvent,&iSetup);
         }
-        for (unsigned int iconverter = 0; iconverter<_converters.size(); ++iconverter)
+        
+        if (_filterPathProvider->accept(_filterPaths))
         {
-            _converters[iconverter]->convert(&iEvent,&iSetup,&pxlEvent);
+            for (unsigned int iconverter = 0; iconverter<_converters.size(); ++iconverter)
+            {
+                _converters[iconverter]->convert(&iEvent,&iSetup,&pxlEvent);
+            }
+            _pxlFile->streamObject(&pxlEvent);
         }
-        _pxlFile->streamObject(&pxlEvent);
     } 
     catch (...)
     {
