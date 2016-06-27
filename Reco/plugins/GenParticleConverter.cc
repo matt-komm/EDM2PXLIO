@@ -51,45 +51,46 @@ void GenParticleConverter::convert(const edm::Event* edmEvent, const edm::EventS
 
     edm::ESHandle<ParticleDataTable> pdt;
     iSetup->getData(pdt);
+    
+    if (_genEventInfoProductInputTag.label().length()>0)
+    {
+        edm::Handle<GenEventInfoProduct> genEventInfoProduct;
+        edmEvent->getByToken(_genEventInfoProductToken,genEventInfoProduct);
+        pxlEvent->setUserRecord("signalProcessID",genEventInfoProduct->signalProcessID());
+        pxlEvent->setUserRecord("genweight",genEventInfoProduct->weight());
+        pxlEvent->setUserRecord("alphaQCD",genEventInfoProduct->alphaQCD());
+        pxlEvent->setUserRecord("alphaQED",genEventInfoProduct->alphaQED());
+        pxlEvent->setUserRecord("qscale",genEventInfoProduct->qScale());
+        
+        pxlEvent->setUserRecord("nMEPartons",genEventInfoProduct->nMEPartons());
+        pxlEvent->setUserRecord("nMEPartonsFiltered",genEventInfoProduct->nMEPartonsFiltered());
+        
+
+        const GenEventInfoProduct::PDF* pdf = genEventInfoProduct->pdf();
+        pxlEvent->setUserRecord("id1",pdf->id.first);
+        pxlEvent->setUserRecord("id2",pdf->id.second);
+        pxlEvent->setUserRecord("x1",pdf->x.first);
+        pxlEvent->setUserRecord("x2",pdf->x.second);
+        pxlEvent->setUserRecord("scalePDF",pdf->scalePDF);
+
+    }
+    
+    if (_lheEventProductInputTag.label().length()>0)
+    {
+        edm::Handle<LHEEventProduct> lheEventProduct;
+        if (edmEvent->getByToken(_lheEventProductToken,lheEventProduct))
+        {
+            const std::vector<LHEEventProduct::WGT>& weights = lheEventProduct->weights();
+            for (unsigned int iweight = 0; iweight < weights.size(); ++iweight)
+            {
+                pxlEvent->setUserRecord("lheweight_"+weights[iweight].id,weights[iweight].wgt);
+            }
+        }
+    }
+    
     for (unsigned index=0; index<Base::size(); ++index)
     {
         pxl::EventView* pxlEventView = Base::findEventView(pxlEvent,Base::getEventViewName(index));
-
-        if (_genEventInfoProductInputTag.label().length()>0)
-        {
-            edm::Handle<GenEventInfoProduct> genEventInfoProduct;
-            edmEvent->getByToken(_genEventInfoProductToken,genEventInfoProduct);
-            pxlEventView->setUserRecord("signalProcessID",genEventInfoProduct->signalProcessID());
-            pxlEventView->setUserRecord("genweight",genEventInfoProduct->weight());
-            pxlEventView->setUserRecord("alphaQCD",genEventInfoProduct->alphaQCD());
-            pxlEventView->setUserRecord("alphaQED",genEventInfoProduct->alphaQED());
-            pxlEventView->setUserRecord("qscale",genEventInfoProduct->qScale());
-            
-            pxlEventView->setUserRecord("nMEPartons",genEventInfoProduct->nMEPartons());
-            pxlEventView->setUserRecord("nMEPartonsFiltered",genEventInfoProduct->nMEPartonsFiltered());
-            
-
-            const GenEventInfoProduct::PDF* pdf = genEventInfoProduct->pdf();
-            pxlEventView->setUserRecord("id1",pdf->id.first);
-            pxlEventView->setUserRecord("id2",pdf->id.second);
-            pxlEventView->setUserRecord("x1",pdf->x.first);
-            pxlEventView->setUserRecord("x2",pdf->x.second);
-            pxlEventView->setUserRecord("scalePDF",pdf->scalePDF);
-
-        }
-        if (_lheEventProductInputTag.label().length()>0)
-        {
-            
-            edm::Handle<LHEEventProduct> lheEventProduct;
-            if (edmEvent->getByToken(_lheEventProductToken,lheEventProduct))
-            {
-                const std::vector<LHEEventProduct::WGT>& weights = lheEventProduct->weights();
-                for (unsigned int iweight = 0; iweight < weights.size(); ++iweight)
-                {
-                    pxlEventView->setUserRecord("lheweight_"+weights[iweight].id,weights[iweight].wgt);
-                }
-            }
-        }
         
         const edm::Handle<edm::View<reco::GenParticle>> collection = Base::getCollection(edmEvent,index);
         std::unordered_map<size_t,std::pair<const reco::GenParticle*,pxl::Particle*>> addMap;

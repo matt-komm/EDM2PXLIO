@@ -39,6 +39,22 @@ options.register(
 )
 
 options.register(
+    'noGen',
+    False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "removes storing of gen objects"
+)
+
+options.register(
+    'noLHE',
+    False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "removes LHE weights"
+)
+
+options.register(
     'addPL',
     False,
     VarParsing.multiplicity.singleton,
@@ -186,9 +202,9 @@ def addFilter(inputTag,cutString,minN=None):
         process.skimSequence+=selectorMinFilter
     
     
-addFilter(cms.InputTag("slimmedMuons"),"pt>55.0",minN=1)
+addFilter(cms.InputTag("slimmedMuons"),"pt>15.0",minN=1)
 addFilter(cms.InputTag("slimmedJets"),"pt>15.0",minN=2)
-addFilter(cms.InputTag("slimmedJets"),"pt>30.0",minN=1)
+addFilter(cms.InputTag("slimmedJets"),"pt>20.0",minN=1)
 
 
 
@@ -234,7 +250,7 @@ addModule(process.egmGsfElectronIDSequence)
 
 
 ### JEC ###
-'''
+
 from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import updatedPatJetCorrFactors
 process.jec25nsSpring16V3 = updatedPatJetCorrFactors.clone(
     src = cms.InputTag("slimmedJets"),
@@ -257,7 +273,7 @@ process.slimmedJetsJEC = updatedPatJets.clone(
 )
 process.reapplyJEC = cms.Sequence(process.jec25nsSpring16V3*process.slimmedJetsJEC)
 addModule(process.reapplyJEC)
-'''
+
 
 ### recalculate MET & Uncertainties ###
 
@@ -320,7 +336,8 @@ setattr(process.pat2pxlio,"muons",cms.PSet(
     type=cms.string("MuonConverter"),
     srcs=cms.VInputTag(cms.InputTag("slimmedMuons")),
     names=cms.vstring("Muon"),
-    valueMaps = cms.PSet()
+    valueMaps = cms.PSet(),
+    select=cms.string("pt>10.0"),
 ))
 
 setattr(process.pat2pxlio,"electrons",cms.PSet(
@@ -337,7 +354,8 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
             src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-Spring15-25ns-V1-standalone-tight")
         ),
         
-    )
+    ),
+    select=cms.string("pt>10.0"),
 ))
 
 #add jets/met
@@ -345,12 +363,11 @@ if options.isData:
     setattr(process.pat2pxlio,"patJets",cms.PSet(
         type=cms.string("JetConverter"),
         srcs=cms.VInputTag(
-            cms.InputTag("slimmedJets"),
-            cms.InputTag("jetSelectorForMet"),
+            #cms.InputTag("slimmedJets"),
+            cms.InputTag("patJetsReapplyJEC"),
         ),
         names=cms.vstring(
             "Jet",
-            "JetJEC"
         ),
         select=cms.string("pt>15.0"),
         valueMaps=cms.PSet(
@@ -370,14 +387,15 @@ else:
     setattr(process.pat2pxlio,"patJets",cms.PSet(
         type=cms.string("JetConverter"),
         srcs=cms.VInputTag(
-            cms.InputTag("jetSelectorForMet"),
-            cms.InputTag("shiftedPatJetEnDown"),
-            cms.InputTag("shiftedPatJetEnUp"),
+            cms.InputTag("patJetsReapplyJEC"),
+            
+            #cms.InputTag("shiftedPatJetEnDown"), # this cannot be used - jets are already cleaned against leptons for T1
+            #cms.InputTag("shiftedPatJetEnUp"), # this cannot be used - jets are already cleaned against leptons for T1
         ),
         names=cms.vstring(
             "Jet",
-            "JetEnDown",
-            "JetEnUp"
+            #"JetEnDown",
+            #"JetEnUp"
         ),
         select=cms.string("pt>15.0"),
         valueMaps=cms.PSet(
@@ -388,13 +406,13 @@ else:
         type=cms.string("METConverter"),
         srcs=cms.VInputTag(
             cms.InputTag("patPFMetT1"),
-            cms.InputTag("patPFMetT1JetEnDown"),
-            cms.InputTag("patPFMetT1JetEnUp"),
+            #cms.InputTag("patPFMetT1JetEnDown"),
+            #cms.InputTag("patPFMetT1JetEnUp"),
         ),
         names=cms.vstring(
             "MET",
-            "METEnDown",
-            "METEnUp"
+            #"METEnDown",
+            #"METEnUp"
         )
     ))
 
@@ -453,15 +471,16 @@ else:
 if not options.isData:
     setattr(process.pat2pxlio,"genParticles",cms.PSet(
         type=cms.string("GenParticleConverter"),
-        srcs=cms.VInputTag(cms.InputTag("lessGenParticles")),
+        srcs=cms.VInputTag(cms.InputTag("lessGenParticles") if not options.noGen else ()),
         targetEventViews=cms.vstring("Generated"),
-        LHEEvent=cms.InputTag("externalLHEProducer"),
+        LHEEvent=cms.InputTag("externalLHEProducer" if not options.noLHE else ""),
         GenEventInfo=cms.InputTag("generator","","SIM"),
+        filterPaths=cms.vstring(filteredPath),
     ))
             
     setattr(process.pat2pxlio,"genjets",cms.PSet(
         type=cms.string("GenJetConverter"),
-        srcs=cms.VInputTag(cms.InputTag("slimmedGenJets")),
+        srcs=cms.VInputTag(cms.InputTag("slimmedGenJets") if not options.noGen else ()),
         names=cms.vstring("GenJet"),
         targetEventViews=cms.vstring("GenJets"),
         filterPaths=cms.vstring(filteredPath),
