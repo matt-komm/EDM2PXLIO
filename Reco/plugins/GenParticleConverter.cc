@@ -48,9 +48,11 @@ GenParticleConverter::GenParticleConverter(const std::string& name, const edm::P
 void GenParticleConverter::convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent) const
 {
     //Base::convert(edmEvent, iSetup, pxlEvent);
-
     edm::ESHandle<ParticleDataTable> pdt;
-    iSetup->getData(pdt);
+    if (_useNameDB)
+    {
+        iSetup->getData(pdt);
+    }
     
     if (_genEventInfoProductInputTag.label().length()>0)
     {
@@ -142,6 +144,7 @@ void GenParticleConverter::convertObject(const reco::GenParticle& genObject, pxl
 {
     pxlParticle->setP4(genObject.px(),genObject.py(),genObject.pz(),genObject.energy());
     pxlParticle->setPdgNumber(genObject.pdgId());
+    pxlParticle->setCharge(genObject.charge());
     pxlParticle->setUserRecord("status",genObject.status());
     
     unsigned int statusBits = 0;

@@ -5,6 +5,8 @@
 <use name="DataFormats/TrackReco"/>
 <use name="PhysicsTools/CandUtils"/>
 <use name="DataFormats/HepMCCandidate"/>
+<use name="SimGeneral/HepPDTRecord"/>
+<use name="SimDataFormats/GeneratorProducts"/>
 <library   file="ElectronConverter.cc" name="ElectronConverterPlugin">
     <flags   EDM_PLUGIN="1"/>
 </library>
@@ -17,4 +19,6 @@
 <library   file="METConverter.cc" name="METConverterPlugin">
     <flags   EDM_PLUGIN="1"/>
 </library>
-
+<library   file="PackedGenParticleConverter.cc" name="PackedGenParticleConverterPlugin">
+    <flags   EDM_PLUGIN="1"/>
+</library>

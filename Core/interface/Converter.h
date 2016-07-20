@@ -41,8 +41,16 @@ class Converter
         virtual void beginStream()
         {
         }
+        
+        virtual void beginEvent(const edm::Event* edmEvent, const edm::EventSetup* iSetup)
+        {
+        }
 
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent) const
+        {
+        }
+        
+        virtual void endEvent(const edm::Event* edmEvent, const edm::EventSetup* iSetup)
         {
         }
 

@@ -53,10 +53,10 @@ class EDM2PXLIO:
         edm2pxlio::FilterPathProvider* _filterPathProvider;
         std::vector<std::string> _filterPaths;
         
-
-        virtual void beginJob() ;
+        
+        virtual void beginJob();
         virtual void analyze(const edm::Event&, const edm::EventSetup&);
-        virtual void endJob() ;
+        virtual void endJob();
 
         virtual void beginRun(edm::Run const&, edm::EventSetup const&);
         virtual void endRun(edm::Run const&, edm::EventSetup const&);
@@ -152,7 +152,9 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         {
             for (unsigned int iconverter = 0; iconverter<_converters.size(); ++iconverter)
             {
+                _converters[iconverter]->beginEvent(&iEvent,&iSetup);
                 _converters[iconverter]->convert(&iEvent,&iSetup,&pxlEvent);
+                _converters[iconverter]->endEvent(&iEvent,&iSetup);
             }
             _pxlFile->streamObject(&pxlEvent);
         }

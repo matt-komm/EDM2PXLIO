@@ -1,0 +1,13 @@
+<use name="EDM2PXLIO/Core"/>
+<use name="EDM2PXLIO/Provider"/>
+<use name="DataFormats/Common"/>
+<use name="DataFormats/PatCandidates"/>
+<use name="DataFormats/TrackReco"/>
+<use name="PhysicsTools/CandUtils"/>
+<use name="DataFormats/HepMCCandidate"/>
+<use name="SimGeneral/HepPDTRecord"/>
+<use name="SimDataFormats/GeneratorProducts"/>
+<use name="UserCode/ParticleLevelTools"/>
+<library   file="PltJetConverter.cc" name="PltJetConverterPlugin">
+    <flags   EDM_PLUGIN="1"/>
+</library>
