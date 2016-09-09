@@ -149,6 +149,12 @@ class METConverter:
         {
             Base::convertObject(patObject,pxlParticle);
             pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
+            
+            const reco::GenMET* genMET = patObject.genMET();
+            if (genMET)
+            {
+                pxlParticle->setUserRecord("genMET",pxl::LorentzVector(genMET->px(), genMET->py(), genMET->pz(), genMET->energy()));
+            }
         }
         
         virtual ~METConverter()

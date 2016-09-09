@@ -24,11 +24,22 @@ void PltJetConverter::convertObject(const plt::Jet& pltJet, pxl::Particle* pxlPa
     pxlParticle->setP4(vec.px(),vec.py(),vec.pz(),vec.E());
     pxlParticle->setUserRecord("charge",pltJet.charge());
     
+    pxlParticle->setUserRecord("JC02",pltJet.jetCharge(0.2));
+    pxlParticle->setUserRecord("JC05",pltJet.jetCharge(0.5));
+    pxlParticle->setUserRecord("JC07",pltJet.jetCharge(0.7));
+    pxlParticle->setUserRecord("JC10",pltJet.jetCharge(1.0));
+    
     pxlParticle->setUserRecord("electronFraction",pltJet.electronFraction());
     pxlParticle->setUserRecord("muonFraction",pltJet.muonFraction());
     pxlParticle->setUserRecord("photonFraction",pltJet.photonFraction());
     pxlParticle->setUserRecord("neutrinoFraction",pltJet.neutrinoFraction());
     pxlParticle->setUserRecord("hadronFraction",pltJet.hadronFraction());
+    
+    std::vector<std::string> ghostTagNames = pltJet.getGhostTagTypes();
+    for (const std::string& ghostTag: ghostTagNames)
+    {
+        pxlParticle->setUserRecord(ghostTag,pltJet.getNumberOfGhostTags(ghostTag));
+    }
     
 }
 

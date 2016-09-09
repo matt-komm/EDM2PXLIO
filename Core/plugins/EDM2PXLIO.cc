@@ -135,9 +135,9 @@ EDM2PXLIO::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     {
         pxl::Event pxlEvent;
 
-        pxlEvent.setUserRecord("Run", iEvent.run());
+        pxlEvent.setUserRecord("Run", (unsigned int)iEvent.run());
         pxlEvent.setUserRecord("Event number", (uint64_t)iEvent.id().event());
-        pxlEvent.setUserRecord("LuminosityBlock",iEvent.luminosityBlock());
+        pxlEvent.setUserRecord("LuminosityBlock",(unsigned int)iEvent.luminosityBlock());
         pxlEvent.setUserRecord("isRealData",iEvent.isRealData());
         if (_processName.length()>0)
         {

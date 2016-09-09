@@ -96,7 +96,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 
 
 if options.isData:
-    process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v8'
+    process.GlobalTag.globaltag = '80X_dataRun2_Prompt_ICHEP16JEC_v0'
     
     ### frontier database ###
     from CondCore.DBCommon.CondDBSetup_cfi import *
@@ -105,15 +105,15 @@ if options.isData:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Spring16_25nsV3_DATA_AK4PFchs'), #should correspond to V6 (V3 is here an internal name inside the GT)
+                tag    = cms.string('JetCorrectorParametersCollection_Spring16_25nsV6_DATA_AK4PFchs'), #should correspond to V6 (V3 is here an internal name inside the GT)
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
-        #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        connect = cms.string('sqlite:Spring16_25nsV3_DATA.db')
+        connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+        #connect = cms.string('sqlite:Spring16_25nsV3_DATA.db')
     )
 else:
-    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2'
+    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2_v1'
     
     ### frontier database ###
     from CondCore.DBCommon.CondDBSetup_cfi import *
@@ -122,12 +122,12 @@ else:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Spring16_25nsV3_MC_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Spring16_25nsV6_MC_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
-        #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        connect = cms.string('sqlite:Spring16_25nsV3_MC.db')
+        connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+        #connect = cms.string('sqlite:Spring16_25nsV3_MC.db')
     )
 
 process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'frontierDB')
@@ -140,21 +140,22 @@ process.MessageLogger.suppressWarning = cms.untracked.vstring('ecalLaserCorrFilt
 if options.isData and not options.isReRecoData:
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-            ' root://cms-xrd-global.cern.ch//store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v2/000/273/158/00000/18383F36-2E1A-E611-8C57-02163E014186.root'
+            ' root://cmsxrootd.fnal.gov//store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v2/000/273/158/00000/18383F36-2E1A-E611-8C57-02163E014186.root'
         ),
         lumisToProcess = cms.untracked.VLuminosityBlockRange('273158:3-273158:13'),
     )
 elif options.isData and options.isReRecoData:
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-            #'root://xrootd.unl.edu//store/data/Run2015B/SingleMuon/MINIAOD/PromptReco-v1/000/251/244/00000/68275270-7C27-E511-B1F0-02163E011A46.root' #{golden run: 251244:96-251244:121}        ),
+            #'root://cmsxrootd.fnal.gov//store/data/Run2015B/SingleMuon/MINIAOD/PromptReco-v1/000/251/244/00000/68275270-7C27-E511-B1F0-02163E011A46.root' #{golden run: 251244:96-251244:121}        ),
         )
         #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
     )
 else:
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-            'root://cms-xrd-global.cern.ch//store/mc/RunIISpring16MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext4-v1/00000/004A0552-3929-E611-BD44-0025905A48F0.root'
+            'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/00000/001B5A22-4045-E611-B24C-0090FA9DFD8A.root'
+            #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext4-v1/00000/004A0552-3929-E611-BD44-0025905A48F0.root'
         ),
         #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
     )
@@ -163,7 +164,7 @@ else:
 if options.isData:
     process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(400) )
 else:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
 process.DX_plain=cms.Path()
 process.DX_filtered=cms.Path()
@@ -202,9 +203,9 @@ def addFilter(inputTag,cutString,minN=None):
         process.skimSequence+=selectorMinFilter
     
     
-addFilter(cms.InputTag("slimmedMuons"),"pt>15.0",minN=1)
-addFilter(cms.InputTag("slimmedJets"),"pt>15.0",minN=2)
-addFilter(cms.InputTag("slimmedJets"),"pt>20.0",minN=1)
+#addFilter(cms.InputTag("slimmedMuons"),"pt>15.0",minN=1)
+#addFilter(cms.InputTag("slimmedJets"),"pt>15.0",minN=2)
+#addFilter(cms.InputTag("slimmedJets"),"pt>20.0",minN=1)
 
 
 
@@ -219,18 +220,22 @@ if not options.isData:
             "drop  *",
             #"++keep abs(status)>20 & abs(status) < 30", #keeps all particles from the hard matrix element and their mothers
             "++keep isHardProcess",
-            "keep++ abs(pdgId)=24", #keep W-boson decay
-            "keep++ abs(pdgId)=23", #keep Z-boson decay
-            "drop abs(status)>30", #drop all intermediate from decay 
+            "keep++ abs(pdgId)=24 & (isHardProcess | fromHardProcessFinalState)", #keep W-boson decay
+            "keep++ abs(pdgId)=23 & (isHardProcess | fromHardProcessFinalState)", #keep Z-boson decay
+            "keep++ abs(pdgId)=22 & (isHardProcess | fromHardProcessFinalState)", #keep gamma-boson decay
+            "drop abs(status)>30 & (abs(pdgId)!=24 | abs(pdgId)!=23 | abs(pdgId)!=22) & (!isHardProcess | !fromHardProcessFinalState)", #drop all intermediate from decay 
             
             #keep a few other statuses
-            "keep isLastCopy & (abs(pdgId)=6 | abs(pdgId)=5)",
-            "keep isLastCopyBeforeFSR & (abs(pdgId)=6 | abs(pdgId)=5)",
-            "keep fromHardProcessBeforeFSR & (abs(pdgId)=6 | abs(pdgId)=5)",
+            "keep (isLastCopyBeforeFSR | isLastCopy | fromHardProcessBeforeFSR) & (abs(pdgId)<7)",
+            #"keep isLastCopyBeforeFSR & (abs(pdgId)=6 | abs(pdgId)=5)",
+            #"keep fromHardProcessBeforeFSR & (abs(pdgId)=6 | abs(pdgId)=5)",
             #"keep isFirstCopy"
             
-            #keep prompt leptons
-            "keep (isPromptFinalState) & abs(pdgId)>10 & abs(pdgId)<19"
+            #keep prompt leptons/photon
+            "keep (isPromptFinalState) & ((abs(pdgId)>10 & abs(pdgId)<19) || abs(pdgId)=22)",
+            
+            #"drop abs(pdgId)==5 & isLastCopy"
+            #"keep++ abs(pdgId)=5"
         )
     )
     addModule(process.lessGenParticles)
@@ -477,7 +482,8 @@ if not options.isData:
         GenEventInfo=cms.InputTag("generator","","SIM"),
         filterPaths=cms.vstring(filteredPath),
     ))
-            
+
+'''      
     setattr(process.pat2pxlio,"genjets",cms.PSet(
         type=cms.string("GenJetConverter"),
         srcs=cms.VInputTag(cms.InputTag("slimmedGenJets") if not options.noGen else ()),
@@ -485,6 +491,16 @@ if not options.isData:
         targetEventViews=cms.vstring("GenJets"),
         filterPaths=cms.vstring(filteredPath),
     ))
+'''
+    
+    
+#add particle level reco
+
+if (not options.isData) and options.addPL:
+    print "Adding particle level objects"
+    import EDM2PXLIO.Plt.pltReco as pltReco
+    addModule(pltReco.addPlt(process,filteredPath))
+    
 
 process.endpath= cms.EndPath()
 

@@ -263,8 +263,16 @@ pSeq+=process.stableParticlesExLNN+process.particleJetsExLNN
 
 
 addModule(pSeq)
-###TODO: MET from only prompt or allNu; Btagging
 
+process.genMetPromptNu = cms.EDProducer("METProducer",
+    src=cms.InputTag("promtNu")
+)
+pSeq+=process.genMetPromptNu
+
+process.genMetAllNu = cms.EDProducer("METProducer",
+    src=cms.InputTag("allNu")
+)
+pSeq+=process.genMetAllNu
 
 
 ### electron IDs ###
@@ -449,6 +457,7 @@ setattr(process.pat2pxlio,"dressedLeptons",cms.PSet(
     srcs=cms.VInputTag(cms.InputTag("dressedLeptons")),
     names=cms.vstring("Lepton"),
     targetEventViews=cms.vstring("ParticleLevel"),
+    filterPaths=cms.vstring(filteredPath),
 ))
 
 
@@ -457,6 +466,7 @@ setattr(process.pat2pxlio,"particleJets",cms.PSet(
     srcs=cms.VInputTag(cms.InputTag("particleJets")),
     names=cms.vstring("Jet"),
     targetEventViews=cms.vstring("ParticleLevel"),
+    filterPaths=cms.vstring(filteredPath),
 ))
 
 setattr(process.pat2pxlio,"particleJetsExL",cms.PSet(
@@ -464,6 +474,7 @@ setattr(process.pat2pxlio,"particleJetsExL",cms.PSet(
     srcs=cms.VInputTag(cms.InputTag("particleJetsExL")),
     names=cms.vstring("JetExL"),
     targetEventViews=cms.vstring("ParticleLevel"),
+    filterPaths=cms.vstring(filteredPath),
 ))
 
 setattr(process.pat2pxlio,"particleJetsExLN",cms.PSet(
@@ -471,6 +482,7 @@ setattr(process.pat2pxlio,"particleJetsExLN",cms.PSet(
     srcs=cms.VInputTag(cms.InputTag("particleJetsExLN")),
     names=cms.vstring("JetExLN"),
     targetEventViews=cms.vstring("ParticleLevel"),
+    filterPaths=cms.vstring(filteredPath),
 ))
 
 setattr(process.pat2pxlio,"particleJetsExLNN",cms.PSet(
@@ -478,8 +490,8 @@ setattr(process.pat2pxlio,"particleJetsExLNN",cms.PSet(
     srcs=cms.VInputTag(cms.InputTag("particleJetsExLNN")),
     names=cms.vstring("JetExLNN"),
     targetEventViews=cms.vstring("ParticleLevel"),
+    filterPaths=cms.vstring(filteredPath),
 ))
-
 
 
 setattr(process.pat2pxlio,"ghostBHadrons",cms.PSet(
@@ -487,27 +499,23 @@ setattr(process.pat2pxlio,"ghostBHadrons",cms.PSet(
     srcs=cms.VInputTag(cms.InputTag("ghostBHadrons")),
     names=cms.vstring("GhostB"),
     targetEventViews=cms.vstring("GhostBs"),
-))
-
-setattr(process.pat2pxlio,"ghostBHadrons",cms.PSet(
-    type=cms.string("PackedGenParticleConverter"),
-    srcs=cms.VInputTag(cms.InputTag("ghostBHadrons")),
-    names=cms.vstring("GhostB"),
-    targetEventViews=cms.vstring("GhostBs"),
+    filterPaths=cms.vstring(filteredPath),
 ))
 
 setattr(process.pat2pxlio,"promtNu",cms.PSet(
     type=cms.string("PackedGenParticleConverter"),
-    srcs=cms.VInputTag(cms.InputTag("promtNu")),
-    names=cms.vstring("Nu"),
-    targetEventViews=cms.vstring("PromptNu"),
+    srcs=cms.VInputTag(cms.InputTag("genMetPromptNu")),
+    names=cms.vstring("MetPrompt"),
+    targetEventViews=cms.vstring("ParticleLevel"),
+    filterPaths=cms.vstring(filteredPath),
 ))
 
 setattr(process.pat2pxlio,"allNu",cms.PSet(
     type=cms.string("PackedGenParticleConverter"),
-    srcs=cms.VInputTag(cms.InputTag("allNu")),
-    names=cms.vstring("Nu"),
-    targetEventViews=cms.vstring("AllNu"),
+    srcs=cms.VInputTag(cms.InputTag("genMetAllNu")),
+    names=cms.vstring("MetAll"),
+    targetEventViews=cms.vstring("ParticleLevel"),
+    filterPaths=cms.vstring(filteredPath),
 ))
 
 
