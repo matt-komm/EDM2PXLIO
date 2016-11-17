@@ -13,8 +13,8 @@ void CandidateConverter::convertObject(const reco::Candidate& candidate, pxl::Pa
 {
     Base::convertObject(candidate, pxlParticle);
     pxlParticle->setP4(candidate.px(),candidate.py(),candidate.pz(),candidate.energy());
-    
-    pxlParticle->setUserRecord("charge",candidate.charge());
+    pxlParticle->setPdgNumber(candidate.pdgId());
+    pxlParticle->setCharge(candidate.charge());
 }
         
 CandidateConverter::~CandidateConverter()

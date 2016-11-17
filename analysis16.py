@@ -31,6 +31,14 @@ options.register(
 )
 
 options.register(
+    'noFilter',
+    False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "apply no filtering"
+)
+
+options.register(
     'addSys',
     True,
     VarParsing.multiplicity.singleton,
@@ -153,8 +161,9 @@ elif options.isData and options.isReRecoData:
     )
 else:
     process.source = cms.Source("PoolSource",
+        inputCommands = cms.untracked.vstring("keep *", "drop LHERunInfoProduct_*_*_*"), #this produces otherwise a memleak
         fileNames = cms.untracked.vstring(
-            'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/00000/001B5A22-4045-E611-B24C-0090FA9DFD8A.root'
+            'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/00000/04615FE5-D844-E611-B5F0-0090FAA58B94.root'
             #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext4-v1/00000/004A0552-3929-E611-BD44-0025905A48F0.root'
         ),
         #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
@@ -164,7 +173,7 @@ else:
 if options.isData:
     process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(400) )
 else:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 process.DX_plain=cms.Path()
 process.DX_filtered=cms.Path()
@@ -202,11 +211,12 @@ def addFilter(inputTag,cutString,minN=None):
         setattr(process,selectorMinFilterName,selectorMinFilter)
         process.skimSequence+=selectorMinFilter
     
-    
-#addFilter(cms.InputTag("slimmedMuons"),"pt>15.0",minN=1)
-#addFilter(cms.InputTag("slimmedJets"),"pt>15.0",minN=2)
-#addFilter(cms.InputTag("slimmedJets"),"pt>20.0",minN=1)
-
+if not options.noFilter:
+    addFilter(cms.InputTag("slimmedMuons"),"pt>15.0",minN=1)
+    addFilter(cms.InputTag("slimmedJets"),"pt>15.0",minN=2)
+    addFilter(cms.InputTag("slimmedJets"),"pt>20.0",minN=1)
+else:
+    print "will not apply any filtering!"
 
 
 ### gen particle pruner ###
@@ -498,21 +508,88 @@ if not options.isData:
 
 if (not options.isData) and options.addPL:
     print "Adding particle level objects"
-    import EDM2PXLIO.Plt.pltReco as pltReco
-    addModule(pltReco.addPlt(process,filteredPath))
     
+    from TopQuarkAnalysis.TopEventProducers.producers.pseudoTop_cfi import pseudoTop
+    process.pseudoTop = pseudoTop.clone()
+    addModule(process.pseudoTop)
+    setattr(process.pat2pxlio,"ptLeptons",cms.PSet(
+        type=cms.string("GenJetConverter"),
+        srcs=cms.VInputTag(cms.InputTag("pseudoTop","leptons") if not options.noGen else ()),
+        names=cms.vstring("Lepton"),
+        targetEventViews=cms.vstring("PT"),
+        filterPaths=cms.vstring(filteredPath),
+    ))
+    setattr(process.pat2pxlio,"ptJets",cms.PSet(
+        type=cms.string("GenJetConverter"),
+        srcs=cms.VInputTag(cms.InputTag("pseudoTop","jets") if not options.noGen else ()),
+        names=cms.vstring("Jet"),
+        targetEventViews=cms.vstring("PT"),
+        filterPaths=cms.vstring(filteredPath),
+    ))
+    setattr(process.pat2pxlio,"ptNeutrino",cms.PSet(
+        type=cms.string("GenParticleConverter"),
+        srcs=cms.VInputTag(cms.InputTag("pseudoTop","neutrinos") if not options.noGen else ()),
+        names=cms.vstring("Neutrino"),
+        targetEventViews=cms.vstring("PT"),
+        filterPaths=cms.vstring(filteredPath),
+    ))
+    
+
+    
+    import EDM2PXLIO.Plt.pltReco as pltReco
+    
+    
+    
+    for postfix,projectLepton,projectNu,projectAllNu in [
+        ["",False,False,False],
+        ["ExL",True,False,False],
+        ["ExLN",True,True,False],
+        ["ExLNN",True,True,True],
+    ]:
+        addModule(pltReco.addPltCollection(process,filteredPath,"exTauPromptNu"+postfix,
+            "(abs(pdgId)==11 || abs(pdgId)==13 || abs(pdgId)==22)&&(isPromptFinalState)",
+            "(abs(pdgId)==12 || abs(pdgId)==14 || abs(pdgId)==16)&&(isPromptFinalState)",
+            projectLepton,projectNu,projectAllNu
+        ))
+        addModule(pltReco.addPltCollection(process,filteredPath,"incTauPromptNu"+postfix,
+            "(abs(pdgId)==11 || abs(pdgId)==13 || abs(pdgId)==22)&&(isPromptFinalState||isDirectPromptTauDecayProductFinalState)",
+            "(abs(pdgId)==12 || abs(pdgId)==14 || abs(pdgId)==16)&&(isPromptFinalState||isDirectPromptTauDecayProductFinalState)",
+            projectLepton,projectNu,projectAllNu
+        ))
+        
+    '''
+    for postfix,projectLepton,projectNu,projectAllNu in [
+        ["",False,False,False],
+        ["ExL",True,False,False],
+        ["ExLN",True,True,False],
+    ]:
+        addModule(pltReco.addPltCollection(process,filteredPath,"exTauAllNu"+postfix,
+            "(abs(pdgId)==11 || abs(pdgId)==13 || abs(pdgId)==22)&&(isPromptFinalState)",
+            "(abs(pdgId)==12 || abs(pdgId)==14 || abs(pdgId)==16)",
+            projectLepton,projectNu,projectAllNu
+        ))
+        addModule(pltReco.addPltCollection(process,filteredPath,"incTauAllNu"+postfix,
+            "(abs(pdgId)==11 || abs(pdgId)==13 || abs(pdgId)==22)&&(isPromptFinalState||isDirectPromptTauDecayProductFinalState)",
+            "(abs(pdgId)==12 || abs(pdgId)==14 || abs(pdgId)==16)",
+            projectLepton,projectNu,projectAllNu
+        ))
+    '''
 
 process.endpath= cms.EndPath()
 
 process.endpath+=process.pat2pxlio
-'''
+
 print "-------------------------------------"
 print "WARNING: root output module in cfg!!!"
 print "-------------------------------------"
 process.OUT = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('output.root'),
-    outputCommands = cms.untracked.vstring( "keep *","drop *_*_*_DX", "keep *_QGL*_*_*"),
+    outputCommands = cms.untracked.vstring(
+        "keep *",
+        "drop *_*_*_DX",
+        "keep *_pseudoTop*_*_*"
+     ),
     dropMetaData = cms.untracked.string('ALL'),
 )
 process.endpath+= process.OUT
-'''
+

@@ -233,6 +233,8 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
 {
     Base::convertObject(patObject, pxlParticle);
     pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
+    pxlParticle->setPdgNumber(patObject.pdgId());
+    pxlParticle->setCharge(patObject.charge());
     
     pxlParticle->setUserRecord("jetArea",PRECISION(patObject.jetArea()));
     pxlParticle->setUserRecord("jetCharge",PRECISION(patObject.jetCharge()));

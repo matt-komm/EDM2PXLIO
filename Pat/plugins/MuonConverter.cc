@@ -16,6 +16,7 @@ void MuonConverter::convertObject(const pat::Muon& patObject, pxl::Particle* pxl
 {
     Base::convertObject(patObject, pxlParticle);
     pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
+    pxlParticle->setPdgNumber(patObject.pdgId());
     pxlParticle->setCharge(patObject.charge());
 
     pxlParticle->setUserRecord("R03PFsumChargedHadronPt",PRECISION(patObject.pfIsolationR03().sumChargedHadronPt));

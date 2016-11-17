@@ -15,6 +15,8 @@ void GenJetConverter::convertObject(const reco::GenJet& genJet, pxl::Particle* p
     Base::convertObject(genJet, pxlParticle);
     
     pxlParticle->setP4(genJet.px(),genJet.py(),genJet.pz(),genJet.energy());
+    pxlParticle->setPdgNumber(genJet.pdgId());
+    pxlParticle->setCharge(genJet.charge());
     
     pxlParticle->setUserRecord("numberOfDaughters",genJet.numberOfDaughters());
     

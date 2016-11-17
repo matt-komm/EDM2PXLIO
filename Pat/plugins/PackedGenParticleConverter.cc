@@ -57,8 +57,8 @@ void PackedGenParticleConverter::convertObject(const pat::PackedGenParticle& gen
         }
     }
     pxlParticle->setP4(genObject.px(),genObject.py(),genObject.pz(),genObject.energy());
-    pxlParticle->setCharge(genObject.charge());
     pxlParticle->setPdgNumber(genObject.pdgId());
+    pxlParticle->setCharge(genObject.charge());
     pxlParticle->setUserRecord("status",genObject.status());
     
     unsigned int statusBits = 0;

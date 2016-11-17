@@ -17,6 +17,7 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
 {
     Base::convertObject(patObject, pxlParticle);
     pxlParticle->setP4(patObject.px(),patObject.py(),patObject.pz(),patObject.energy());
+    pxlParticle->setPdgNumber(patObject.pdgId());
     pxlParticle->setCharge(patObject.charge());
     
     const std::vector<pat::Electron::IdPair>& electronIds = patObject.electronIDs();
@@ -95,6 +96,7 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     pxlParticle->setUserRecord("puChargedHadronIso",PRECISION(patObject.puChargedHadronIso()));
     
     pxlParticle->setUserRecord("superClusterEta",PRECISION(patObject.superCluster()->eta()));
+    pxlParticle->setUserRecord("superClusterEta",PRECISION(patObject.superCluster()->phi()));
     
     pxlParticle->setUserRecord("fbrem",PRECISION(patObject.fbrem()));
     
