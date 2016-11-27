@@ -173,7 +173,7 @@ else:
 if options.isData:
     process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(400) )
 else:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 
 process.DX_plain=cms.Path()
 process.DX_filtered=cms.Path()
@@ -256,7 +256,7 @@ if not options.isData:
 from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
 switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
 for eleID in [
-    'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_25ns_V1_cff',
+    'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Summer16_80X_V1_cff',
 ]:
     setupAllVIDIdsInModule(process,eleID,setupVIDElectronSelection)
 
@@ -362,11 +362,11 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
     valueMaps=cms.PSet(
         spring15eleIDVeto25ns = cms.PSet(
             type=cms.string("ValueMapAccessorBool"),
-            src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-Spring15-25ns-V1-standalone-veto")
+            src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-Summer16-80X-V1-veto")
         ),
         spring15eleIDTight25ns = cms.PSet(
             type=cms.string("ValueMapAccessorBool"),
-            src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-Spring15-25ns-V1-standalone-tight")
+            src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-Summer16-80X-V1-tight")
         ),
         
     ),
@@ -578,7 +578,7 @@ if (not options.isData) and options.addPL:
 process.endpath= cms.EndPath()
 
 process.endpath+=process.pat2pxlio
-
+'''
 print "-------------------------------------"
 print "WARNING: root output module in cfg!!!"
 print "-------------------------------------"
@@ -592,4 +592,5 @@ process.OUT = cms.OutputModule("PoolOutputModule",
     dropMetaData = cms.untracked.string('ALL'),
 )
 process.endpath+= process.OUT
+'''
 

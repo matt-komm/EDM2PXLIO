@@ -44,6 +44,8 @@ void MuonConverter::convertObject(const pat::Muon& patObject, pxl::Particle* pxl
     pxlParticle->setUserRecord("isGlobalMuon",patObject.isGlobalMuon());
     pxlParticle->setUserRecord("isTrackerMuon",patObject.isTrackerMuon());
     pxlParticle->setUserRecord("isPFMuon",patObject.isPFMuon());
+    
+    pxlParticle->setUserRecord("dB",PRECISION(patObject.dB()));
 
     pxlParticle->setUserRecord("numberOfMatchedStations",patObject.numberOfMatchedStations());
     
@@ -63,9 +65,9 @@ void MuonConverter::convertObject(const pat::Muon& patObject, pxl::Particle* pxl
     }
 
     //ref to embedded Track (tracker only)
-    if (patObject.track().get()!=nullptr)
+    if (patObject.innerTrack().get()!=nullptr)
     {
-        const reco::Track* trackerTrack = patObject.track().get();
+        const reco::Track* trackerTrack = patObject.innerTrack().get();
         pxlParticle->setUserRecord("trackerLayersWithMeasurement",trackerTrack->hitPattern().trackerLayersWithMeasurement());
         pxlParticle->setUserRecord("numberOfValidTrackerHits",trackerTrack->hitPattern().numberOfValidTrackerHits());
 
@@ -74,15 +76,22 @@ void MuonConverter::convertObject(const pat::Muon& patObject, pxl::Particle* pxl
         
         pxlParticle->setUserRecord("track_highPurity",trackerTrack->quality(reco::TrackBase::highPurity));
 
+    }
+    if (patObject.muonBestTrack().get()!=nullptr)
+    {
+        const reco::Track* bestTrack = patObject.muonBestTrack().get();
         if (_primaryVertexProvider->getPrimaryVertex()!=nullptr)
         {
-            double dz = trackerTrack->dz(_primaryVertexProvider->getPrimaryVertex()->position());
-            double dxy = trackerTrack->dxy(_primaryVertexProvider->getPrimaryVertex()->position());
+            double dz = bestTrack->dz(_primaryVertexProvider->getPrimaryVertex()->position());
+            double dxy = bestTrack->dxy(_primaryVertexProvider->getPrimaryVertex()->position());
             pxlParticle->setUserRecord("dz",(float)dz);
             pxlParticle->setUserRecord("dxy",(float)dxy);
-            pxlParticle->setUserRecord("isTightMuon",patObject.isTightMuon(*_primaryVertexProvider->getPrimaryVertex()));
-            pxlParticle->setUserRecord("isSoftMuon",patObject.isSoftMuon(*_primaryVertexProvider->getPrimaryVertex()));
         }
+    }
+    if (_primaryVertexProvider->getPrimaryVertex()!=nullptr)
+    {
+        pxlParticle->setUserRecord("isTightMuon",patObject.isTightMuon(*_primaryVertexProvider->getPrimaryVertex()));
+        pxlParticle->setUserRecord("isSoftMuon",patObject.isSoftMuon(*_primaryVertexProvider->getPrimaryVertex()));
     }
 }
 
