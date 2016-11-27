@@ -7,9 +7,40 @@ namespace edm2pxlio
 
 ElectronConverter::ElectronConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector):
     Base(name, globalConfig, consumesCollector),
-    _primaryVertexProvider(nullptr)
+    _primaryVertexProvider(nullptr),
+    _rhoProvider(nullptr),
+    _effAreas(nullptr)
 {
     _primaryVertexProvider=ProviderFactory::get<PrimaryVertexProvider>(globalConfig,consumesCollector);
+    _rhoProvider=ProviderFactory::get<RhoProvider>(globalConfig,consumesCollector);
+
+    const edm::ParameterSet& iConfig = globalConfig.getParameter<edm::ParameterSet>(_name);
+    if (iConfig.exists("effAreasConfigFile"))
+    {
+        _effAreas.reset(new EffectiveAreas( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile")).fullPath()));
+    }
+    else
+    {
+        edm::LogWarning(_name) << "no effAreasConfigFile defined - isolation wont be stored";    
+    }
+}
+
+float ElectronConverter::calculateRelIso(const pat::Electron& patObject) const
+{
+    //taken from https://github.com/ikrav/cmssw/blob/egm_id_80X_v1/RecoEgamma/ElectronIdentification/plugins/cuts/GsfEleEffAreaPFIsoCut.cc#L83-L94
+    
+    // Compute the combined isolation with effective area correction
+    const reco::GsfElectron::PflowIsolationVariables& pfIso = patObject.pfIsolationVariables();
+    const float chad = pfIso.sumChargedHadronPt;
+    const float nhad = pfIso.sumNeutralHadronEt;
+    const float pho = pfIso.sumPhotonEt;
+    const float  eA = _effAreas->getEffectiveArea(std::abs(patObject.superCluster()->eta()));
+    const float rho = _rhoProvider ? _rhoProvider->getRho() : 0; // std::max likes float arguments
+    const float iso = chad + std::max(0.0f, nhad + pho - rho*eA);
+
+    // Apply the cut and return the result
+    // Scale by pT if the relative isolation is requested but avoid division by 0
+    return iso/patObject.pt();
 }
 
 
@@ -34,9 +65,9 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     pxlParticle->setUserRecord("isEBEEGap",patObject.isEBEEGap());
     
     
-    //http://cmslxr.fnal.gov/lxr/source/EgammaAnalysis/ElectronTools/src/EGammaCutBasedEleId.cc#0104
-    //full5x5_sigmaIetaIeta
+    pxlParticle->setUserRecord("full5x5_sigmaIphiIphi",PRECISION(patObject.full5x5_sigmaIphiIphi()));
     pxlParticle->setUserRecord("full5x5_sigmaIetaIphi",PRECISION(patObject.full5x5_sigmaIetaIphi()));
+    pxlParticle->setUserRecord("full5x5_sigmaIetaIeta",PRECISION(patObject.full5x5_sigmaIetaIeta()));
     //dEtaIn
     pxlParticle->setUserRecord("deltaEtaSuperClusterTrackAtVtx",PRECISION(patObject.deltaEtaSuperClusterTrackAtVtx()));
     //dPhiIn
@@ -44,10 +75,19 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     //hOverE
     pxlParticle->setUserRecord("hadronicOverEm",PRECISION(patObject.hadronicOverEm()));
     //ooEmooP='1/E - 1/p'
-    pxlParticle->setUserRecord("ooEmooP",PRECISION((1.0/patObject.ecalEnergy() - patObject.eSuperClusterOverP()/patObject.ecalEnergy())));
+    const double ecal_energy_inverse = 1.0/patObject.ecalEnergy();
+    const double eSCoverP = patObject.eSuperClusterOverP();
     
-    pxlParticle->setUserRecord("sigmaIetaIeta",PRECISION(patObject.sigmaIetaIeta()));
+    pxlParticle->setUserRecord("ooEmooP",PRECISION(std::abs(1.0 - eSCoverP)*ecal_energy_inverse));
+    
+
     pxlParticle->setUserRecord("passConversionVeto",patObject.passConversionVeto());
+    
+    if (_effAreas)
+    {
+        pxlParticle->setUserRecord("effAreaRelIso",calculateRelIso(patObject));
+        pxlParticle->setUserRecord("effArea",_effAreas->getEffectiveArea(std::abs(patObject.superCluster()->eta())));
+    }
     
     if (patObject.gsfTrack().get()!=nullptr)
     {
@@ -61,8 +101,8 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
 
         pxlParticle->setUserRecord("pixelLayersWithMeasurement",gsfTrack->hitPattern().pixelLayersWithMeasurement());
         pxlParticle->setUserRecord("numberOfValidPixelHits",gsfTrack->hitPattern().numberOfValidPixelHits());
-        pxlParticle->setUserRecord("numberOfMissingHitsInner",gsfTrack->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS)); 
-        pxlParticle->setUserRecord("numberOfMissingHitsOuter",gsfTrack->hitPattern().numberOfHits(reco::HitPattern::MISSING_OUTER_HITS)); 
+        pxlParticle->setUserRecord("numberOfMissingInnerHits",gsfTrack->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS)); 
+        pxlParticle->setUserRecord("numberOfMissingOuterHits",gsfTrack->hitPattern().numberOfHits(reco::HitPattern::MISSING_OUTER_HITS)); 
         
         if (_primaryVertexProvider->getPrimaryVertex())
         {
@@ -96,7 +136,7 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     pxlParticle->setUserRecord("puChargedHadronIso",PRECISION(patObject.puChargedHadronIso()));
     
     pxlParticle->setUserRecord("superClusterEta",PRECISION(patObject.superCluster()->eta()));
-    pxlParticle->setUserRecord("superClusterEta",PRECISION(patObject.superCluster()->phi()));
+    pxlParticle->setUserRecord("superClusterPhi",PRECISION(patObject.superCluster()->phi()));
     
     pxlParticle->setUserRecord("fbrem",PRECISION(patObject.fbrem()));
     

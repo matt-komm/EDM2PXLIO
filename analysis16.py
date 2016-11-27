@@ -359,6 +359,7 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
     type=cms.string("ElectronConverter"),
     srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
     names=cms.vstring("Electron"),
+    effAreasConfigFile = cms.FileInPath("RecoEgamma/ElectronIdentification/data/Summer16/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt"),
     valueMaps=cms.PSet(
         spring15eleIDVeto25ns = cms.PSet(
             type=cms.string("ValueMapAccessorBool"),

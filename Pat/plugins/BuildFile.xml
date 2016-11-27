@@ -7,6 +7,7 @@
 <use name="DataFormats/HepMCCandidate"/>
 <use name="SimGeneral/HepPDTRecord"/>
 <use name="SimDataFormats/GeneratorProducts"/>
+<use name="RecoEgamma/EgammaTools"/>
 <library   file="ElectronConverter.cc" name="ElectronConverterPlugin">
     <flags   EDM_PLUGIN="1"/>
 </library>

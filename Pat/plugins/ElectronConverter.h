@@ -20,12 +20,15 @@
 #include "EDM2PXLIO/Core/interface/CollectionClassConverter.h"
 
 #include "EDM2PXLIO/Provider/interface/PrimaryVertexProvider.h"
+#include "EDM2PXLIO/Provider/interface/RhoProvider.h"
 
 #include "DataFormats/PatCandidates/interface/Electron.h"
 
 #include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
 
 #include "DataFormats/VertexReco/interface/Vertex.h"
+
+#include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
 
 //#include "EDM2PXLIO/EDM2PXLIO/src/provider/EffectiveAreaIsolationProvider.h"
 
@@ -39,9 +42,12 @@ class ElectronConverter:
         typedef CollectionClassConverter<pat::Electron> Base;
     protected:
         PrimaryVertexProvider* _primaryVertexProvider;
-
+        RhoProvider* _rhoProvider;
+        std::shared_ptr<EffectiveAreas> _effAreas;
     public:
         ElectronConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);
+        
+        float calculateRelIso(const pat::Electron& patObject) const;
         
         virtual void convertObject(const pat::Electron& patObject, pxl::Particle* pxlParticle) const;
         
