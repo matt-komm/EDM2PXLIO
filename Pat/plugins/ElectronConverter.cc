@@ -51,11 +51,13 @@ void ElectronConverter::convertObject(const pat::Electron& patObject, pxl::Parti
     pxlParticle->setPdgNumber(patObject.pdgId());
     pxlParticle->setCharge(patObject.charge());
     
+    /*
     const std::vector<pat::Electron::IdPair>& electronIds = patObject.electronIDs();
     for (unsigned int i = 0; i < electronIds.size(); ++i)
     {
         pxlParticle->setUserRecord(electronIds[i].first,bool(electronIds[i].second));
     }
+    */
     
     pxlParticle->setUserRecord("isPF",patObject.isPF());
     pxlParticle->setUserRecord("ecalDrivenSeed",patObject.ecalDrivenSeed());

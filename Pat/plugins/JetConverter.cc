@@ -128,9 +128,9 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
     std::vector< math::XYZVector > eventShapeVectorYPhi(patObject.numberOfDaughters());
     
     //vector for pt-ordered daughters
-    std::vector<const reco::Candidate*> ptOrderedChargedCandidates(patObject.numberOfDaughters());
+    //std::vector<const reco::Candidate*> ptOrderedChargedCandidates(patObject.numberOfDaughters());
     //vector for dY-ordered daughters
-    std::vector<const reco::Candidate*> dROrderedChargedCandidates(patObject.numberOfDaughters());
+    //std::vector<const reco::Candidate*> dROrderedChargedCandidates(patObject.numberOfDaughters());
     
     for (unsigned int idaughter = 0; idaughter < patObject.numberOfDaughters(); ++idaughter)
     {
@@ -147,8 +147,8 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
         
         eventShapeVectorYPhi[idaughter].SetXYZ(dY,dPhi,0);
 
-        ptOrderedChargedCandidates[idaughter]=daughter;
-        dROrderedChargedCandidates[idaughter]=daughter;
+        //ptOrderedChargedCandidates[idaughter]=daughter;
+        //dROrderedChargedCandidates[idaughter]=daughter;
     }
     
     pullY/=patObject.pt();
@@ -161,13 +161,13 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
     EventShapeVariables eventShapeYPhi(eventShapeVectorYPhi);
     pxlParticle->setUserRecord("circularityYPhi",PRECISION(eventShapeYPhi.circularity()));
     
-    
+    /*
     std::function<double(const reco::Candidate* p1, const reco::Candidate* p2)> getDR=[](const reco::Candidate* p1, const reco::Candidate* p2)->double {
         const double dY = p1->rapidity()-p2->rapidity();
         const double dPhi = reco::deltaPhi(p1->phi(),p2->phi());
         return std::sqrt(dY*dY+dPhi*dPhi);
     };
-    
+
     //sort descending by pt
     std::sort(ptOrderedChargedCandidates.begin(),ptOrderedChargedCandidates.end(), [](const reco::Candidate* p1, const reco::Candidate* p2){ return p1->pt() > p2->pt(); });
     
@@ -194,7 +194,7 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
     }
     pxlParticle->setUserRecord("dr3ptRatio",PRECISION(dr3ptRatio));
     pxlParticle->setUserRecord("dr3drRatio",PRECISION(dr3drRatio));
-    
+    */
 
     
     /*
@@ -242,7 +242,7 @@ void JetConverter::convertObject(const pat::Jet& patObject, pxl::Particle* pxlPa
     const reco::Candidate::LorentzVector& rawP4 = patObject.correctedP4("Uncorrected");
     pxlParticle->setUserRecord("rawP4",pxl::LorentzVector(rawP4.px(),rawP4.py(),rawP4.pz(),rawP4.energy()));
     
-    
+    pxlParticle->setUserRecord("hadronFlavour",patObject.hadronFlavour());
     if (patObject.genParton())
     {
         pxlParticle->setUserRecord("partonFlavour",patObject.partonFlavour());

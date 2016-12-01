@@ -15,6 +15,14 @@ options.register(
 )
 
 options.register(
+    'reHLT',
+    False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "is data"
+)
+
+options.register(
     'isReRecoData',
     False,
     VarParsing.multiplicity.singleton,
@@ -163,8 +171,10 @@ else:
     process.source = cms.Source("PoolSource",
         inputCommands = cms.untracked.vstring("keep *", "drop LHERunInfoProduct_*_*_*"), #this produces otherwise a memleak
         fileNames = cms.untracked.vstring(
-            'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/00000/04615FE5-D844-E611-B5F0-0090FAA58B94.root'
+            #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/00000/04615FE5-D844-E611-B5F0-0090FAA58B94.root'
             #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext4-v1/00000/004A0552-3929-E611-BD44-0025905A48F0.root'
+            'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/MINIAODSIM/premix_withHLT_80X_mcRun2_asymptotic_v14_ext1-v1/80000/02236588-E871-E611-BDA6-D8D385AE85C0.root'
+            #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14_ext1-v1/20000/00071E92-6F55-E611-B68C-0025905A6066.root'
         ),
         #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
     )
@@ -173,22 +183,25 @@ else:
 if options.isData:
     process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(400) )
 else:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 process.DX_plain=cms.Path()
-process.DX_filtered=cms.Path()
-
+process.DX_filtered_mu=cms.Path()
+process.DX_filtered_ele=cms.Path()
 
 def addModule(m):
     process.DX_plain+=m
-    process.DX_filtered+=m
+    process.DX_filtered_mu+=m
+    process.DX_filtered_ele+=m
 
 
 ### selectors ###
-process.skimSequence = cms.Sequence()
-process.DX_filtered+=process.skimSequence
+skimMuSequence = cms.Sequence()
+process.DX_filtered_mu+=skimMuSequence
+skimEleSequence = cms.Sequence()
+process.DX_filtered_ele+=skimEleSequence
 
-def addFilter(inputTag,cutString,minN=None):
+def addFilter(seq,inputTag,cutString,minN=None):
     name = str(inputTag._InputTag__moduleLabel)
     
     if minN!=None:
@@ -200,7 +213,7 @@ def addFilter(inputTag,cutString,minN=None):
     )
     selectorName="select"+name
     setattr(process,selectorName,selector)
-    process.skimSequence+=selector
+    seq+=selector
   
     if minN!=None:
         selectorMinFilter = cms.EDFilter("CandViewCountFilter",
@@ -209,12 +222,16 @@ def addFilter(inputTag,cutString,minN=None):
         )
         selectorMinFilterName="minFilter"+name
         setattr(process,selectorMinFilterName,selectorMinFilter)
-        process.skimSequence+=selectorMinFilter
+        seq+=selectorMinFilter
     
 if not options.noFilter:
-    addFilter(cms.InputTag("slimmedMuons"),"pt>15.0",minN=1)
-    addFilter(cms.InputTag("slimmedJets"),"pt>15.0",minN=2)
-    addFilter(cms.InputTag("slimmedJets"),"pt>20.0",minN=1)
+    addFilter(skimMuSequence,cms.InputTag("slimmedMuons"),"pt>20.0",minN=1)
+    addFilter(skimMuSequence,cms.InputTag("patJetsReapplyJEC"),"pt>20.0",minN=2)
+    addFilter(skimMuSequence,cms.InputTag("patJetsReapplyJEC"),"pt>30.0",minN=1)
+    
+    addFilter(skimEleSequence,cms.InputTag("slimmedElectrons"),"pt>25.0",minN=1)
+    addFilter(skimEleSequence,cms.InputTag("patJetsReapplyJEC"),"pt>20.0",minN=2)
+    addFilter(skimEleSequence,cms.InputTag("patJetsReapplyJEC"),"pt>30.0",minN=1)
 else:
     print "will not apply any filtering!"
 
@@ -298,6 +315,7 @@ runMetCorAndUncFromMiniAOD(
     process,
     isData=options.isData
 )
+addModule(process.fullPatMetSequence)
 
 ### Q/G Likelihood ###
 
@@ -331,7 +349,7 @@ if not options.isData:
 
 
 
-filteredPath = "DX_filtered"
+filteredPath = ["DX_filtered_mu","DX_filtered_ele"]
 
 process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
     outFileName=cms.string("output.pxlio"),
@@ -361,11 +379,11 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
     names=cms.vstring("Electron"),
     effAreasConfigFile = cms.FileInPath("RecoEgamma/ElectronIdentification/data/Summer16/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt"),
     valueMaps=cms.PSet(
-        spring15eleIDVeto25ns = cms.PSet(
+        summer16eleIDVeto25ns = cms.PSet(
             type=cms.string("ValueMapAccessorBool"),
             src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-Summer16-80X-V1-veto")
         ),
-        spring15eleIDTight25ns = cms.PSet(
+        summer16eleIDTight25ns = cms.PSet(
             type=cms.string("ValueMapAccessorBool"),
             src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-Summer16-80X-V1-tight")
         ),
@@ -393,10 +411,12 @@ if options.isData:
     setattr(process.pat2pxlio,"patMET",cms.PSet(
         type=cms.string("METConverter"),
         srcs=cms.VInputTag(
-            cms.InputTag("slimmedMETs"),
+            #cms.InputTag("slimmedMETs","","RECO"),
+            cms.InputTag("patPFMetT1","","DX"),
         ),
         names=cms.vstring(
-            "MET",
+            #"MET_reco",
+            "MET"
         )
     ))
 else:
@@ -421,12 +441,16 @@ else:
     setattr(process.pat2pxlio,"patMET",cms.PSet(
         type=cms.string("METConverter"),
         srcs=cms.VInputTag(
-            cms.InputTag("patPFMetT1"),
+            #cms.InputTag("slimmedMETs","","RECO"),
+            cms.InputTag("patPFMetT1","","DX"),
+            
             #cms.InputTag("patPFMetT1JetEnDown"),
             #cms.InputTag("patPFMetT1JetEnUp"),
         ),
         names=cms.vstring(
-            "MET",
+            #"MET_reco",
+            "MET"
+            
             #"METEnDown",
             #"METEnUp"
         )
@@ -445,11 +469,19 @@ setattr(process.pat2pxlio,"puInfo",cms.PSet(
 ))
 
 #add trigger info
-setattr(process.pat2pxlio,"triggersHLT",cms.PSet(
-    type=cms.string("TriggerResultConverter"),
-    srcs=cms.VInputTag(cms.InputTag("TriggerResults","","HLT")),
-    regex=cms.vstring("HLT_Iso[0-9a-zA-z_]*","HLT_Ele[0-9a-zA-z_]*")
-))
+
+if options.reHLT:
+    setattr(process.pat2pxlio,"triggersHLT",cms.PSet(
+        type=cms.string("TriggerResultConverter"),
+        srcs=cms.VInputTag(cms.InputTag("TriggerResults","","HLT2")),
+        regex=cms.vstring("HLT_Iso[0-9a-zA-z_]*","HLT_Ele[0-9a-zA-z_]*")
+    ))
+else:
+    setattr(process.pat2pxlio,"triggersHLT",cms.PSet(
+        type=cms.string("TriggerResultConverter"),
+        srcs=cms.VInputTag(cms.InputTag("TriggerResults","","HLT")),
+        regex=cms.vstring("HLT_Iso[0-9a-zA-z_]*","HLT_Ele[0-9a-zA-z_]*")
+    ))
 
 setattr(process.pat2pxlio,"triggersDX",cms.PSet(
     type=cms.string("TriggerResultConverter"),
@@ -588,10 +620,9 @@ process.OUT = cms.OutputModule("PoolOutputModule",
     outputCommands = cms.untracked.vstring(
         "keep *",
         "drop *_*_*_DX",
-        "keep *_pseudoTop*_*_*"
+        #"keep *_pseudoTop*_*_*"
      ),
     dropMetaData = cms.untracked.string('ALL'),
 )
 process.endpath+= process.OUT
 '''
-
