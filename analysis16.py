@@ -183,7 +183,7 @@ else:
 if options.isData:
     process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(400) )
 else:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 
 process.DX_plain=cms.Path()
 process.DX_filtered_mu=cms.Path()
@@ -543,7 +543,7 @@ if (not options.isData) and options.addPL:
     print "Adding particle level objects"
     
     from TopQuarkAnalysis.TopEventProducers.producers.pseudoTop_cfi import pseudoTop
-    process.pseudoTop = pseudoTop.clone()
+    process.pseudoTop = pseudoTop.clone(maxJetEta = cms.double(10.0))
     addModule(process.pseudoTop)
     setattr(process.pat2pxlio,"ptLeptons",cms.PSet(
         type=cms.string("GenJetConverter"),
