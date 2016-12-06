@@ -121,12 +121,12 @@ if options.isData:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Spring16_25nsV6_DATA_AK4PFchs'), #should correspond to V6 (V3 is here an internal name inside the GT)
+                tag    = cms.string('JetCorrectorParametersCollection_Spring16_25nsV10All_DATA_AK4PFchs'), #should correspond to V6 (V3 is here an internal name inside the GT)
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
-        connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        #connect = cms.string('sqlite:Spring16_25nsV3_DATA.db')
+        #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+        connect = cms.string('sqlite:Spring16_25nsV10All_DATA.db')
     )
 else:
     process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2_v1'
@@ -138,12 +138,12 @@ else:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Spring16_25nsV6_MC_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Spring16_25nsV10_MC_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
-        connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        #connect = cms.string('sqlite:Spring16_25nsV3_MC.db')
+        #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+        connect = cms.string('sqlite:Spring16_25nsV10_MC.db')
     )
 
 process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'frontierDB')
@@ -229,7 +229,7 @@ if not options.noFilter:
     addFilter(skimMuSequence,cms.InputTag("patJetsReapplyJEC"),"pt>20.0",minN=2)
     addFilter(skimMuSequence,cms.InputTag("patJetsReapplyJEC"),"pt>30.0",minN=1)
     
-    addFilter(skimEleSequence,cms.InputTag("slimmedElectrons"),"pt>25.0",minN=1)
+    addFilter(skimEleSequence,cms.InputTag("slimmedElectrons"),"pt>20.0",minN=1)
     addFilter(skimEleSequence,cms.InputTag("patJetsReapplyJEC"),"pt>20.0",minN=2)
     addFilter(skimEleSequence,cms.InputTag("patJetsReapplyJEC"),"pt>30.0",minN=1)
 else:
@@ -543,7 +543,7 @@ if (not options.isData) and options.addPL:
     print "Adding particle level objects"
     
     from TopQuarkAnalysis.TopEventProducers.producers.pseudoTop_cfi import pseudoTop
-    process.pseudoTop = pseudoTop.clone(maxJetEta = cms.double(10.0))
+    process.pseudoTop = pseudoTop.clone(jetMaxEta = cms.double(10.0))
     addModule(process.pseudoTop)
     setattr(process.pat2pxlio,"ptLeptons",cms.PSet(
         type=cms.string("GenJetConverter"),

@@ -18,7 +18,7 @@ def addPltCollection(process,filteredPath,name,leptonCut,neutrinoCut,projectProm
     setattr(process,name+"dressedLeptons",cms.EDProducer("JetClustering",
         src=cms.InputTag(name+"promptLeptons"),
         jetR=cms.double(0.1),
-        minJetPt=cms.double(15.0)
+        minJetPt=cms.double(20.0)
     ))
     pSeq+=getattr(process,name+"dressedLeptons")
 

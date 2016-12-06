@@ -35,7 +35,6 @@ class METConverter:
         static const std::vector<std::pair<std::string,pat::MET::METUncertainty>> SYSVariations;
         
         std::vector<edm::InputTag> _metSignificanceInputTags;
-        std::vector<edm::EDGetTokenT<double>> _metSignificancesToken;
         
         bool _addSysVariations;
         
@@ -48,15 +47,6 @@ class METConverter:
             if (globalConfig.exists(_name))
 	        {
 	            const edm::ParameterSet& iConfig = globalConfig.getParameter<edm::ParameterSet>(_name);   
-	
-                if (iConfig.exists("metSignificances"))
-                {
-                    _metSignificanceInputTags = iConfig.getParameter<std::vector<edm::InputTag>>("metSignificances");
-                    for (unsigned int itag = 0; itag<_metSignificanceInputTags.size();++itag)
-                    {
-                        _metSignificancesToken.push_back(consumesCollector.consumes<double>(_metSignificanceInputTags[itag]));
-                    }
-                }
                 
                 if (iConfig.exists("addSysVariations"))
                 {
@@ -102,11 +92,6 @@ class METConverter:
                     
                     edm::Handle<double> metSigCollection;
                     
-                    if (_metSignificanceInputTags.size()==Base::size() && _metSignificanceInputTags[index].label().length()>0)
-                    {
-                        edmEvent->getByToken(_metSignificancesToken[index],metSigCollection);
-                    }
-                    
                     for (unsigned iparticle=0; iparticle< collection->size(); ++iparticle) 
                     {
                         const pat::MET& met = (*collection)[iparticle];
@@ -114,20 +99,20 @@ class METConverter:
                         pxlParticle->setName(Base::getCollectionName(index));
                         convertObject(met,pxlParticle);
                         
-                        if (_metSignificanceInputTags.size()==Base::size() && _metSignificanceInputTags[index].label().length()>0)
-                        {
-                            pxlParticle->setUserRecord("metSignificance",*metSigCollection);
-                        }
+                        pxlParticle->setUserRecord("metSignificance",met.metSignificance());
+                        //pxlParticle->setUserRecord("MuonEtFraction",met.MuonEtFraction());
+                        //pxlParticle->setUserRecord("NeutralEMFraction",met.NeutralEMFraction());
+                        //pxlParticle->setUserRecord("NeutralHadEtFraction",met.NeutralHadEtFraction());
                         
                         for (unsigned int ivm = 0; ivm < _valueMapAccessors.size(); ++ ivm)
                         {
                             _valueMapAccessors[ivm]->accessValues(collection.id(),collection->refAt(iparticle).key(), pxlParticle);
                         }
                         
+                        //pxlParticle->setUserRecord("uncorrectedPhi",PRECISION(met.uncorPhi()));
+                        //pxlParticle->setUserRecord("uncorrectedPt",PRECISION(met.uncorPt()));
                         if (_addSysVariations)
                         {
-                            pxlParticle->setUserRecord("uncorrectedPhi",PRECISION(met.uncorPhi()));
-                            pxlParticle->setUserRecord("uncorrectedPt",PRECISION(met.uncorPt()));
                             for (unsigned int isys = 0; isys < SYSVariations.size(); ++isys)
                             {
                                 try
