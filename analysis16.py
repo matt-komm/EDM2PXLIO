@@ -121,13 +121,12 @@ if options.isData and not options.isReRecoData:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                #tag    = cms.string('JetCorrectorParametersCollection_Spring16_25nsV10All_DATA_AK4PFchs'), #should correspond to V6 (V3 is here an internal name inside the GT)
-                tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016AllV2_DATA_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV2_DATA_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        connect = cms.string('sqlite:Spring16_23Sep2016AllV2_DATA.db')
+        connect = cms.string('sqlite:Summer16_23Sep2016AllV2_DATA.db')
     )
 elif options.isData and options.isReRecoData:
     process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v4'
@@ -138,13 +137,12 @@ elif options.isData and options.isReRecoData:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                #tag    = cms.string('JetCorrectorParametersCollection_Spring16_25nsV10All_DATA_AK4PFchs'), #should correspond to V6 (V3 is here an internal name inside the GT)
-                tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016AllV2_DATA_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV2_DATA_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        connect = cms.string('sqlite:Spring16_23Sep2016AllV2_DATA.db')
+        connect = cms.string('sqlite:Summer16_23Sep2016AllV2_DATA.db')
     )
 else:
     process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v6'
@@ -155,12 +153,12 @@ else:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016V2_MC_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016V2_MC_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        connect = cms.string('sqlite:Spring16_23Sep2016V2_MC.db')
+        connect = cms.string('sqlite:Summer16_23Sep2016V2_MC.db')
     )
     
     process.dbJES = cms.ESSource("PoolDBESSource",
@@ -217,7 +215,7 @@ else:
             #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/MINIAODSIM/premix_withHLT_80X_mcRun2_asymptotic_v14_ext1-v1/80000/02236588-E871-E611-BDA6-D8D385AE85C0.root'
             #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14_ext1-v1/20000/00071E92-6F55-E611-B68C-0025905A6066.root'
         
-            'root://cmsxrootd.fnal.gov//store/mc/RunIISummer16MiniAODv2/ST_t-channel_top_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/120000/109EB663-ADC9-E611-AB4F-02163E011627.root',
+            'root://cmsxrootd.fnal.gov//store/mc/RunIISummer16MiniAODv2/ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/120000/00688753-BCBD-E611-8B2F-001E67E71DDA.root',
         ),
         #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
     )
@@ -324,6 +322,16 @@ addModule(process.egmGsfElectronIDSequence)
 
 
 
+### Jet PU ID ###
+'''
+from RecoJets.JetProducers.PileupJetID_cfi import pileupJetId
+process.pileupJetIdUpdated = pileupJetId.clone(
+    jets=cms.InputTag("slimmedJets"),
+    inputIsCorrected=True,
+    applyJec=True,
+    vertexes=cms.InputTag("offlineSlimmedPrimaryVertices")
+)
+'''
 ### JEC ###
 
 from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import updatedPatJetCorrFactors
@@ -334,8 +342,9 @@ process.newJEC = updatedPatJetCorrFactors.clone(
         'L2Relative', 
         'L3Absolute'
     ],
-    payload = 'AK4PFchs' 
+    payload = 'AK4PFchs',
 )
+
 if options.isData:
     process.newJEC.levels.append('L2L3Residual')
     
@@ -346,6 +355,8 @@ process.slimmedJetsJEC = updatedPatJets.clone(
         cms.InputTag("newJEC")
     )
 )
+#process.slimmedJetsJEC.userData.userFloats.src += ['pileupJetIdUpdated:fullDiscriminant']
+
 process.reappliedJEC = cms.Sequence(process.newJEC*process.slimmedJetsJEC)
 
 ### JEC uncertainties
@@ -534,7 +545,7 @@ setattr(process.pat2pxlio,"muons",cms.PSet(
     srcs=cms.VInputTag(cms.InputTag("slimmedMuons")),
     names=cms.vstring("Muon"),
     valueMaps = cms.PSet(),
-    select=cms.string("pt>10.0"),
+    select=cms.string("pt>15.0"),
 ))
 
 setattr(process.pat2pxlio,"electrons",cms.PSet(
@@ -553,7 +564,7 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
         ),
         
     ),
-    select=cms.string("pt>10.0"),
+    select=cms.string("pt>15.0"),
 ))
 
 #add jets/met
