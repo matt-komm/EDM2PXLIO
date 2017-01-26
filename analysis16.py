@@ -121,12 +121,14 @@ if options.isData and not options.isReRecoData:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV2_DATA_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV3_DATA_AK4PFchs'),
+                #tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016AllV2_DATA_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        connect = cms.string('sqlite:Summer16_23Sep2016AllV2_DATA.db')
+        connect = cms.string('sqlite:Summer16_23Sep2016AllV3_DATA.db'),
+        #connect = cms.string('sqlite:Spring16_23Sep2016AllV2_DATA.db')
     )
 elif options.isData and options.isReRecoData:
     process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v4'
@@ -137,12 +139,14 @@ elif options.isData and options.isReRecoData:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV2_DATA_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV3_DATA_AK4PFchs'),
+                #tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016AllV2_DATA_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        connect = cms.string('sqlite:Summer16_23Sep2016AllV2_DATA.db')
+        connect = cms.string('sqlite:Summer16_23Sep2016AllV3_DATA.db'),
+        #connect = cms.string('sqlite:Spring16_23Sep2016AllV2_DATA.db')
     )
 else:
     process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v6'
@@ -153,12 +157,14 @@ else:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016V2_MC_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016V3_MC_AK4PFchs'),
+                #tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016V2_MC_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        connect = cms.string('sqlite:Summer16_23Sep2016V2_MC.db')
+        connect = cms.string('sqlite:Summer16_23Sep2016V3_MC.db')
+        #connect = cms.string('sqlite:Spring16_23Sep2016V2_MC.db')
     )
     
     process.dbJES = cms.ESSource("PoolDBESSource",
@@ -198,13 +204,19 @@ if options.isData and not options.isReRecoData:
             'root://cmsxrootd.fnal.gov//store/data/Run2016H/SingleMuon/MINIAOD/PromptReco-v2/000/281/382/00000/8A8C3000-F882-E611-80C6-02163E014266.root',
         ),
         #lumisToProcess = cms.untracked.VLuminosityBlockRange('273158:3-273158:13'),
+        
     )
 elif options.isData and options.isReRecoData:
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-            'root://cmsxrootd.fnal.gov//store/data/Run2016G/SingleMuon/MINIAOD/23Sep2016-v1/1110000/A2C0F697-B19C-E611-A4D8-F04DA275BFF2.root'
+            #'root://cmsxrootd.fnal.gov//store/data/Run2016G/SingleMuon/MINIAOD/23Sep2016-v1/1110000/A2C0F697-B19C-E611-A4D8-F04DA275BFF2.root'
+            
+            #sync
+            #'/store/data/Run2016H/SingleMuon/MINIAOD/PromptReco-v3/000/284/040/00000/0848D330-889F-E611-8935-02163E01444D.root'
+            '/store/data/Run2016B/SingleMuon/MINIAOD/23Sep2016-v3/00000/A2EB30F3-4499-E611-91D6-A0369F7F92E8.root ',
         )
         #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
+        
     )
 else:
     process.source = cms.Source("PoolSource",
@@ -214,9 +226,14 @@ else:
             #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext4-v1/00000/004A0552-3929-E611-BD44-0025905A48F0.root'
             #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/MINIAODSIM/premix_withHLT_80X_mcRun2_asymptotic_v14_ext1-v1/80000/02236588-E871-E611-BDA6-D8D385AE85C0.root'
             #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14_ext1-v1/20000/00071E92-6F55-E611-B68C-0025905A6066.root'
-        
-            'root://cmsxrootd.fnal.gov//store/mc/RunIISummer16MiniAODv2/ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/120000/00688753-BCBD-E611-8B2F-001E67E71DDA.root',
-        ),
+            #'root://cmsxrootd.hep.wisc.edu//store/mc/RunIISummer16MiniAODv2/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/120000/08CB2C65-82BC-E611-8BCE-5065F3810301.root'
+            #'root://cmsxrootd.fnal.gov//store/mc/RunIISummer16MiniAODv2/ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/120000/00688753-BCBD-E611-8B2F-001E67E71DDA.root',
+            #'root://sbgse1.in2p3.fr//store/mc/RunIISummer16MiniAODv2/QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/2ADA07B4-D2B1-E611-A716-0CC47A7C351E.root',
+	
+	        #sync
+	        '/store/mc/RunIISummer16MiniAODv2/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/60000/A059F3BF-79B9-E611-B81C-0CC47A7FC412.root'
+	),
+        #skipEvents = cms.untracked.uint32(24900)
         #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
     )
     
@@ -225,6 +242,11 @@ if options.isData:
     process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 else:
     process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+    
+### bad muon filter ###
+process.load("RecoMET.METFilters.badGlobalMuonTaggersMiniAOD_cff")
+process.DX_hasBadCloneMuons = cms.Path(process.cloneGlobalMuonTagger)
+process.DX_hasBadMuons = cms.Path(process.badGlobalMuonTagger)
 
 process.DX_plain=cms.Path()
 process.DX_filtered_mu=cms.Path()
@@ -319,7 +341,6 @@ for eleID in [
     setupAllVIDIdsInModule(process,eleID,setupVIDElectronSelection)
 
 addModule(process.egmGsfElectronIDSequence)
-
 
 
 ### Jet PU ID ###
@@ -517,7 +538,7 @@ if not options.isData:
     )
 
     process.eventAndPuInfo = cms.EDAnalyzer("EventInfoCollector",
-        GenEventInfo=cms.InputTag("generator","","SIM"),
+        GenEventInfo=cms.InputTag("generator"),
         PileupSummaryInfo=cms.InputTag("slimmedAddPileupInfo")
     )
     process.DX_plain+=process.eventAndPuInfo
@@ -544,8 +565,18 @@ setattr(process.pat2pxlio,"muons",cms.PSet(
     type=cms.string("MuonConverter"),
     srcs=cms.VInputTag(cms.InputTag("slimmedMuons")),
     names=cms.vstring("Muon"),
-    valueMaps = cms.PSet(),
-    select=cms.string("pt>15.0"),
+    valueMaps = cms.PSet(
+        isBadMuon = cms.PSet(
+            type=cms.string("ValueMapAccessorBool"),
+            src=cms.InputTag("badGlobalMuonTagger","bad")
+        ),
+        isBadCloneMuon = cms.PSet(
+            type=cms.string("ValueMapAccessorBool"),
+            src=cms.InputTag("cloneGlobalMuonTagger","bad")
+        )
+    ),
+    select=cms.string("pt>10.0"), #keep at 10 for veto
+    
 ))
 
 setattr(process.pat2pxlio,"electrons",cms.PSet(
@@ -564,7 +595,7 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
         ),
         
     ),
-    select=cms.string("pt>15.0"),
+    select=cms.string("pt>15.0"), #keep at 15 for veto
 ))
 
 #add jets/met
@@ -612,8 +643,8 @@ else:
             #cms.InputTag("shiftedPatJetEnUp"), # this cannot be used - jets are already cleaned against leptons for T1
         ),
         names=cms.vstring(
-            "Jetunsmeared",
             "Jet",
+            "Jetsmeared",
             
             "JetEnUp",
             "JetEnDown",
@@ -718,8 +749,9 @@ if not options.isData:
         type=cms.string("GenParticleConverter"),
         srcs=cms.VInputTag(cms.InputTag("lessGenParticles") if not options.noGen else ()),
         targetEventViews=cms.vstring("Generated"),
-        LHEEvent=cms.InputTag("externalLHEProducer" if not options.noLHE else ""),
-        GenEventInfo=cms.InputTag("generator","","SIM"),
+        LHEEvent=cms.InputTag("externalLHEProducer"),
+        skipLHEweights = cms.bool(options.noLHE),
+        GenEventInfo=cms.InputTag("generator"),
         filterPaths=cms.vstring(filteredPath),
     ))
 

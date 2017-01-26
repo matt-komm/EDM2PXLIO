@@ -8,7 +8,8 @@ GenParticleConverter::GenParticleConverter(const std::string& name, const edm::P
     Base(name,globalConfig,consumesCollector),
     _genEventInfoProductInputTag(),
     _lheEventProductInputTag(),
-    _useNameDB(true)
+    _useNameDB(true),
+    _skipLHEweights(false)
 {
     //TODO: does not work yet
     Base::setDefaultEventView("Generated");
@@ -29,6 +30,11 @@ GenParticleConverter::GenParticleConverter(const std::string& name, const edm::P
         
         if (iConfig.exists("LHEEvent"))
         {
+            if (iConfig.exists("skipLHEweights"))
+            {
+                _skipLHEweights = iConfig.getParameter<bool>("skipLHEweights");
+            }
+            
             _lheEventProductInputTag = iConfig.getParameter<edm::InputTag>("LHEEvent");
             _lheEventProductToken = consumesCollector.consumes<LHEEventProduct>(_lheEventProductInputTag);
         }
@@ -82,10 +88,64 @@ void GenParticleConverter::convert(const edm::Event* edmEvent, const edm::EventS
         edm::Handle<LHEEventProduct> lheEventProduct;
         if (edmEvent->getByToken(_lheEventProductToken,lheEventProduct))
         {
-            const std::vector<LHEEventProduct::WGT>& weights = lheEventProduct->weights();
-            for (unsigned int iweight = 0; iweight < weights.size(); ++iweight)
+            //count number of partons from LHE (not pruned particles!) for merging
+            const lhef::HEPEUP& lheRecord = lheEventProduct->hepeup();
+            std::vector<unsigned short> partonsByFlavor(6,0); //0=gluon ... 5=bottom
+            std::vector<unsigned short> leptonsByFlavor(3,0);
+            unsigned short totalPartons = 0;
+            unsigned short totalLeptons = 0;
+            for (unsigned int iParticle = 0; iParticle < lheRecord.ISTUP.size(); ++ iParticle)
             {
-                pxlEvent->setUserRecord("lheweight_"+weights[iweight].id,weights[iweight].wgt);
+                if (lheRecord.ISTUP[iParticle]==1)
+                {
+                    int absPdgId = std::abs(lheRecord.IDUP[iParticle]);
+                    if (absPdgId==21)
+                    {
+                        partonsByFlavor[0]+=1;
+                        totalPartons+=1;
+                    }
+                    else if (absPdgId<=5)
+                    {
+                        partonsByFlavor[absPdgId]+=1;
+                        totalPartons+=1;
+                    }
+                    
+                    else if (absPdgId==11)
+                    {
+                        leptonsByFlavor[0]+=1;
+                        totalLeptons+=1;
+                    }
+                    else if (absPdgId==13)
+                    {
+                        leptonsByFlavor[1]+=1;
+                        totalLeptons+=1;
+                    }
+                    else if (absPdgId==15)
+                    {
+                        leptonsByFlavor[2]+=1;
+                        totalLeptons+=1;
+                    }
+                }
+            }
+            pxlEvent->setUserRecord("nparton",totalPartons);
+            for (unsigned int iId = 0; iId < partonsByFlavor.size(); ++iId)
+            {
+                pxlEvent->setUserRecord("nparton"+std::to_string(iId),partonsByFlavor[iId]);
+            }
+            
+            pxlEvent->setUserRecord("nlepton",totalLeptons);
+            for (unsigned int iId = 0; iId < leptonsByFlavor.size(); ++iId)
+            {
+                pxlEvent->setUserRecord("nlepton"+std::to_string(iId),leptonsByFlavor[iId]);
+            }
+            
+            if (!_skipLHEweights)
+            {
+                const std::vector<LHEEventProduct::WGT>& weights = lheEventProduct->weights();
+                for (unsigned int iweight = 0; iweight < weights.size(); ++iweight)
+                {
+                    pxlEvent->setUserRecord("lheweight_"+weights[iweight].id,weights[iweight].wgt);
+                }
             }
         }
     }

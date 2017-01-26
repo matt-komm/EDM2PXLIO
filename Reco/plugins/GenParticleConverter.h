@@ -43,6 +43,7 @@ class GenParticleConverter:
         edm::InputTag _lheEventProductInputTag;
         edm::EDGetTokenT<LHEEventProduct>  _lheEventProductToken;
         bool _useNameDB;
+        bool _skipLHEweights;
 
     public:
         GenParticleConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);
