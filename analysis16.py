@@ -593,6 +593,10 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
             type=cms.string("ValueMapAccessorBool"),
             src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-Summer16-80X-V1-tight")
         ),
+        summer16eleHTLPreselection = cms.PSet(
+            type=cms.string("ValueMapAccessorBool"),
+            src=cms.InputTag("egmGsfElectronIDs:cutBasedElectronHLTPreselection-Summer16-V1")
+        )
         
     ),
     select=cms.string("pt>15.0"), #keep at 15 for veto
