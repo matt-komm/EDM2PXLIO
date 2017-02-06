@@ -108,9 +108,9 @@ class METConverter:
                         {
                             _valueMapAccessors[ivm]->accessValues(collection.id(),collection->refAt(iparticle).key(), pxlParticle);
                         }
-                        
+       
                         //pxlParticle->setUserRecord("uncorrectedPhi",PRECISION(met.uncorPhi()));
-                        //pxlParticle->setUserRecord("uncorrectedPt",PRECISION(met.uncorPt()));
+                        //pxlParticle->setUserRecord("uncorPt",PRECISION(met.corPt(pat::MET::Raw)));
                         if (_addSysVariations)
                         {
                             for (unsigned int isys = 0; isys < SYSVariations.size(); ++isys)

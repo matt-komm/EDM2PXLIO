@@ -121,14 +121,14 @@ if options.isData and not options.isReRecoData:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV3_DATA_AK4PFchs'),
-                #tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016AllV2_DATA_AK4PFchs'),
+                #tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV3_DATA_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016AllV2_DATA_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        connect = cms.string('sqlite:Summer16_23Sep2016AllV3_DATA.db'),
-        #connect = cms.string('sqlite:Spring16_23Sep2016AllV2_DATA.db')
+        #connect = cms.string('sqlite:Summer16_23Sep2016AllV3_DATA.db'),
+        connect = cms.string('sqlite:Spring16_23Sep2016AllV2_DATA.db')
     )
 elif options.isData and options.isReRecoData:
     process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v4'
@@ -139,14 +139,14 @@ elif options.isData and options.isReRecoData:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV3_DATA_AK4PFchs'),
-                #tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016AllV2_DATA_AK4PFchs'),
+                #tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV3_DATA_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016AllV2_DATA_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        connect = cms.string('sqlite:Summer16_23Sep2016AllV3_DATA.db'),
-        #connect = cms.string('sqlite:Spring16_23Sep2016AllV2_DATA.db')
+        #connect = cms.string('sqlite:Summer16_23Sep2016AllV3_DATA.db'),
+        connect = cms.string('sqlite:Spring16_23Sep2016AllV2_DATA.db')
     )
 else:
     process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v6'
@@ -157,14 +157,14 @@ else:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016V3_MC_AK4PFchs'),
-                #tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016V2_MC_AK4PFchs'),
+                #tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016V3_MC_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016V2_MC_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        connect = cms.string('sqlite:Summer16_23Sep2016V3_MC.db')
-        #connect = cms.string('sqlite:Spring16_23Sep2016V2_MC.db')
+        #connect = cms.string('sqlite:Summer16_23Sep2016V3_MC.db')
+        connect = cms.string('sqlite:Spring16_23Sep2016V2_MC.db')
     )
     
     process.dbJES = cms.ESSource("PoolDBESSource",
@@ -239,9 +239,9 @@ else:
     
     
 if options.isData:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 else:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(20) )
     
 ### bad muon filter ###
 process.load("RecoMET.METFilters.badGlobalMuonTaggersMiniAOD_cff")
@@ -337,6 +337,7 @@ from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
 switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
 for eleID in [
     'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Summer16_80X_V1_cff',
+    'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronHLTPreselecition_Summer16_V1_cff'
 ]:
     setupAllVIDIdsInModule(process,eleID,setupVIDElectronSelection)
 
@@ -517,6 +518,44 @@ addModule(process.fullPatMetSequence)
 
 ### MET Significance ###
 
+
+### Match Trigger ###
+
+process.matchMuonTriggers = cms.EDProducer("TriggerMatcherMuons",
+    triggerResult = cms.InputTag("TriggerResults","","HLT"),
+    triggerObjects = cms.InputTag("selectedPatTrigger"),
+    recoObjects = cms.InputTag("slimmedMuons"),
+    dR = cms.double(0.1),
+    flags = cms.PSet(
+        IsoMu22 = cms.string("HLT_IsoMu22_v[0-9]+"),
+        IsoTkMu22 = cms.string("HLT_IsoTkMu22_v[0-9]+"),
+    
+        IsoMu24 = cms.string("HLT_IsoMu24_v[0-9]+"),
+        IsoTkMu24 = cms.string("HLT_IsoTkMu24_v[0-9]+"),
+        
+        IsoMu27 = cms.string("HLT_IsoMu27_v[0-9]+"),
+        IsoTkMu27 = cms.string("HLT_IsoTkMu27_v[0-9]+"),
+    )
+)
+addModule(process.matchMuonTriggers)
+
+
+process.matchElectronTriggers = cms.EDProducer("TriggerMatcherElectrons",
+    triggerResult = cms.InputTag("TriggerResults","","HLT"),
+    triggerObjects = cms.InputTag("selectedPatTrigger"),
+    recoObjects = cms.InputTag("slimmedElectrons"),
+    dR = cms.double(0.1),
+    flags = cms.PSet(
+        Ele27WPLoose = cms.string("HLT_Ele27_eta2p1_WPLoose_Gsf_v[0-9]+"),
+        Ele27WPTight = cms.string("HLT_Ele27_eta2p1_WPTight_Gsf_v[0-9]+"),
+        
+        Ele30WPLoose = cms.string("HLT_Ele30_eta2p1_WPLoose_Gsf_v[0-9]+"),
+        Ele30WPTight = cms.string("HLT_Ele30_eta2p1_WPTight_Gsf_v[0-9]+"),
+
+    )
+)
+addModule(process.matchElectronTriggers)
+
 ### PV selection ###
 
 process.goodVertexFilter = cms.EDFilter("GoodVertexFilter",
@@ -566,14 +605,14 @@ setattr(process.pat2pxlio,"muons",cms.PSet(
     srcs=cms.VInputTag(cms.InputTag("slimmedMuons")),
     names=cms.vstring("Muon"),
     valueMaps = cms.PSet(
-        isBadMuon = cms.PSet(
-            type=cms.string("ValueMapAccessorBool"),
-            src=cms.InputTag("badGlobalMuonTagger","bad")
-        ),
-        isBadCloneMuon = cms.PSet(
-            type=cms.string("ValueMapAccessorBool"),
-            src=cms.InputTag("cloneGlobalMuonTagger","bad")
-        )
+        IsoMu22 = cms.PSet(type=cms.string("ValueMapAccessorBool"), src=cms.InputTag("matchMuonTriggers","IsoMu22")),
+        IsoTkMu22 = cms.PSet(type=cms.string("ValueMapAccessorBool"), src=cms.InputTag("matchMuonTriggers","IsoTkMu22")),
+
+        IsoMu24 = cms.PSet(type=cms.string("ValueMapAccessorBool"), src=cms.InputTag("matchMuonTriggers","IsoMu24")),
+        IsoTkMu24 = cms.PSet(type=cms.string("ValueMapAccessorBool"), src=cms.InputTag("matchMuonTriggers","IsoTkMu24")),
+    
+        IsoMu27 = cms.PSet(type=cms.string("ValueMapAccessorBool"), src=cms.InputTag("matchMuonTriggers","IsoMu27")),
+        IsoTkMu27 = cms.PSet(type=cms.string("ValueMapAccessorBool"), src=cms.InputTag("matchMuonTriggers","IsoTkMu27")),
     ),
     select=cms.string("pt>10.0"), #keep at 10 for veto
     
@@ -585,6 +624,11 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
     names=cms.vstring("Electron"),
     effAreasConfigFile = cms.FileInPath("RecoEgamma/ElectronIdentification/data/Summer16/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt"),
     valueMaps=cms.PSet(
+        Ele27WPLoose = cms.PSet(type=cms.string("ValueMapAccessorBool"), src=cms.InputTag("matchElectronTriggers","Ele27WPLoose")),
+        Ele27WPTight = cms.PSet(type=cms.string("ValueMapAccessorBool"), src=cms.InputTag("matchElectronTriggers","Ele27WPTight")),
+        Ele30WPLoose = cms.PSet(type=cms.string("ValueMapAccessorBool"), src=cms.InputTag("matchElectronTriggers","Ele30WPLoose")),
+        Ele30WPTight = cms.PSet(type=cms.string("ValueMapAccessorBool"), src=cms.InputTag("matchElectronTriggers","Ele30WPTight")),
+    
         summer16eleIDVeto25ns = cms.PSet(
             type=cms.string("ValueMapAccessorBool"),
             src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-Summer16-80X-V1-veto")
@@ -595,7 +639,7 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
         ),
         summer16eleHTLPreselection = cms.PSet(
             type=cms.string("ValueMapAccessorBool"),
-            src=cms.InputTag("egmGsfElectronIDs:cutBasedElectronHLTPreselection-Summer16-V1")
+            src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronHLTPreselection-Summer16-V1")
         )
         
     ),
@@ -622,11 +666,13 @@ if options.isData:
     setattr(process.pat2pxlio,"patMET",cms.PSet(
         type=cms.string("METConverter"),
         srcs=cms.VInputTag(
-            #cms.InputTag("slimmedMETs","","RECO"),
-            cms.InputTag("patPFMetT1","","DX"),
+            cms.InputTag("slimmedMETs","","RECO"),
+            #cms.InputTag("patPFMetT1","","DX"),
+            cms.InputTag("slimmedMETs","","DX"),
         ),
         names=cms.vstring(
-            #"MET_reco",
+            "MET_reco",
+            #"MET",
             "MET"
         )
     ))
@@ -718,7 +764,7 @@ else:
     setattr(process.pat2pxlio,"triggersHLT",cms.PSet(
         type=cms.string("TriggerResultConverter"),
         srcs=cms.VInputTag(cms.InputTag("TriggerResults","","HLT")),
-        regex=cms.vstring("HLT_Iso[0-9a-zA-z_]*","HLT_Ele[0-9a-zA-z_]*")
+        regex=cms.vstring("HLT_IsoMu[2-9][0-9a-zA-z_]*","HLT_IsoTkMu[2-9][0-9a-zA-z_]*","HLT_Ele[2-9][0-9a-zA-z_]*")
     ))
 
 setattr(process.pat2pxlio,"triggersDX",cms.PSet(
@@ -853,7 +899,7 @@ process.OUT = cms.OutputModule("PoolOutputModule",
     outputCommands = cms.untracked.vstring(
         "keep *",
         "drop *_*_*_DX",
-        #"keep *_pseudoTop*_*_*"
+        "keep *_matchMuonTriggers_*_*"
      ),
     dropMetaData = cms.untracked.string('ALL'),
 )
