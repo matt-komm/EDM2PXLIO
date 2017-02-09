@@ -32,8 +32,8 @@ class PileupSummaryInfoConverter:
     private:
         typedef CollectionConverter<std::vector<PileupSummaryInfo>> Base;
     protected:
-        PrimaryVertexProvider* _primaryVertexProvider;
-        RhoProvider* _rhoProvider;
+        std::shared_ptr<PrimaryVertexProvider> _primaryVertexProvider;
+        std::shared_ptr<RhoProvider> _rhoProvider;
     public:
         PileupSummaryInfoConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);    
         virtual void convert(const edm::Event* edmEvent, const edm::EventSetup* iSetup, pxl::Event* pxlEvent) const;

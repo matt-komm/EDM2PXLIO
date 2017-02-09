@@ -30,6 +30,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 
 class EDM2PXLIO:
@@ -44,13 +45,13 @@ class EDM2PXLIO:
 
     private:
         
-        pxl::OutputFile* _pxlFile;
+        std::unique_ptr<pxl::OutputFile> _pxlFile;
         std::string _processName;
         
-        std::vector<edm2pxlio::Converter*> _converters; 
-        std::vector<edm2pxlio::Provider*> _providers;
+        std::vector<std::shared_ptr<edm2pxlio::Converter>> _converters; 
+        std::vector<std::shared_ptr<edm2pxlio::Provider>> _providers;
         
-        edm2pxlio::FilterPathProvider* _filterPathProvider;
+        std::shared_ptr<edm2pxlio::FilterPathProvider> _filterPathProvider;
         std::vector<std::string> _filterPaths;
         
         
@@ -80,10 +81,10 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& globalConfig):
     
 
     if (globalConfig.exists("outFileName")) {
-        _pxlFile = new pxl::OutputFile(globalConfig.getParameter<std::string>("outFileName"));
+        _pxlFile.reset(new pxl::OutputFile(globalConfig.getParameter<std::string>("outFileName")));
     } else {
         edm::LogWarning("no output file name configured") << "default name 'out.pxlio' will be used";
-        _pxlFile = new pxl::OutputFile("out.pxlio");
+        _pxlFile.reset(new pxl::OutputFile("out.pxlio"));
     }
     _pxlFile->setCompressionMode(3);
     _pxlFile->setMaxNObjects(2000);
@@ -103,7 +104,7 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& globalConfig):
         if (localConf.exists("type"))
         {
             std::string typeName = localConf.getParameter<std::string>("type");
-            edm2pxlio::Converter* converter = edm2pxlio::ConverterFactory::get()->tryToCreate(typeName,converterName,globalConfig,consumeCollect);
+            std::shared_ptr<edm2pxlio::Converter> converter(edm2pxlio::ConverterFactory::get()->tryToCreate(typeName,converterName,globalConfig,consumeCollect));
             if (converter)
             {
                 _converters.push_back(converter);
@@ -177,7 +178,6 @@ EDM2PXLIO::endJob()
 {
     _pxlFile->writeFileSection();
     _pxlFile->close();
-    delete _pxlFile;
 }
 
 // ------------ method called when starting to processes a run  ------------

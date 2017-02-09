@@ -35,15 +35,16 @@ namespace edm2pxlio
 {
 
 template<class Class>
-class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
+class CollectionClassConverter: 
+    public CollectionConverter<edm::View<Class>>
 {
     private:
         typedef CollectionConverter<edm::View<Class>> Base;
     protected:
-        std::vector<std::pair<std::string,StringObjectFunction<Class>*>> _userRecordsFcts;
-        StringCutObjectSelector<Class>* _cutFct;
-        std::vector<ValueMapAccessor*> _valueMapAccessors;
-        edm2pxlio::FilterPathProvider* _filterPathProvider;
+        std::vector<std::pair<std::string,std::shared_ptr<StringObjectFunction<Class>>>> _userRecordsFcts;
+        std::shared_ptr<StringCutObjectSelector<Class>> _cutFct;
+        std::vector<std::shared_ptr<ValueMapAccessor>> _valueMapAccessors;
+        std::shared_ptr<edm2pxlio::FilterPathProvider> _filterPathProvider;
         std::vector<std::string> _filterPaths;
 
     public:
@@ -64,13 +65,13 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
                     const std::vector<std::string> userRecordNames = urConfig.getParameterNamesForType<std::string>();
                     for (unsigned int iur=0; iur< userRecordNames.size(); ++iur)
                     {
-                        StringObjectFunction<Class>* fct = new StringObjectFunction<Class>(urConfig.getParameter<std::string>(userRecordNames[iur]),true);
-                        _userRecordsFcts.push_back(std::make_pair(userRecordNames[iur],fct));
+                        std::shared_ptr<StringObjectFunction<Class>> fct(new StringObjectFunction<Class>(urConfig.getParameter<std::string>(userRecordNames[iur]),true));
+                        _userRecordsFcts.emplace_back(std::make_pair(userRecordNames[iur],fct));
                     }
                 }
                 if (iConfig.exists("select"))
                 {
-                    _cutFct = new StringCutObjectSelector<Class>(iConfig.getParameter<std::string>("select"), true);
+                    _cutFct.reset(new StringCutObjectSelector<Class>(iConfig.getParameter<std::string>("select"), true));
                 }
                 
                 if (iConfig.exists("valueMaps"))
@@ -83,10 +84,10 @@ class CollectionClassConverter: public CollectionConverter<edm::View<Class>>
                         const edm::ParameterSet& vmConfig = vmConfigs.getParameter<edm::ParameterSet>(vmPluginName);
                         const std::string vmPluginType = vmConfig.getParameter<std::string>("type");
                         
-                        edm2pxlio::ValueMapAccessor* accessor = edm2pxlio::ValueMapAccessorFactory::get()->tryToCreate(vmPluginType,vmPluginName,vmConfig,consumesCollector);
+                        std::shared_ptr<edm2pxlio::ValueMapAccessor> accessor(edm2pxlio::ValueMapAccessorFactory::get()->tryToCreate(vmPluginType,vmPluginName,vmConfig,consumesCollector));
                         if (accessor)
                         {
-                            _valueMapAccessors.push_back(accessor);
+                            _valueMapAccessors.emplace_back(accessor);
                         }
                         else
                         {

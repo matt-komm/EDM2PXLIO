@@ -121,14 +121,14 @@ if options.isData and not options.isReRecoData:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                #tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV3_DATA_AK4PFchs'),
-                tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016AllV2_DATA_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV3_DATA_AK4PFchs'),
+                #tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016AllV2_DATA_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        #connect = cms.string('sqlite:Summer16_23Sep2016AllV3_DATA.db'),
-        connect = cms.string('sqlite:Spring16_23Sep2016AllV2_DATA.db')
+        connect = cms.string('sqlite:Summer16_23Sep2016AllV3_DATA.db'),
+        #connect = cms.string('sqlite:Spring16_23Sep2016AllV2_DATA.db')
     )
 elif options.isData and options.isReRecoData:
     process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v4'
@@ -139,14 +139,14 @@ elif options.isData and options.isReRecoData:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                #tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV3_DATA_AK4PFchs'),
-                tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016AllV2_DATA_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV3_DATA_AK4PFchs'),
+                #tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016AllV2_DATA_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        #connect = cms.string('sqlite:Summer16_23Sep2016AllV3_DATA.db'),
-        connect = cms.string('sqlite:Spring16_23Sep2016AllV2_DATA.db')
+        connect = cms.string('sqlite:Summer16_23Sep2016AllV3_DATA.db'),
+        #connect = cms.string('sqlite:Spring16_23Sep2016AllV2_DATA.db')
     )
 else:
     process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v6'
@@ -157,14 +157,14 @@ else:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                #tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016V3_MC_AK4PFchs'),
-                tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016V2_MC_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016V3_MC_AK4PFchs'),
+                #tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016V2_MC_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        #connect = cms.string('sqlite:Summer16_23Sep2016V3_MC.db')
-        connect = cms.string('sqlite:Spring16_23Sep2016V2_MC.db')
+        connect = cms.string('sqlite:Summer16_23Sep2016V3_MC.db')
+        #connect = cms.string('sqlite:Spring16_23Sep2016V2_MC.db')
     )
     
     process.dbJES = cms.ESSource("PoolDBESSource",
@@ -239,9 +239,9 @@ else:
     
     
 if options.isData:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
 else:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(20) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
     
 ### bad muon filter ###
 process.load("RecoMET.METFilters.badGlobalMuonTaggersMiniAOD_cff")
@@ -551,6 +551,10 @@ process.matchElectronTriggers = cms.EDProducer("TriggerMatcherElectrons",
         
         Ele30WPLoose = cms.string("HLT_Ele30_eta2p1_WPLoose_Gsf_v[0-9]+"),
         Ele30WPTight = cms.string("HLT_Ele30_eta2p1_WPTight_Gsf_v[0-9]+"),
+        
+        Ele32WPLoose = cms.string("HLT_Ele32_eta2p1_WPLoose_Gsf_v[0-9]+"),
+        Ele32WPTight = cms.string("HLT_Ele32_eta2p1_WPTight_Gsf_v[0-9]+"),
+
 
     )
 )
@@ -628,6 +632,8 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
         Ele27WPTight = cms.PSet(type=cms.string("ValueMapAccessorBool"), src=cms.InputTag("matchElectronTriggers","Ele27WPTight")),
         Ele30WPLoose = cms.PSet(type=cms.string("ValueMapAccessorBool"), src=cms.InputTag("matchElectronTriggers","Ele30WPLoose")),
         Ele30WPTight = cms.PSet(type=cms.string("ValueMapAccessorBool"), src=cms.InputTag("matchElectronTriggers","Ele30WPTight")),
+        Ele32WPLoose = cms.PSet(type=cms.string("ValueMapAccessorBool"), src=cms.InputTag("matchElectronTriggers","Ele32WPLoose")),
+        Ele32WPTight = cms.PSet(type=cms.string("ValueMapAccessorBool"), src=cms.InputTag("matchElectronTriggers","Ele32WPTight")),
     
         summer16eleIDVeto25ns = cms.PSet(
             type=cms.string("ValueMapAccessorBool"),
@@ -846,6 +852,63 @@ if (not options.isData) and options.addPL:
         filterPaths=cms.vstring(filteredPath),
     ))
     
+
+    ### new RIVET-based producer ###
+    
+    process.genMerger = cms.EDProducer("MergedGenParticleProducer",
+        inputPruned = cms.InputTag("prunedGenParticles"),
+        inputPacked = cms.InputTag("packedGenParticles")
+    )
+    process.hepmcProducer = cms.EDProducer("GenParticles2HepMCConverter",
+        genParticles = cms.InputTag("genMerger"),
+        genEventInfo = cms.InputTag("generator"),
+    )
+    
+    process.rivetPseudoTop = cms.EDProducer("PseudoTopRivetProducer",
+        src = cms.InputTag("hepmcProducer","unsmeared"),
+        minLeptonPt = cms.double(15),
+        maxLeptonEta = cms.double(2.5),
+        minJetPt = cms.double(20),
+        maxJetEta = cms.double(5.0),
+        leptonConeSize = cms.double(0.1),
+        jetConeSize = cms.double(0.4),
+        wMass = cms.double(80.4),
+        tMass = cms.double(172.5),
+
+        minLeptonPtDilepton = cms.double(20),
+        maxLeptonEtaDilepton = cms.double(2.4),
+        minDileptonMassDilepton = cms.double(20),
+        minLeptonPtSemilepton = cms.double(20),
+        maxLeptonEtaSemilepton = cms.double(2.4),
+        minVetoLeptonPtSemilepton = cms.double(15),
+        maxVetoLeptonEtaSemilepton = cms.double(2.5),
+        minMETSemiLepton = cms.double(30),
+        minMtWSemiLepton = cms.double(30),
+    )
+    addModule(process.rivetPseudoTop)
+    setattr(process.pat2pxlio,"rivetLeptons",cms.PSet(
+        type=cms.string("GenParticleConverter"),
+        useNameDB = cms.bool(False),
+        srcs=cms.VInputTag(cms.InputTag("rivetPseudoTop","leptons") if not options.noGen else ()),
+        names=cms.vstring("Lepton"),
+        targetEventViews=cms.vstring("PTR"),
+        filterPaths=cms.vstring(filteredPath),
+    ))
+    setattr(process.pat2pxlio,"rivetJets",cms.PSet(
+        type=cms.string("GenJetConverter"),
+        srcs=cms.VInputTag(cms.InputTag("rivetPseudoTop","jets") if not options.noGen else ()),
+        names=cms.vstring("Jet"),
+        targetEventViews=cms.vstring("PTR"),
+        filterPaths=cms.vstring(filteredPath),
+    ))
+    setattr(process.pat2pxlio,"rivetNeutrino",cms.PSet(
+        type=cms.string("GenParticleConverter"),
+        useNameDB = cms.bool(False),
+        srcs=cms.VInputTag(cms.InputTag("rivetPseudoTop","neutrinos") if not options.noGen else ()),
+        names=cms.vstring("Neutrino"),
+        targetEventViews=cms.vstring("PTR"),
+        filterPaths=cms.vstring(filteredPath),
+    ))
 
     
     import EDM2PXLIO.Plt.pltReco as pltReco

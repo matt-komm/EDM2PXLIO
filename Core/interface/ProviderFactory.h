@@ -7,6 +7,7 @@
 #include <typeinfo>
 #include <vector>
 #include <iostream>
+#include <memory>
 
 namespace edm2pxlio
 {
@@ -14,7 +15,7 @@ namespace edm2pxlio
 class ProviderFactory
 {
     protected:
-        std::unordered_map<long,Provider*> _providers;
+        std::unordered_map<long,std::shared_ptr<Provider>> _providers;
 
         ProviderFactory()
         {
@@ -30,15 +31,15 @@ class ProviderFactory
             return factory;
         }
 
-        template<class PROVIDER> static PROVIDER* get(const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector)
+        template<class PROVIDER> static std::shared_ptr<PROVIDER> get(const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector)
         {
             return getInstance().create<PROVIDER>(globalConfig, consumesCollector);
         }
         
-        std::vector<Provider*> getProviderList()
+        std::vector<std::shared_ptr<Provider>> getProviderList()
         {
-            std::vector<Provider*> providerList;
-            for (std::unordered_map<long,Provider*>::const_iterator it = _providers.cbegin(); it != _providers.cend(); ++it)
+            std::vector<std::shared_ptr<Provider>> providerList;
+            for (auto it = _providers.cbegin(); it != _providers.cend(); ++it)
             {
                 providerList.push_back(it->second);
             }
@@ -46,22 +47,27 @@ class ProviderFactory
         }
 
         template<class PROVIDER>
-        PROVIDER* create(const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector)
+        std::shared_ptr<PROVIDER> create(const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector)
         {
             long hash = typeid(PROVIDER).hash_code();
-            std::unordered_map<long,Provider*>::iterator it = _providers.find(hash);
+            auto it = _providers.find(hash);
             if (it!=_providers.end())
             {
-                PROVIDER* provider = dynamic_cast<PROVIDER*>(it->second);
+                std::shared_ptr<PROVIDER> provider = std::dynamic_pointer_cast<PROVIDER>(it->second);
                 return provider;
             }
             else
             {
-                PROVIDER* provider = new PROVIDER(globalConfig,consumesCollector);
+                std::shared_ptr<PROVIDER> provider(new PROVIDER(globalConfig,consumesCollector));
                 _providers[hash]=provider;
                 return provider;
             }
             return nullptr;
+        }
+        
+        ~ProviderFactory()
+        {
+            _providers.clear();
         }
 };
 

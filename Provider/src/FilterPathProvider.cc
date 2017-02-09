@@ -16,12 +16,7 @@ void FilterPathProvider::process(const edm::Event* edmEvent, const edm::EventSet
     edm::Handle<edm::TriggerResults> triggerResult;
     edmEvent->getByToken(_triggerResultToken,triggerResult);
     const edm::TriggerNames& trigNames = edmEvent->triggerNames(*triggerResult);
-    
-    if (_trigByName!=nullptr)
-    {
-        delete _trigByName;
-    }
-    _trigByName = new edm::TriggerResultsByName(triggerResult.product(),&trigNames);
+    _trigByName.reset(new edm::TriggerResultsByName(triggerResult.product(),&trigNames));
 }
 
 bool FilterPathProvider::accept(const std::vector<std::string>& paths) const

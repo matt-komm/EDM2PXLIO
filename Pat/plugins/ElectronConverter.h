@@ -41,8 +41,8 @@ class ElectronConverter:
     private:
         typedef CollectionClassConverter<pat::Electron> Base;
     protected:
-        PrimaryVertexProvider* _primaryVertexProvider;
-        RhoProvider* _rhoProvider;
+        std::shared_ptr<PrimaryVertexProvider> _primaryVertexProvider;
+        std::shared_ptr<RhoProvider> _rhoProvider;
         std::shared_ptr<EffectiveAreas> _effAreas;
     public:
         ElectronConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);

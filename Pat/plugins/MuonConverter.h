@@ -33,7 +33,7 @@ class MuonConverter:
     private:
         typedef CollectionClassConverter<pat::Muon> Base;
     protected:
-        PrimaryVertexProvider* _primaryVertexProvider;
+        std::shared_ptr<PrimaryVertexProvider> _primaryVertexProvider;
     public:
         MuonConverter(const std::string& name, const edm::ParameterSet& globalConfig, edm::ConsumesCollector& consumesCollector);
         virtual void convertObject(const pat::Muon& patObject, pxl::Particle* pxlParticle) const;

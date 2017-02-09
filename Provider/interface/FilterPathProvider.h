@@ -16,6 +16,8 @@
 
 #include "EDM2PXLIO/Core/interface/Provider.h"
 
+#include <memory>
+
 namespace edm2pxlio
 {
 
@@ -23,7 +25,7 @@ class FilterPathProvider:
     public Provider
 {
     protected:
-        edm::TriggerResultsByName* _trigByName;
+        std::unique_ptr<edm::TriggerResultsByName> _trigByName;
         edm::EDGetTokenT<edm::TriggerResults> _triggerResultToken;
     public:
         
