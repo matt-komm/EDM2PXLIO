@@ -113,7 +113,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 #from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
 
 if options.isData and not options.isReRecoData:
-    process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v14'
+    process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'
     
     ### frontier database ###
     process.dbJEC = cms.ESSource("PoolDBESSource",
@@ -131,7 +131,7 @@ if options.isData and not options.isReRecoData:
         #connect = cms.string('sqlite:Spring16_23Sep2016AllV2_DATA.db')
     )
 elif options.isData and options.isReRecoData:
-    process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v4'
+    process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v16'
     
     ### frontier database ###
     process.dbJEC = cms.ESSource("PoolDBESSource",
@@ -239,14 +239,14 @@ else:
     
     
 if options.isData:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 else:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
     
 ### bad muon filter ###
-process.load("RecoMET.METFilters.badGlobalMuonTaggersMiniAOD_cff")
-process.DX_hasBadCloneMuons = cms.Path(process.cloneGlobalMuonTagger)
-process.DX_hasBadMuons = cms.Path(process.badGlobalMuonTagger)
+#process.load("RecoMET.METFilters.badGlobalMuonTaggersMiniAOD_cff")
+#process.DX_hasBadCloneMuons = cms.Path(process.cloneGlobalMuonTagger)
+#process.DX_hasBadMuons = cms.Path(process.badGlobalMuonTagger)
 
 process.DX_plain=cms.Path()
 process.DX_filtered_mu=cms.Path()

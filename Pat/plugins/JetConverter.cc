@@ -117,8 +117,10 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
     //rms: https://cds.cern.ch/record/1581583
     //jet charge: http://arxiv.org/abs/1209.2421
     
-    double pullY = 0;
-    double pullPhi = 0;
+    double pullY = 0; //difference in rapidity
+    double pullPhiX = 0; //difference in X transverse to calculate Phi
+    double pullPhiY = 0; //difference in Y transverse to calculate Phi
+    
     double weightedPtSum2 = 0;
     double weightedSum2 = 0;
     
@@ -139,8 +141,9 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
         const double dY = daughter->rapidity()-patObject.rapidity();
         const double dPhi = reco::deltaPhi(daughter->phi(),patObject.phi());
         const double dR = std::sqrt(dY*dY+dPhi*dPhi);
-        pullY+=daughter->pt()*dR*dY;
-        pullPhi+=daughter->pt()*dR*dPhi;
+        pullY+=daughter->pt()*dR*dY/patObject.pt();
+        pullPhiX+=daughter->pt()*dR*std::cos(dPhi)/patObject.pt();
+        pullPhiX+=daughter->pt()*dR*std::sin(dPhi)/patObject.pt();
         
         weightedPtSum2+=dR*dR*daughter->pt()*daughter->pt();
         weightedSum2+=daughter->pt()*daughter->pt();
@@ -151,11 +154,8 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
         //dROrderedChargedCandidates[idaughter]=daughter;
     }
     
-    pullY/=patObject.pt();
-    pullPhi/=patObject.pt();
-    
     pxlParticle->setUserRecord("pullY",PRECISION(pullY));
-    pxlParticle->setUserRecord("pullPhi",PRECISION(pullPhi));
+    pxlParticle->setUserRecord("pullPhi",PRECISION(std::atan2(pullPhiX,pullPhiY)));
     pxlParticle->setUserRecord("rms",PRECISION(weightedPtSum2/weightedSum2));
     
     EventShapeVariables eventShapeYPhi(eventShapeVectorYPhi);
