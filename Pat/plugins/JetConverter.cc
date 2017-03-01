@@ -143,12 +143,12 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
         const double dR = std::sqrt(dY*dY+dPhi*dPhi);
         pullY+=daughter->pt()*dR*dY/patObject.pt();
         pullPhiX+=daughter->pt()*dR*std::cos(dPhi)/patObject.pt();
-        pullPhiX+=daughter->pt()*dR*std::sin(dPhi)/patObject.pt();
+        pullPhiY+=daughter->pt()*dR*std::sin(dPhi)/patObject.pt();
         
         weightedPtSum2+=dR*dR*daughter->pt()*daughter->pt();
         weightedSum2+=daughter->pt()*daughter->pt();
         
-        eventShapeVectorYPhi[idaughter].SetXYZ(dY,dPhi,0);
+        eventShapeVectorYPhi[idaughter].SetXYZ(dY,dR*std::cos(dPhi),dR*std::sin(dPhi));
 
         //ptOrderedChargedCandidates[idaughter]=daughter;
         //dROrderedChargedCandidates[idaughter]=daughter;
