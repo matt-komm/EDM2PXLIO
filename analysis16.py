@@ -572,6 +572,39 @@ process.DX_primaryVertexFilter = cms.Path(process.goodVertexFilter)
 
 
 
+### NJettiness ###
+'''
+process.selectMuonsForJettiness = cms.EDFilter("PATMuonSelector",
+    cut = cms.string('pt>26 && abs(eta)<2.4 && isPFMuon && isGlobalMuon'),
+    src = cms.InputTag("slimmedMuons")
+)
+
+process.selectElectronsForJettiness = cms.EDFilter("PATElectronSelector",
+    cut = cms.string('pt>36 && abs(eta)<2.4'),
+    src = cms.InputTag("slimmedElectrons")
+)
+
+process.selectJetsForJettiness = cms.EDFilter("PATJetSelector",
+    cut = cms.string('pt>40 && abs(eta)<4.7'),
+    src = cms.InputTag("slimmedJetsJEC")
+)
+
+process.njettiness = cms.EDProducer("NJettines",
+    pfCand = cms.InputTag("packedPFCandidates"),
+    muons = cms.InputTag("selectMuonsForJettiness"),
+    electrons = cms.InputTag("selectElectronsForJettiness"),
+    jets = cms.InputTag("selectJetsForJettiness")
+)
+
+process.njettinessSeq = cms.Sequence(
+    process.selectMuonsForJettiness
+    +process.selectElectronsForJettiness
+    +process.selectJetsForJettiness
+    +process.njettiness
+)
+
+addModule(process.njettinessSeq)
+'''
 ### OUTPUT ###
 
 #file service for EventWeight and PU info

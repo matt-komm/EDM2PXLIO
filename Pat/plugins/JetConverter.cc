@@ -4,6 +4,8 @@
 
 #include "PhysicsTools/CandUtils/interface/EventShapeVariables.h"
 
+#include "vdt/vdtMath.h"
+
 #include <functional>
 
 namespace edm2pxlio
@@ -141,9 +143,10 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
         const double dY = daughter->rapidity()-patObject.rapidity();
         const double dPhi = reco::deltaPhi(daughter->phi(),patObject.phi());
         const double dR = std::sqrt(dY*dY+dPhi*dPhi);
-        pullY+=daughter->pt()*dR*dY/patObject.pt();
-        pullPhiX+=daughter->pt()*dR*std::cos(dPhi)/patObject.pt();
-        pullPhiY+=daughter->pt()*dR*std::sin(dPhi)/patObject.pt();
+        const double weight = daughter->pt()*dR/patObject.pt();
+        pullY+=weight*dY;
+        pullPhiX+=weight*vdt::fast_cos(dPhi);
+        pullPhiY+=weight*vdt::fast_sin(dPhi);
         
         weightedPtSum2+=dR*dR*daughter->pt()*daughter->pt();
         weightedSum2+=daughter->pt()*daughter->pt();
