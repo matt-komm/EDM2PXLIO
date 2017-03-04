@@ -191,6 +191,19 @@ process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'dbJEC')
 if not options.isData:
     process.es_prefer_jer = cms.ESPrefer('PoolDBESSource', 'dbJES')
 
+print "JECs -------------------"
+print "\t",process.dbJEC.toGet[0].tag
+print "\t",process.dbJEC.connect
+
+if not options.isData:
+    process.es_prefer_jer = cms.ESPrefer('PoolDBESSource', 'dbJES')
+
+    print "JER -------------------"
+    for s in process.dbJES.toGet:
+        print "\t",s.tag
+    print "\t",process.dbJES.connect
+print " ------------------- "
+
 
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
@@ -705,14 +718,12 @@ if options.isData:
     setattr(process.pat2pxlio,"patMET",cms.PSet(
         type=cms.string("METConverter"),
         srcs=cms.VInputTag(
-            cms.InputTag("slimmedMETs","","RECO"),
-            #cms.InputTag("patPFMetT1","","DX"),
-            cms.InputTag("slimmedMETs","","DX"),
+            cms.InputTag("patPFMetT1","","DX"),
+            #cms.InputTag("slimmedMETs","","DX"),
         ),
         names=cms.vstring(
-            "MET_reco",
-            #"MET",
-            "MET"
+            "MET",
+            #"MET"
         )
     ))
 else:
@@ -861,29 +872,7 @@ if (not options.isData) and options.addPL:
     print "Adding particle level objects"
     
     from TopQuarkAnalysis.TopEventProducers.producers.pseudoTop_cfi import pseudoTop
-    process.pseudoTop = pseudoTop.clone(jetMaxEta = cms.double(10.0))
-    addModule(process.pseudoTop)
-    setattr(process.pat2pxlio,"ptLeptons",cms.PSet(
-        type=cms.string("GenJetConverter"),
-        srcs=cms.VInputTag(cms.InputTag("pseudoTop","leptons") if not options.noGen else ()),
-        names=cms.vstring("Lepton"),
-        targetEventViews=cms.vstring("PT"),
-        filterPaths=cms.vstring(filteredPath),
-    ))
-    setattr(process.pat2pxlio,"ptJets",cms.PSet(
-        type=cms.string("GenJetConverter"),
-        srcs=cms.VInputTag(cms.InputTag("pseudoTop","jets") if not options.noGen else ()),
-        names=cms.vstring("Jet"),
-        targetEventViews=cms.vstring("PT"),
-        filterPaths=cms.vstring(filteredPath),
-    ))
-    setattr(process.pat2pxlio,"ptNeutrino",cms.PSet(
-        type=cms.string("GenParticleConverter"),
-        srcs=cms.VInputTag(cms.InputTag("pseudoTop","neutrinos") if not options.noGen else ()),
-        names=cms.vstring("Neutrino"),
-        targetEventViews=cms.vstring("PT"),
-        filterPaths=cms.vstring(filteredPath),
-    ))
+
     
 
     ### new RIVET-based producer ###
@@ -897,8 +886,10 @@ if (not options.isData) and options.addPL:
         genEventInfo = cms.InputTag("generator"),
     )
     
-    process.rivetPseudoTop = cms.EDProducer("PseudoTopRivetProducer",
+    process.rivetPseudoTop = cms.EDProducer("PseudoTopProducer",
         src = cms.InputTag("hepmcProducer","unsmeared"),
+        projection = cms.string("PseudoTop"),
+        
         minLeptonPt = cms.double(15),
         maxLeptonEta = cms.double(2.5),
         minJetPt = cms.double(20),
@@ -920,7 +911,7 @@ if (not options.isData) and options.addPL:
     )
     addModule(process.rivetPseudoTop)
     setattr(process.pat2pxlio,"rivetLeptons",cms.PSet(
-        type=cms.string("GenParticleConverter"),
+        type=cms.string("GenJetConverter"),
         useNameDB = cms.bool(False),
         srcs=cms.VInputTag(cms.InputTag("rivetPseudoTop","leptons") if not options.noGen else ()),
         names=cms.vstring("Lepton"),
@@ -954,11 +945,13 @@ if (not options.isData) and options.addPL:
         ["ExLN",True,True,False],
         ["ExLNN",True,True,True],
     ]:
+        
         addModule(pltReco.addPltCollection(process,filteredPath,"exTauPromptNu"+postfix,
             "(abs(pdgId)==11 || abs(pdgId)==13 || abs(pdgId)==22)&&(isPromptFinalState)",
             "(abs(pdgId)==12 || abs(pdgId)==14 || abs(pdgId)==16)&&(isPromptFinalState)",
             projectLepton,projectNu,projectAllNu
         ))
+        
         addModule(pltReco.addPltCollection(process,filteredPath,"incTauPromptNu"+postfix,
             "(abs(pdgId)==11 || abs(pdgId)==13 || abs(pdgId)==22)&&(isPromptFinalState||isDirectPromptTauDecayProductFinalState)",
             "(abs(pdgId)==12 || abs(pdgId)==14 || abs(pdgId)==16)&&(isPromptFinalState||isDirectPromptTauDecayProductFinalState)",
