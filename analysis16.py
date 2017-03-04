@@ -223,10 +223,11 @@ elif options.isData and options.isReRecoData:
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
             #'root://cmsxrootd.fnal.gov//store/data/Run2016G/SingleMuon/MINIAOD/23Sep2016-v1/1110000/A2C0F697-B19C-E611-A4D8-F04DA275BFF2.root'
+            'root://cms-xrd-global.cern.ch//store/data/Run2016D/SingleMuon/MINIAOD/03Feb2017-v1/100000/00622F98-20EB-E611-A0A4-28924A33AFF6.root',
             
             #sync
             #'/store/data/Run2016H/SingleMuon/MINIAOD/PromptReco-v3/000/284/040/00000/0848D330-889F-E611-8935-02163E01444D.root'
-            '/store/data/Run2016B/SingleMuon/MINIAOD/23Sep2016-v3/00000/A2EB30F3-4499-E611-91D6-A0369F7F92E8.root ',
+            #'/store/data/Run2016B/SingleMuon/MINIAOD/23Sep2016-v3/00000/A2EB30F3-4499-E611-91D6-A0369F7F92E8.root ',
         )
         #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
         
@@ -718,12 +719,21 @@ if options.isData:
     setattr(process.pat2pxlio,"patMET",cms.PSet(
         type=cms.string("METConverter"),
         srcs=cms.VInputTag(
+            
+            # NOTE: PAT is process 
+            # this contains the cleaned muons, uptodate JECs, ecal slew correction
+            cms.InputTag("slimmedMETsMuEGClean","","PAT"), 
+            
+            # NOTE: PAT is process 
+            # this has only the copy muons removed
+            cms.InputTag("slimmedMETs","","PAT"),
+            
             cms.InputTag("patPFMetT1","","DX"),
-            #cms.InputTag("slimmedMETs","","DX"),
         ),
         names=cms.vstring(
             "MET",
-            #"MET"
+            "MET_old",
+            "MET_new",
         )
     ))
 else:
