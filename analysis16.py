@@ -255,7 +255,7 @@ else:
 if options.isData:
     process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 else:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
     
 ### bad muon filter ###
 #process.load("RecoMET.METFilters.badGlobalMuonTaggersMiniAOD_cff")

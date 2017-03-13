@@ -120,8 +120,7 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
     //jet charge: http://arxiv.org/abs/1209.2421
     
     double pullY = 0; //difference in rapidity
-    double pullPhiX = 0; //difference in X transverse to calculate Phi
-    double pullPhiY = 0; //difference in Y transverse to calculate Phi
+    double pullPhi = 0;
     
     double weightedPtSum2 = 0;
     double weightedSum2 = 0;
@@ -135,30 +134,29 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
     //std::vector<const reco::Candidate*> ptOrderedChargedCandidates(patObject.numberOfDaughters());
     //vector for dY-ordered daughters
     //std::vector<const reco::Candidate*> dROrderedChargedCandidates(patObject.numberOfDaughters());
-    
     for (unsigned int idaughter = 0; idaughter < patObject.numberOfDaughters(); ++idaughter)
     {
         const reco::Candidate* daughter = patObject.daughter(idaughter);
         
         const double dY = daughter->rapidity()-patObject.rapidity();
         const double dPhi = reco::deltaPhi(daughter->phi(),patObject.phi());
+        
         const double dR = std::sqrt(dY*dY+dPhi*dPhi);
         const double weight = daughter->pt()*dR/patObject.pt();
         pullY+=weight*dY;
-        pullPhiX+=weight*vdt::fast_cos(dPhi);
-        pullPhiY+=weight*vdt::fast_sin(dPhi);
+        pullPhi+=weight*dPhi;
         
         weightedPtSum2+=dR*dR*daughter->pt()*daughter->pt();
         weightedSum2+=daughter->pt()*daughter->pt();
         
-        eventShapeVectorYPhi[idaughter].SetXYZ(dY,dR*std::cos(dPhi),dR*std::sin(dPhi));
+        eventShapeVectorYPhi[idaughter].SetXYZ(dY,dPhi,0.0);
 
         //ptOrderedChargedCandidates[idaughter]=daughter;
         //dROrderedChargedCandidates[idaughter]=daughter;
     }
     
     pxlParticle->setUserRecord("pullY",PRECISION(pullY));
-    pxlParticle->setUserRecord("pullPhi",PRECISION(std::atan2(pullPhiX,pullPhiY)));
+    pxlParticle->setUserRecord("pullPhi",PRECISION(pullPhi));
     pxlParticle->setUserRecord("rms",PRECISION(weightedPtSum2/weightedSum2));
     
     EventShapeVariables eventShapeYPhi(eventShapeVectorYPhi);
