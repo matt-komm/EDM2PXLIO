@@ -246,6 +246,7 @@ else:
 	
 	        #sync
 	        '/store/mc/RunIISummer16MiniAODv2/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/60000/A059F3BF-79B9-E611-B81C-0CC47A7FC412.root'
+	        #'/store/mc/RunIISummer16MiniAODv2/QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/60000/04DBE4B6-82B5-E611-83E5-00266CF94D50.root'
 	),
         #skipEvents = cms.untracked.uint32(24900)
         #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
@@ -255,7 +256,7 @@ else:
 if options.isData:
     process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 else:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
     
 ### bad muon filter ###
 #process.load("RecoMET.METFilters.badGlobalMuonTaggersMiniAOD_cff")
@@ -265,6 +266,10 @@ else:
 process.DX_plain=cms.Path()
 process.DX_filtered_mu=cms.Path()
 process.DX_filtered_ele=cms.Path()
+
+#process.DX_plain.isMC=cms.bool(not options.isData)
+#process.DX_filtered_mu.isMC=cms.bool(not options.isData)
+#process.DX_filtered_ele.isMC=cms.bool(not options.isData)
 
 def addModule(m):
     process.DX_plain+=m
@@ -345,6 +350,37 @@ if not options.isData:
     addModule(process.lessGenParticles)
 
 
+### electron smearing ###
+
+from EgammaAnalysis.ElectronTools.regressionWeights_cfi import regressionWeights
+process = regressionWeights(process)
+
+process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService",
+    calibratedPatElectrons = cms.PSet(
+        initialSeed = cms.untracked.uint32(8675389),
+        engineName = cms.untracked.string('TRandom3'),
+    ),
+    calibratedPatPhotons = cms.PSet( 
+        initialSeed = cms.untracked.uint32(8675389),
+        engineName = cms.untracked.string('TRandom3'),
+    ),
+)
+
+process.load('EgammaAnalysis.ElectronTools.regressionApplication_cff')
+process.load('EgammaAnalysis.ElectronTools.calibratedPatElectronsRun2_cfi')
+#process.load('EgammaAnalysis.ElectronTools.calibratedPatPhotonsRun2_cfi')
+
+process.EGMScaleAndSmear = cms.Sequence(
+    process.regressionApplication
+    *process.calibratedPatElectrons
+    #*process.calibratedPatPhotons
+)
+
+process.calibratedPatElectrons.isMC = cms.bool(not options.isData)
+
+addModule(process.EGMScaleAndSmear)
+
+
 ### electron IDs ###
 
 from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
@@ -354,6 +390,16 @@ for eleID in [
     'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronHLTPreselecition_Summer16_V1_cff'
 ]:
     setupAllVIDIdsInModule(process,eleID,setupVIDElectronSelection)
+
+process.selectedElectronsForVID = cms.EDFilter("PATElectronSelector",
+    src = cms.InputTag("calibratedPatElectrons"),
+    cut = cms.string("pt>5 && abs(eta)")
+)
+
+process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag('selectedElectronsForVID')
+#process.electronIDValueMapProducer.srcMiniAOD = cms.InputTag('selectedElectronsForVID')
+process.electronRegressionValueMapProducer.srcMiniAOD = cms.InputTag('selectedElectronsForVID')
+#process.electronMVAValueMapProducer.srcMiniAOD = cms.InputTag('selectedElectronsForVID')
 
 addModule(process.egmGsfElectronIDSequence)
 
@@ -557,7 +603,7 @@ addModule(process.matchMuonTriggers)
 process.matchElectronTriggers = cms.EDProducer("TriggerMatcherElectrons",
     triggerResult = cms.InputTag("TriggerResults","","HLT"),
     triggerObjects = cms.InputTag("selectedPatTrigger"),
-    recoObjects = cms.InputTag("slimmedElectrons"),
+    recoObjects = cms.InputTag("selectedElectronsForVID"),
     dR = cms.double(0.1),
     flags = cms.PSet(
         Ele27WPLoose = cms.string("HLT_Ele27_eta2p1_WPLoose_Gsf_v[0-9]+"),
@@ -671,7 +717,7 @@ setattr(process.pat2pxlio,"muons",cms.PSet(
 
 setattr(process.pat2pxlio,"electrons",cms.PSet(
     type=cms.string("ElectronConverter"),
-    srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
+    srcs=cms.VInputTag(cms.InputTag("selectedElectronsForVID")),
     names=cms.vstring("Electron"),
     effAreasConfigFile = cms.FileInPath("RecoEgamma/ElectronIdentification/data/Summer16/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt"),
     valueMaps=cms.PSet(
@@ -698,6 +744,17 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
     ),
     select=cms.string("pt>15.0"), #keep at 15 for veto
 ))
+
+setattr(process.pat2pxlio,"electronsAlt",cms.PSet(
+    type=cms.string("ElectronConverter"),
+    srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
+    names=cms.vstring("ElectronAlt"),
+    valueMaps=cms.PSet(),
+    effAreasConfigFile = cms.FileInPath("RecoEgamma/ElectronIdentification/data/Summer16/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt"),
+    select=cms.string("pt>15.0"), #keep at 15 for veto
+))
+
+
 
 #add jets/met
 if options.isData:
@@ -749,6 +806,8 @@ else:
             cms.InputTag("slimmedJetsJECSmearedResDown"),
             
             
+            cms.InputTag("cleanedPatJets"),
+            
             #cms.InputTag("shiftedPatJetEnDown"), # this cannot be used - jets are already cleaned against leptons for T1
             #cms.InputTag("shiftedPatJetEnUp"), # this cannot be used - jets are already cleaned against leptons for T1
         ),
@@ -760,6 +819,8 @@ else:
             "JetEnDown",
             "JetResUp",
             "JetResDown",
+            
+            "JetCleaned",
         ),
         select=cms.string("pt>20.0"),
         valueMaps=cms.PSet(
@@ -944,7 +1005,7 @@ if (not options.isData) and options.addPL:
         filterPaths=cms.vstring(filteredPath),
     ))
 
-    
+    '''
     import EDM2PXLIO.Plt.pltReco as pltReco
     
     
@@ -968,7 +1029,7 @@ if (not options.isData) and options.addPL:
             projectLepton,projectNu,projectAllNu
         ))
         
-    '''
+    
     for postfix,projectLepton,projectNu,projectAllNu in [
         ["",False,False,False],
         ["ExL",True,False,False],
