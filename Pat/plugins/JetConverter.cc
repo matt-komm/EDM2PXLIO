@@ -128,7 +128,7 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
    
     
     //use here dY/dPhi space
-    std::vector< math::XYZVector > eventShapeVectorYPhi(patObject.numberOfDaughters());
+    std::vector< math::XYZVector > eventShapeVectorXYZ(patObject.numberOfDaughters());
     
     //vector for pt-ordered daughters
     //std::vector<const reco::Candidate*> ptOrderedChargedCandidates(patObject.numberOfDaughters());
@@ -149,7 +149,11 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
         weightedPtSum2+=dR*dR*daughter->pt()*daughter->pt();
         weightedSum2+=daughter->pt()*daughter->pt();
         
-        eventShapeVectorYPhi[idaughter].SetXYZ(dY,dPhi,0.0);
+        eventShapeVectorXYZ[idaughter].SetXYZ(
+            daughter->px()-patObject.px(),
+            daughter->py()-patObject.py(),
+            daughter->pz()-patObject.pz()
+        );
 
         //ptOrderedChargedCandidates[idaughter]=daughter;
         //dROrderedChargedCandidates[idaughter]=daughter;
@@ -159,8 +163,10 @@ void JetConverter::calculateJetShapes(const pat::Jet& patObject, pxl::Particle* 
     pxlParticle->setUserRecord("pullPhi",PRECISION(pullPhi));
     pxlParticle->setUserRecord("rms",PRECISION(weightedPtSum2/weightedSum2));
     
-    EventShapeVariables eventShapeYPhi(eventShapeVectorYPhi);
-    pxlParticle->setUserRecord("circularityYPhi",PRECISION(eventShapeYPhi.circularity()));
+    EventShapeVariables eventShapeXYZ(eventShapeVectorXYZ);
+    pxlParticle->setUserRecord("circularity",PRECISION(eventShapeXYZ.circularity()));
+    pxlParticle->setUserRecord("isotropy",PRECISION(eventShapeXYZ.isotropy()));
+    pxlParticle->setUserRecord("sphericity",PRECISION(eventShapeXYZ.sphericity()));
     
     /*
     std::function<double(const reco::Candidate* p1, const reco::Candidate* p2)> getDR=[](const reco::Candidate* p1, const reco::Candidate* p2)->double {

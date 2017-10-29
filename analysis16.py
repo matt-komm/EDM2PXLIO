@@ -121,13 +121,13 @@ if options.isData and not options.isReRecoData:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV3_DATA_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV4_DATA_AK4PFchs'),
                 #tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016AllV2_DATA_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        connect = cms.string('sqlite:Summer16_23Sep2016AllV3_DATA.db'),
+        connect = cms.string('sqlite:Summer16_23Sep2016AllV4_DATA.db'),
         #connect = cms.string('sqlite:Spring16_23Sep2016AllV2_DATA.db')
     )
 elif options.isData and options.isReRecoData:
@@ -139,13 +139,13 @@ elif options.isData and options.isReRecoData:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV3_DATA_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV4_DATA_AK4PFchs'),
                 #tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016AllV2_DATA_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        connect = cms.string('sqlite:Summer16_23Sep2016AllV3_DATA.db'),
+        connect = cms.string('sqlite:Summer16_23Sep2016AllV4_DATA.db'),
         #connect = cms.string('sqlite:Spring16_23Sep2016AllV2_DATA.db')
     )
 else:
@@ -157,13 +157,13 @@ else:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016V3_MC_AK4PFchs'),
+                tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016V4_MC_AK4PFchs'),
                 #tag    = cms.string('JetCorrectorParametersCollection_Spring16_23Sep2016V2_MC_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
         #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        connect = cms.string('sqlite:Summer16_23Sep2016V3_MC.db')
+        connect = cms.string('sqlite:Summer16_23Sep2016V4_MC.db')
         #connect = cms.string('sqlite:Spring16_23Sep2016V2_MC.db')
     )
     
@@ -223,13 +223,15 @@ elif options.isData and options.isReRecoData:
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
             #'root://cmsxrootd.fnal.gov//store/data/Run2016G/SingleMuon/MINIAOD/23Sep2016-v1/1110000/A2C0F697-B19C-E611-A4D8-F04DA275BFF2.root'
-            'root://cms-xrd-global.cern.ch//store/data/Run2016D/SingleMuon/MINIAOD/03Feb2017-v1/100000/00622F98-20EB-E611-A0A4-28924A33AFF6.root',
-            
+            #'root://cms-xrd-global.cern.ch//store/data/Run2016D/SingleMuon/MINIAOD/03Feb2017-v1/100000/00622F98-20EB-E611-A0A4-28924A33AFF6.root',
+            #'root://cms-xrd-global.cern.ch//store/data/Run2016C/SingleElectron/MINIAOD/03Feb2017-v1/100000/02169BE7-81EB-E611-BB99-02163E0137CD.root'
+            #'/store/data/Run2016G/SingleElectron/MINIAOD/03Feb2017-v1/50000/14818F6E-0CEB-E611-AEBF-5065F38122A1.root'
+            '/store/data/Run2016C/SingleElectron/MINIAOD/03Feb2017-v1/100000/487EA4FB-28EC-E611-86F9-0CC47A009E26.root'
             #sync
             #'/store/data/Run2016H/SingleMuon/MINIAOD/PromptReco-v3/000/284/040/00000/0848D330-889F-E611-8935-02163E01444D.root'
             #'/store/data/Run2016B/SingleMuon/MINIAOD/23Sep2016-v3/00000/A2EB30F3-4499-E611-91D6-A0369F7F92E8.root ',
-        )
-        #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
+        ),
+        lumisToProcess = cms.untracked.VLuminosityBlockRange('275836:1056-275836:1056'),
         
     )
 else:
@@ -254,7 +256,7 @@ else:
     
     
 if options.isData:
-    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
 else:
     process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
     
@@ -307,13 +309,13 @@ def addFilter(seq,inputTag,cutString,minN=None):
         seq+=selectorMinFilter
     
 if not options.noFilter:
-    addFilter(skimMuSequence,cms.InputTag("slimmedMuons"),"pt>20.0",minN=1)
+    addFilter(skimMuSequence,cms.InputTag("slimmedMuons"),"pt>24.0",minN=1)
     #addFilter(skimMuSequence,cms.InputTag("slimmedJetsJEC"),"pt>15.0",minN=2)
-    addFilter(skimMuSequence,cms.InputTag("slimmedJetsJEC"),"pt>20.0",minN=1)
+    addFilter(skimMuSequence,cms.InputTag("slimmedJetsJEC"),"pt>26.0",minN=2) #allows 13% JEC uncertainty @ 30 GeV
     
-    addFilter(skimEleSequence,cms.InputTag("slimmedElectrons"),"pt>20.0",minN=1)
+    addFilter(skimEleSequence,cms.InputTag("slimmedElectrons"),"pt>27.0",minN=1)
     #addFilter(skimEleSequence,cms.InputTag("slimmedJetsJEC"),"pt>15.0",minN=2)
-    addFilter(skimEleSequence,cms.InputTag("slimmedJetsJEC"),"pt>20.0",minN=1)
+    addFilter(skimEleSequence,cms.InputTag("slimmedJetsJEC"),"pt>26.0",minN=2) #allows 13% JEC uncertainty @ 30 GeV
 else:
     print "will not apply any filtering!"
 
@@ -392,8 +394,8 @@ for eleID in [
     setupAllVIDIdsInModule(process,eleID,setupVIDElectronSelection)
 
 process.selectedElectronsForVID = cms.EDFilter("PATElectronSelector",
-    src = cms.InputTag("calibratedPatElectrons"),
-    cut = cms.string("pt>5 && abs(eta)")
+    src = cms.InputTag("slimmedElectrons"),
+    cut = cms.string("pt>5 && abs(eta)<2.5")
 )
 
 process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag('selectedElectronsForVID')
@@ -736,7 +738,7 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
             type=cms.string("ValueMapAccessorBool"),
             src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronID-Summer16-80X-V1-tight")
         ),
-        summer16eleHTLPreselection = cms.PSet(
+        summer16eleHLTPreselection = cms.PSet(
             type=cms.string("ValueMapAccessorBool"),
             src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronHLTPreselection-Summer16-V1")
         )
@@ -744,7 +746,7 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
     ),
     select=cms.string("pt>15.0"), #keep at 15 for veto
 ))
-
+'''
 setattr(process.pat2pxlio,"electronsAlt",cms.PSet(
     type=cms.string("ElectronConverter"),
     srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
@@ -753,7 +755,7 @@ setattr(process.pat2pxlio,"electronsAlt",cms.PSet(
     effAreasConfigFile = cms.FileInPath("RecoEgamma/ElectronIdentification/data/Summer16/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt"),
     select=cms.string("pt>15.0"), #keep at 15 for veto
 ))
-
+'''
 
 
 #add jets/met
@@ -783,14 +785,14 @@ if options.isData:
             
             # NOTE: PAT is process 
             # this has only the copy muons removed
-            cms.InputTag("slimmedMETs","","PAT"),
+            #cms.InputTag("slimmedMETs","","PAT"),
             
-            cms.InputTag("patPFMetT1","","DX"),
+            #cms.InputTag("patPFMetT1","","DX"),
         ),
         names=cms.vstring(
             "MET",
-            "MET_old",
-            "MET_new",
+            #"MET_old",
+            #"MET_new",
         )
     ))
 else:
@@ -805,9 +807,6 @@ else:
             cms.InputTag("slimmedJetsJECSmearedResUp"),
             cms.InputTag("slimmedJetsJECSmearedResDown"),
             
-            
-            cms.InputTag("cleanedPatJets"),
-            
             #cms.InputTag("shiftedPatJetEnDown"), # this cannot be used - jets are already cleaned against leptons for T1
             #cms.InputTag("shiftedPatJetEnUp"), # this cannot be used - jets are already cleaned against leptons for T1
         ),
@@ -820,7 +819,6 @@ else:
             "JetResUp",
             "JetResDown",
             
-            "JetCleaned",
         ),
         select=cms.string("pt>20.0"),
         valueMaps=cms.PSet(
@@ -943,10 +941,6 @@ if (not options.isData) and options.addPL:
     print "Adding particle level objects"
     
     from TopQuarkAnalysis.TopEventProducers.producers.pseudoTop_cfi import pseudoTop
-
-    
-
-    ### new RIVET-based producer ###
     
     process.genMerger = cms.EDProducer("MergedGenParticleProducer",
         inputPruned = cms.InputTag("prunedGenParticles"),
@@ -955,30 +949,27 @@ if (not options.isData) and options.addPL:
     process.hepmcProducer = cms.EDProducer("GenParticles2HepMCConverter",
         genParticles = cms.InputTag("genMerger"),
         genEventInfo = cms.InputTag("generator"),
+        signalParticlePdgIds = cms.vint32(6,-6)
     )
     
-    process.rivetPseudoTop = cms.EDProducer("PseudoTopProducer",
+    process.rivetPseudoTop = pseudoTop.clone(
         src = cms.InputTag("hepmcProducer","unsmeared"),
         projection = cms.string("PseudoTop"),
         
-        minLeptonPt = cms.double(15),
-        maxLeptonEta = cms.double(2.5),
-        minJetPt = cms.double(20),
-        maxJetEta = cms.double(5.0),
+        maxEta = cms.double(5.), # HF range. Maximum 6.0 on MiniAOD
+        
+        usePromptFinalStates = cms.bool(True), # for leptons, photons, neutrinos
+        excludePromptLeptonsFromJetClustering = cms.bool(True),
+        
         leptonConeSize = cms.double(0.1),
+        minLeptonPt = cms.double(20.),
+        maxLeptonEta = cms.double(2.5),
+        
         jetConeSize = cms.double(0.4),
-        wMass = cms.double(80.4),
-        tMass = cms.double(172.5),
-
-        minLeptonPtDilepton = cms.double(20),
-        maxLeptonEtaDilepton = cms.double(2.4),
-        minDileptonMassDilepton = cms.double(20),
-        minLeptonPtSemilepton = cms.double(20),
-        maxLeptonEtaSemilepton = cms.double(2.4),
-        minVetoLeptonPtSemilepton = cms.double(15),
-        maxVetoLeptonEtaSemilepton = cms.double(2.5),
-        minMETSemiLepton = cms.double(30),
-        minMtWSemiLepton = cms.double(30),
+        minJetPt = cms.double(20.),
+        maxJetEta = cms.double(5.0),
+        
+        runTopReconstruction = cms.bool(False),
     )
     addModule(process.rivetPseudoTop)
     setattr(process.pat2pxlio,"rivetLeptons",cms.PSet(
@@ -1059,7 +1050,7 @@ process.OUT = cms.OutputModule("PoolOutputModule",
     outputCommands = cms.untracked.vstring(
         "keep *",
         "drop *_*_*_DX",
-        "keep *_matchMuonTriggers_*_*"
+        "keep *_slimmedElectrons_*_*"
      ),
     dropMetaData = cms.untracked.string('ALL'),
 )

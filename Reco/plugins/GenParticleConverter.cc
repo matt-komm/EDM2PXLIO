@@ -144,7 +144,14 @@ void GenParticleConverter::convert(const edm::Event* edmEvent, const edm::EventS
                 const std::vector<LHEEventProduct::WGT>& weights = lheEventProduct->weights();
                 for (unsigned int iweight = 0; iweight < weights.size(); ++iweight)
                 {
-                    pxlEvent->setUserRecord("lheweight_"+weights[iweight].id,weights[iweight].wgt);
+                    if (std::isfinite(weights[iweight].wgt))
+                    {
+                        pxlEvent->setUserRecord("lheweight_"+weights[iweight].id,weights[iweight].wgt);
+                    }
+                    else
+                    {
+                        pxlEvent->setUserRecord("lheweight_"+weights[iweight].id,1.0);
+                    }
                 }
             }
         }

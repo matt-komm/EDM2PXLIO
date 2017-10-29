@@ -87,7 +87,7 @@ EDM2PXLIO::EDM2PXLIO(const edm::ParameterSet& globalConfig):
         _pxlFile.reset(new pxl::OutputFile("out.pxlio"));
     }
     _pxlFile->setCompressionMode(3);
-    _pxlFile->setMaxNObjects(2000);
+    _pxlFile->setMaxNObjects(1000);
     _pxlFile->setMaxSize(20485760); //20MB   
     if (globalConfig.exists("processName")) {
         _processName = globalConfig.getParameter<std::string>("processName");
