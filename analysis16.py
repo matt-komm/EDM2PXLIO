@@ -383,6 +383,8 @@ process.calibratedPatElectrons.isMC = cms.bool(not options.isData)
 addModule(process.EGMScaleAndSmear)
 
 
+
+
 ### electron IDs ###
 
 from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
@@ -393,17 +395,22 @@ for eleID in [
 ]:
     setupAllVIDIdsInModule(process,eleID,setupVIDElectronSelection)
 
-process.selectedElectronsForVID = cms.EDFilter("PATElectronSelector",
-    src = cms.InputTag("slimmedElectrons"),
-    cut = cms.string("pt>5 && abs(eta)<2.5")
-)
 
-process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag('selectedElectronsForVID')
+process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag('calibratedPatElectrons')
 #process.electronIDValueMapProducer.srcMiniAOD = cms.InputTag('selectedElectronsForVID')
-process.electronRegressionValueMapProducer.srcMiniAOD = cms.InputTag('selectedElectronsForVID')
+process.electronRegressionValueMapProducer.srcMiniAOD = cms.InputTag('calibratedPatElectrons')
 #process.electronMVAValueMapProducer.srcMiniAOD = cms.InputTag('selectedElectronsForVID')
 
 addModule(process.egmGsfElectronIDSequence)
+
+
+from EgammaAnalysis.ElectronTools.egammaEnergyShifter_cff import configElectronEnergyShifter
+process.electronRegressionUncertainties = cms.EDProducer("ElectronRegressionUncertainties",
+    src = cms.InputTag("calibratedPatElectrons"),
+    isMC = cms.bool(not options.isData),
+    egmUncertaintyConfig = configElectronEnergyShifter
+)
+addModule(process.electronRegressionUncertainties)
 
 
 ### Jet PU ID ###
@@ -605,7 +612,7 @@ addModule(process.matchMuonTriggers)
 process.matchElectronTriggers = cms.EDProducer("TriggerMatcherElectrons",
     triggerResult = cms.InputTag("TriggerResults","","HLT"),
     triggerObjects = cms.InputTag("selectedPatTrigger"),
-    recoObjects = cms.InputTag("selectedElectronsForVID"),
+    recoObjects = cms.InputTag("calibratedPatElectrons"),
     dR = cms.double(0.1),
     flags = cms.PSet(
         Ele27WPLoose = cms.string("HLT_Ele27_eta2p1_WPLoose_Gsf_v[0-9]+"),
@@ -719,7 +726,7 @@ setattr(process.pat2pxlio,"muons",cms.PSet(
 
 setattr(process.pat2pxlio,"electrons",cms.PSet(
     type=cms.string("ElectronConverter"),
-    srcs=cms.VInputTag(cms.InputTag("selectedElectronsForVID")),
+    srcs=cms.VInputTag(cms.InputTag("calibratedPatElectrons")),
     names=cms.vstring("Electron"),
     effAreasConfigFile = cms.FileInPath("RecoEgamma/ElectronIdentification/data/Summer16/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt"),
     valueMaps=cms.PSet(
@@ -741,6 +748,15 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
         summer16eleHLTPreselection = cms.PSet(
             type=cms.string("ValueMapAccessorBool"),
             src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronHLTPreselection-Summer16-V1")
+        ),
+        
+        energyRegressionUp = cms.PSet(
+            type=cms.string("ValueMapAccessorDouble"),
+            src = cms.InputTag("electronRegressionUncertainties","energyUp")
+        ),
+        energyRegressionDown = cms.PSet(
+            type=cms.string("ValueMapAccessorDouble"),
+            src = cms.InputTag("electronRegressionUncertainties","energyDown")
         )
         
     ),
