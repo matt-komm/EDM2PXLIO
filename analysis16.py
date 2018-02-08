@@ -238,6 +238,7 @@ else:
     process.source = cms.Source("PoolSource",
         inputCommands = cms.untracked.vstring("keep *", "drop LHERunInfoProduct_*_*_*"), #this produces otherwise a memleak
         fileNames = cms.untracked.vstring(
+            'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv2/SMS-T1qqqq_ctau-1_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_GridpackScan_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v2/10000/000486C0-2588-E711-8E92-0025905A48BA.root',
             #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/00000/04615FE5-D844-E611-B5F0-0090FAA58B94.root'
             #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext4-v1/00000/004A0552-3929-E611-BD44-0025905A48F0.root'
             #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/MINIAODSIM/premix_withHLT_80X_mcRun2_asymptotic_v14_ext1-v1/80000/02236588-E871-E611-BDA6-D8D385AE85C0.root'
@@ -247,8 +248,11 @@ else:
             #'root://sbgse1.in2p3.fr//store/mc/RunIISummer16MiniAODv2/QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/2ADA07B4-D2B1-E611-A716-0CC47A7C351E.root',
 	
 	        #sync
-	        '/store/mc/RunIISummer16MiniAODv2/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/60000/A059F3BF-79B9-E611-B81C-0CC47A7FC412.root'
+	        #'/store/mc/RunIISummer16MiniAODv2/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/60000/A059F3BF-79B9-E611-B81C-0CC47A7FC412.root'
 	        #'/store/mc/RunIISummer16MiniAODv2/QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/60000/04DBE4B6-82B5-E611-83E5-00266CF94D50.root'
+	        #'/store/mc/RunIISummer16MiniAODv2/SMS-T1qqqq_ctau-1e18_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_GridpackScan_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v2/90000/02FB2435-448A-E711-98AC-002590E7D7C2.root',
+	        #'/store/mc/RunIISummer16MiniAODv2/SMS-T1qqqq_ctau-0p01_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_GridpackScan_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v2/110000/0C07E448-338A-E711-B877-0CC47A4D75F2.root',
+	        #'file://TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root',
 	),
         #skipEvents = cms.untracked.uint32(24900)
         #lumisToProcess = cms.untracked.VLuminosityBlockRange('251244:96-251244:121'),
@@ -353,7 +357,7 @@ if not options.isData:
 
 
 ### electron smearing ###
-
+\
 from EgammaAnalysis.ElectronTools.regressionWeights_cfi import regressionWeights
 process = regressionWeights(process)
 
@@ -367,7 +371,7 @@ process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService
         engineName = cms.untracked.string('TRandom3'),
     ),
 )
-
+'''
 process.load('EgammaAnalysis.ElectronTools.regressionApplication_cff')
 process.load('EgammaAnalysis.ElectronTools.calibratedPatElectronsRun2_cfi')
 #process.load('EgammaAnalysis.ElectronTools.calibratedPatPhotonsRun2_cfi')
@@ -383,6 +387,14 @@ process.calibratedPatElectrons.isMC = cms.bool(not options.isData)
 addModule(process.EGMScaleAndSmear)
 
 
+from EgammaAnalysis.ElectronTools.egammaEnergyShifter_cff import configElectronEnergyShifter
+process.electronRegressionUncertainties = cms.EDProducer("ElectronRegressionUncertainties",
+    src = cms.InputTag("calibratedPatElectrons"),
+    isMC = cms.bool(not options.isData),
+    egmUncertaintyConfig = configElectronEnergyShifter
+)
+addModule(process.electronRegressionUncertainties)
+'''
 
 
 ### electron IDs ###
@@ -395,22 +407,13 @@ for eleID in [
 ]:
     setupAllVIDIdsInModule(process,eleID,setupVIDElectronSelection)
 
-
+'''
 process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag('calibratedPatElectrons')
-#process.electronIDValueMapProducer.srcMiniAOD = cms.InputTag('selectedElectronsForVID')
 process.electronRegressionValueMapProducer.srcMiniAOD = cms.InputTag('calibratedPatElectrons')
-#process.electronMVAValueMapProducer.srcMiniAOD = cms.InputTag('selectedElectronsForVID')
+'''
 
 addModule(process.egmGsfElectronIDSequence)
 
-
-from EgammaAnalysis.ElectronTools.egammaEnergyShifter_cff import configElectronEnergyShifter
-process.electronRegressionUncertainties = cms.EDProducer("ElectronRegressionUncertainties",
-    src = cms.InputTag("calibratedPatElectrons"),
-    isMC = cms.bool(not options.isData),
-    egmUncertaintyConfig = configElectronEnergyShifter
-)
-addModule(process.electronRegressionUncertainties)
 
 
 ### Jet PU ID ###
@@ -612,7 +615,8 @@ addModule(process.matchMuonTriggers)
 process.matchElectronTriggers = cms.EDProducer("TriggerMatcherElectrons",
     triggerResult = cms.InputTag("TriggerResults","","HLT"),
     triggerObjects = cms.InputTag("selectedPatTrigger"),
-    recoObjects = cms.InputTag("calibratedPatElectrons"),
+    #recoObjects = cms.InputTag("calibratedPatElectrons"),
+    recoObjects = cms.InputTag("slimmedElectrons"),
     dR = cms.double(0.1),
     flags = cms.PSet(
         Ele27WPLoose = cms.string("HLT_Ele27_eta2p1_WPLoose_Gsf_v[0-9]+"),
@@ -726,7 +730,8 @@ setattr(process.pat2pxlio,"muons",cms.PSet(
 
 setattr(process.pat2pxlio,"electrons",cms.PSet(
     type=cms.string("ElectronConverter"),
-    srcs=cms.VInputTag(cms.InputTag("calibratedPatElectrons")),
+    #srcs=cms.VInputTag(cms.InputTag("calibratedPatElectrons")),
+    srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
     names=cms.vstring("Electron"),
     effAreasConfigFile = cms.FileInPath("RecoEgamma/ElectronIdentification/data/Summer16/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt"),
     valueMaps=cms.PSet(
@@ -749,20 +754,28 @@ setattr(process.pat2pxlio,"electrons",cms.PSet(
             type=cms.string("ValueMapAccessorBool"),
             src=cms.InputTag("egmGsfElectronIDs","cutBasedElectronHLTPreselection-Summer16-V1")
         ),
-        
-        energyRegressionUp = cms.PSet(
-            type=cms.string("ValueMapAccessorDouble"),
-            src = cms.InputTag("electronRegressionUncertainties","energyUp")
-        ),
-        energyRegressionDown = cms.PSet(
-            type=cms.string("ValueMapAccessorDouble"),
-            src = cms.InputTag("electronRegressionUncertainties","energyDown")
-        )
-        
     ),
     select=cms.string("pt>15.0"), #keep at 15 for veto
 ))
 '''
+        energyRegressionUp = cms.PSet(
+            type=cms.string("ValueMapAccessorDouble"),
+            src = cms.InputTag("electronRegressionUncertainties","energyRegressionUp")
+        ),
+        energyRegressionDown = cms.PSet(
+            type=cms.string("ValueMapAccessorDouble"),
+            src = cms.InputTag("electronRegressionUncertainties","energyRegressionDown")
+        ),
+        energyScaleUp = cms.PSet(
+            type=cms.string("ValueMapAccessorDouble"),
+            src = cms.InputTag("electronRegressionUncertainties","energyScaleUp")
+        ),
+        energyScaleDown = cms.PSet(
+            type=cms.string("ValueMapAccessorDouble"),
+            src = cms.InputTag("electronRegressionUncertainties","energyScaleDown")
+        )
+
+
 setattr(process.pat2pxlio,"electronsAlt",cms.PSet(
     type=cms.string("ElectronConverter"),
     srcs=cms.VInputTag(cms.InputTag("slimmedElectrons")),
