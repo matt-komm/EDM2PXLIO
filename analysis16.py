@@ -172,17 +172,17 @@ else:
         toGet = cms.VPSet(
             cms.PSet(
                 record = cms.string('JetResolutionRcd'),
-                tag    = cms.string('JR_Spring16_25nsV6_MC_PtResolution_AK4PFchs'),
+                tag    = cms.string('JR_Summer16_25nsV1_80X_MC_PtResolution_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs_pt')
             ),
             cms.PSet(
                 record = cms.string('JetResolutionScaleFactorRcd'),
-                tag    = cms.string('JR_Spring16_25nsV6_MC_SF_AK4PFchs'),
+                tag    = cms.string('JR_Summer16_25nsV1_80X_MC_SF_AK4PFchs'),
                 label  = cms.untracked.string('AK4PFchs')
             ),
         ),
-        connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-        #connect = cms.string('sqlite:Spring16_25nsV10_MC.db')
+        #connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+        connect = cms.string('sqlite:Summer16_25nsV1_80X_MC.db')
     )
 
 
@@ -238,7 +238,7 @@ else:
     process.source = cms.Source("PoolSource",
         inputCommands = cms.untracked.vstring("keep *", "drop LHERunInfoProduct_*_*_*"), #this produces otherwise a memleak
         fileNames = cms.untracked.vstring(
-            'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv2/SMS-T1qqqq_ctau-1_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_GridpackScan_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v2/10000/000486C0-2588-E711-8E92-0025905A48BA.root',
+            #'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv2/SMS-T1qqqq_ctau-1_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_GridpackScan_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v2/10000/000486C0-2588-E711-8E92-0025905A48BA.root',
             #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/00000/04615FE5-D844-E611-B5F0-0090FAA58B94.root'
             #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext4-v1/00000/004A0552-3929-E611-BD44-0025905A48F0.root'
             #'root://cmsxrootd.fnal.gov//store/mc/RunIISpring16MiniAODv2/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/MINIAODSIM/premix_withHLT_80X_mcRun2_asymptotic_v14_ext1-v1/80000/02236588-E871-E611-BDA6-D8D385AE85C0.root'
@@ -248,7 +248,7 @@ else:
             #'root://sbgse1.in2p3.fr//store/mc/RunIISummer16MiniAODv2/QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/2ADA07B4-D2B1-E611-A716-0CC47A7C351E.root',
 	
 	        #sync
-	        #'/store/mc/RunIISummer16MiniAODv2/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/60000/A059F3BF-79B9-E611-B81C-0CC47A7FC412.root'
+	        '/store/mc/RunIISummer16MiniAODv2/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/60000/A059F3BF-79B9-E611-B81C-0CC47A7FC412.root'
 	        #'/store/mc/RunIISummer16MiniAODv2/QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/60000/04DBE4B6-82B5-E611-83E5-00266CF94D50.root'
 	        #'/store/mc/RunIISummer16MiniAODv2/SMS-T1qqqq_ctau-1e18_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_GridpackScan_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v2/90000/02FB2435-448A-E711-98AC-002590E7D7C2.root',
 	        #'/store/mc/RunIISummer16MiniAODv2/SMS-T1qqqq_ctau-0p01_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_GridpackScan_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v2/110000/0C07E448-338A-E711-B877-0CC47A4D75F2.root',
@@ -315,11 +315,11 @@ def addFilter(seq,inputTag,cutString,minN=None):
 if not options.noFilter:
     addFilter(skimMuSequence,cms.InputTag("slimmedMuons"),"pt>24.0",minN=1)
     #addFilter(skimMuSequence,cms.InputTag("slimmedJetsJEC"),"pt>15.0",minN=2)
-    addFilter(skimMuSequence,cms.InputTag("slimmedJetsJEC"),"pt>26.0",minN=2) #allows 13% JEC uncertainty @ 30 GeV
+    addFilter(skimMuSequence,cms.InputTag("slimmedJetsJEC"),"pt>24.0",minN=2)
     
     addFilter(skimEleSequence,cms.InputTag("slimmedElectrons"),"pt>27.0",minN=1)
     #addFilter(skimEleSequence,cms.InputTag("slimmedJetsJEC"),"pt>15.0",minN=2)
-    addFilter(skimEleSequence,cms.InputTag("slimmedJetsJEC"),"pt>26.0",minN=2) #allows 13% JEC uncertainty @ 30 GeV
+    addFilter(skimEleSequence,cms.InputTag("slimmedJetsJEC"),"pt>24.0",minN=2)
 else:
     print "will not apply any filtering!"
 
@@ -357,7 +357,7 @@ if not options.isData:
 
 
 ### electron smearing ###
-\
+
 from EgammaAnalysis.ElectronTools.regressionWeights_cfi import regressionWeights
 process = regressionWeights(process)
 
@@ -814,14 +814,14 @@ if options.isData:
             
             # NOTE: PAT is process 
             # this has only the copy muons removed
-            #cms.InputTag("slimmedMETs","","PAT"),
+            cms.InputTag("slimmedMETs","","PAT"),
             
-            #cms.InputTag("patPFMetT1","","DX"),
+            cms.InputTag("patPFMetT1","","DX"),
         ),
         names=cms.vstring(
             "MET",
-            #"MET_old",
-            #"MET_new",
+            "MET_old",
+            "MET_new",
         )
     ))
 else:
@@ -864,6 +864,9 @@ else:
             cms.InputTag("patPFMetT1JetEnUp"),
             cms.InputTag("patPFMetT1JetEnDown"),
             
+            cms.InputTag("patPFMetT1JetResUp"),
+            cms.InputTag("patPFMetT1JetResDown"),
+            
             #cms.InputTag("patPFMetT1MuonEnUp"),
             #cms.InputTag("patPFMetT1MuonEnDown"),
             #cms.InputTag("patPFMetT1ElectronEnUp"),
@@ -883,6 +886,8 @@ else:
             "MET",
             "METEnUp",
             "METEnDown",
+            "METResUp",
+            "METResDown",
             "METUncUp",
             "METUncDown",
         )
